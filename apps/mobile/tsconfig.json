@@ -1,0 +1,11 @@
+{
+  "extends": ["expo/tsconfig.base", "@fant/config/tsconfig/strict.json"],
+  "compilerOptions": {
+    // Committed replacement for the generated, git-ignored expo-env.d.ts.
+    "types": ["expo/types"],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.tsx"]
+}

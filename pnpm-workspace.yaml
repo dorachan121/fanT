@@ -8,6 +8,10 @@ packages:
 minimumReleaseAge: 1440
 # Refuse a version whose publish provenance is weaker than an earlier version's.
 trustPolicy: no-downgrade
+# Reviewed exceptions: legitimate releases published before npm provenance existed,
+# flagged only because newer majors of the same package carry attestations.
+trustPolicyExclude:
+  - semver@6.3.1 # 2023-07 ReDoS fix release, required by @babel/core
 # Fail installs on an incompatible Node.js instead of warning.
 engineStrict: true
 
@@ -16,7 +20,7 @@ engineStrict: true
 catalog:
   '@eslint/js': ^10.0.1
   '@types/node': ^24.19.2
-  canvaskit-wasm: ^0.42.0
+  canvaskit-wasm: 0.41.0 # keep in sync with @shopify/react-native-skia's dependency
   eslint: ^10.13.0
   prettier: ^3.9.10
   turbo: ^2.11.10

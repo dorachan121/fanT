@@ -1,0 +1,37 @@
+{
+  "name": "@fant/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "lint": "eslint .",
+    "start": "expo start",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~58.0.15",
+    "@fant/filters": "workspace:*",
+    "@shopify/react-native-skia": "2.14.0",
+    "expo": "~58.0.17",
+    "expo-constants": "~58.0.13",
+    "expo-dev-client": "~58.0.14",
+    "expo-linking": "~58.0.14",
+    "expo-router": "~58.0.25",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.0",
+    "react-native-reanimated": "4.7.1",
+    "react-native-safe-area-context": "~5.10.1",
+    "react-native-screens": "~4.30.0",
+    "react-native-worklets": "0.13.0"
+  },
+  "devDependencies": {
+    "@fant/config": "workspace:*",
+    "@types/react": "~19.3.0",
+    "eslint": "catalog:",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "typescript": "catalog:"
+  }
+}
