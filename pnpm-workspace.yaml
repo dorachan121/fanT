@@ -1,0 +1,26 @@
+packages:
+  - apps/*
+  - packages/*
+
+# --- Supply-chain hardening ---------------------------------------------------
+# Ignore versions published less than 24h ago (most malicious releases are
+# detected and unpublished within that window).
+minimumReleaseAge: 1440
+# Refuse a version whose publish provenance is weaker than an earlier version's.
+trustPolicy: no-downgrade
+# Fail installs on an incompatible Node.js instead of warning.
+engineStrict: true
+
+# Shared versions for tooling used by more than one workspace package.
+# Expo / React Native dependencies are managed per app with `expo install`.
+catalog:
+  '@eslint/js': ^10.0.1
+  '@types/node': ^24.19.2
+  canvaskit-wasm: ^0.42.0
+  eslint: ^10.13.0
+  prettier: ^3.9.10
+  turbo: ^2.11.10
+  typescript: ~6.0.3
+  typescript-eslint: ^8.72.0
+  vite: ^8.3.5
+  vitest: ^5.0.5
