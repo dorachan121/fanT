@@ -18,7 +18,14 @@ docs/
 │   ├── 07-technology.md         … 技術動向（SDK / 端末上 AI / クロスプラットフォーム）
 │   ├── 08-strategy.md           … SWOT・ポジショニング・推奨戦略
 │   └── sources.md               … 出典一覧
-└── requirements/                … 要件定義
+└── requirements/                … 要件定義（v0.1）
+    ├── 01-product-overview.md
+    ├── 02-functional-requirements.md
+    ├── 03-non-functional-requirements.md
+    ├── 04-monetization.md
+    ├── 05-screens.md
+    ├── 06-open-issues.md
+    └── 07-system-architecture.md
 ```
 
 ## データの扱い
