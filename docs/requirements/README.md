@@ -1,7 +1,7 @@
 # 要件定義
 
 市場調査（[../market-research](../market-research/00-summary.md)）をもとに要件を定義します。
-版: v0.1（初版ドラフト, 2026-10-24）
+版: v0.2（2026-10-24）
 
 | ファイル | 内容 |
 |---|---|
@@ -11,4 +11,11 @@
 | [04-monetization.md](04-monetization.md) | 課金・価格設計（フリーミアム＋AI クレジット） |
 | [05-screens.md](05-screens.md) | 画面一覧・画面遷移・カメラ画面のレイアウト案 |
 | [06-open-issues.md](06-open-issues.md) | 決定事項・未決事項・リスク・スコープを削る順番 |
-| [07-system-architecture.md](07-system-architecture.md) | システム構成（案）: Flutter とネイティブの分担、描画パイプライン、技術選定 |
+| [07-system-architecture.md](07-system-architecture.md) | システム構成: TypeScript モノレポ（Expo / React Native ＋ VisionCamera ＋ Skia ＋ ネイティブモジュール ＋ React Web ＋ Firebase）、描画パイプライン、リポジトリ構成、技術検証の項目 |
+
+## 改訂履歴
+
+| 版 | 日付 | 内容 |
+|---|---|---|
+| v0.1 | 2026-10-24 | 初版ドラフト（Flutter で両 OS） |
+| v0.2 | 2026-10-24 | 技術構成を TypeScript モノレポに変更（Expo / React Native ＋ VisionCamera ＋ Skia ＋ ネイティブモジュール ＋ React Web ＋ Firebase）。シェーダーを SkSL の1ソースに統一。フィルムスタジオ（STU）を追加 |
