@@ -31,7 +31,7 @@ audit:
 catalog:
   '@eslint/js': ^10.0.1
   '@types/node': ^24.19.2
-  canvaskit-wasm: 0.41.0 # keep in sync with @shopify/react-native-skia's dependency
+  canvaskit-wasm: 0.41.1 # keep in sync with @shopify/react-native-skia's dependency
   eslint: ^10.13.0
   prettier: ^3.9.10
   turbo: ^2.11.10
