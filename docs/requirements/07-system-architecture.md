@@ -219,7 +219,8 @@ Skia で描いた加工は、カメラの撮影画像には直接乗りません
 | 画像生成 AI | 未定（Q-04） |
 | Web | Vite + React（スタジオ）、Next.js（宣伝用サイト） |
 | モノレポ | pnpm workspaces + Turborepo |
-| テスト | Vitest（packages）、Jest + React Native Testing Library（アプリ）、シェーダーのゴールデン画像テスト（ヘッドレスの CanvasKit で描いて ΔE で比較）、Maestro（E2E） |
+| ツールチェーン（雛形で確定） | Node.js 24 LTS、pnpm 12、TypeScript 6.0（Expo SDK 58 の推奨版。typescript-eslint が 7.0 未対応のため）、ESLint 10 ＋ typescript-eslint ＋ eslint-plugin-react-hooks（`eslint-config-expo` はサポートが終了した ESLint 9 に依存するため使わない） |
+| テスト | Vitest（packages）、Jest + React Native Testing Library（アプリ）、シェーダーのゴールデン画像テスト（ヘッドレスの CanvasKit で描いて ΔE で比較）、Maestro（E2E）。CanvasKit は react-native-skia が内部で使う版に合わせる |
 | CI/CD | GitHub Actions（lint・型チェック・テスト・コンテンツの検証）、EAS Build / EAS Submit / EAS Update |
 
 ## 9. ストア審査なしの JS 配信（EAS Update）の運用方針
