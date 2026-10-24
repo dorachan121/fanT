@@ -5,6 +5,7 @@
   "main": "expo-router/entry",
   "scripts": {
     "android": "expo run:android",
+    "bundle": "expo export --platform android --platform ios --output-dir dist",
     "ios": "expo run:ios",
     "lint": "eslint .",
     "start": "expo start",

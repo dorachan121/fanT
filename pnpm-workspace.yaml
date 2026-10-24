@@ -15,6 +15,17 @@ trustPolicyExclude:
 # Fail installs on an incompatible Node.js instead of warning.
 engineStrict: true
 
+# Reviewed audit exceptions. Each entry: affected path, why it is not exploitable
+# here, and when to remove it. Re-check on every Expo SDK upgrade.
+audit:
+  ignore:
+    # node-forge <=1.4.0 (no patched release yet), via @expo/cli code-signing
+    # certificates. Build-time CLI only; expo-updates code signing is not used.
+    - GHSA-86w9-cpqp-85rv
+    # zod 3.x memory exhaustion (fixed only in zod 4), via @expo/cli validating
+    # local config. Build-time CLI only; never parses untrusted input in the app.
+    - GHSA-mrhx-c7xc-m3w5
+
 # Shared versions for tooling used by more than one workspace package.
 # Expo / React Native dependencies are managed per app with `expo install`.
 catalog:

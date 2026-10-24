@@ -1,0 +1,64 @@
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Tokyo
+    # Matches minimumReleaseAge in pnpm-workspace.yaml: let fresh releases settle first.
+    cooldown:
+      default-days: 3
+    open-pull-requests-limit: 5
+    # A dependency joins the first group whose patterns match it.
+    groups:
+      expo-sdk:
+        patterns:
+          - expo
+          - expo-*
+          - '@expo/*'
+          - react
+          - react-dom
+          - '@types/react'
+          - react-native
+          - react-native-*
+          - '@shopify/react-native-skia'
+          - canvaskit-wasm
+      tooling:
+        patterns: ['*']
+    ignore:
+      # Expo pins SDK-compatible versions; move them with `expo install --fix`
+      # during an SDK upgrade instead of individual bumps.
+      - dependency-name: expo
+        update-types: [version-update:semver-major]
+      - dependency-name: expo-*
+        update-types: [version-update:semver-major]
+      - dependency-name: '@expo/*'
+        update-types: [version-update:semver-major]
+      - dependency-name: react
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: react-dom
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: react-native
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: react-native-*
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: '@shopify/react-native-skia'
+        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: canvaskit-wasm
+        update-types: [version-update:semver-major, version-update:semver-minor]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '09:00'
+      timezone: Asia/Tokyo
+    cooldown:
+      default-days: 3
+    groups:
+      actions:
+        patterns: ['*']
