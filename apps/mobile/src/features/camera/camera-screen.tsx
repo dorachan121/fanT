@@ -2,7 +2,7 @@ import { DEFAULT_FILM_PARAMS } from '@fant/filters';
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { TargetCameraPosition } from 'react-native-vision-camera';
+import type { Constraint, TargetCameraPosition } from 'react-native-vision-camera';
 import { SkiaCamera } from 'react-native-vision-camera-skia';
 
 import { CameraPermissionGate } from './camera-permission-gate';
@@ -16,6 +16,12 @@ import { useFilmFrameRenderer } from './use-film-frame-renderer';
 type LensPosition = Extract<TargetCameraPosition, 'front' | 'back'>;
 
 const newSeed = () => Math.random();
+
+/**
+ * Fixed 24fps: dark scenes keep a smooth preview instead of the camera stretching
+ * exposure down to ~16fps. VisionCamera v5 only supports a fixed rate, not a range.
+ */
+const CAMERA_CONSTRAINTS: Constraint[] = [{ fps: 24 }];
 
 export function CameraScreen() {
   return (
@@ -60,6 +66,7 @@ function FilmCamera() {
         style={styles.preview}
         device={position}
         isActive={isActive}
+        constraints={CAMERA_CONSTRAINTS}
         outputs={outputs}
         onFrame={onFrame}
       />
