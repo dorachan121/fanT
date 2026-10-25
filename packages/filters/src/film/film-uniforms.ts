@@ -15,7 +15,9 @@ export type FilmUniforms = FilmParams & {
   readonly seed: number;
 };
 
+/** Marked as a worklet so it can run on the camera frame thread. */
 export function toFilmUniforms(params: FilmParams, frame: FilmFrame): FilmUniforms {
+  'worklet';
   const { width, height, seed } = frame;
   if (!isPositiveFinite(width) || !isPositiveFinite(height)) {
     throw new RangeError(`Invalid frame size: ${String(width)}x${String(height)}`);
@@ -27,5 +29,6 @@ export function toFilmUniforms(params: FilmParams, frame: FilmFrame): FilmUnifor
 }
 
 function isPositiveFinite(value: number): boolean {
+  'worklet';
   return Number.isFinite(value) && value > 0;
 }

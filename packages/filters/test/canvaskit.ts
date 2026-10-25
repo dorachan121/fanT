@@ -2,6 +2,8 @@ import { createRequire } from 'node:module';
 
 import CanvasKitInit, { type CanvasKit, type RuntimeEffect } from 'canvaskit-wasm';
 
+import { packUniforms, type UniformValues } from '../src';
+
 /** Unpremultiplied RGBA8 pixels in row-major order. */
 export interface Bitmap {
   readonly width: number;
@@ -10,7 +12,6 @@ export interface Bitmap {
 }
 
 type Rgba = readonly [number, number, number, number];
-type UniformValues = Readonly<Record<string, number | readonly number[]>>;
 
 const require = createRequire(import.meta.url);
 let canvasKit: Promise<CanvasKit> | undefined;
@@ -98,19 +99,4 @@ export function renderEffect(
       object.delete();
     });
   }
-}
-
-function packUniforms(effect: RuntimeEffect, uniforms: UniformValues): Float32Array {
-  const packed = new Float32Array(effect.getUniformFloatCount());
-  for (const [index, name] of uniformNames(effect).entries()) {
-    const value = uniforms[name];
-    if (value === undefined) throw new Error(`Missing value for uniform "${name}"`);
-    const values = typeof value === 'number' ? [value] : value;
-    const { slot, columns, rows } = effect.getUniform(index);
-    if (values.length !== columns * rows) {
-      throw new Error(`Uniform "${name}" expects ${String(columns * rows)} floats`);
-    }
-    packed.set(values, slot);
-  }
-  return packed;
 }

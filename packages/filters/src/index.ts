@@ -7,6 +7,7 @@ export {
 } from './film/film-params';
 export { FILM_SHADER_NAME, FILM_SHADER_SOURCE } from './film/film-shader';
 export { toFilmUniforms, type FilmFrame, type FilmUniforms } from './film/film-uniforms';
+export { packUniforms, type UniformLayout, type UniformValues } from './uniforms';
 export {
   compileRuntimeEffect,
   ShaderCompileError,
