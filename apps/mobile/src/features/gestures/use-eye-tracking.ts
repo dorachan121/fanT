@@ -1,4 +1,5 @@
 import { useCallback, useMemo } from 'react';
+import { Platform } from 'react-native';
 import type { Frame } from 'react-native-vision-camera';
 import {
   useFaceDetector,
@@ -20,6 +21,14 @@ const DETECTOR_OPTIONS: FaceDetectorOptions = {
 const DETECT_EVERY_N_FRAMES = 2;
 
 /**
+ * On Android the plugin hands ML Kit the camera's raw buffer, and the left eye it
+ * reports is the face's own right eye (checked on a Pixel 7a with both cameras).
+ * On iOS the plugin passes the front camera's mirroring to ML Kit; that is
+ * unverified until it runs on an iPhone.
+ */
+const EYES_SWAPPED = Platform.OS === 'android';
+
+/**
  * Returns a frame-thread worklet that reads the primary face's eye openness and
  * reports it to the JS thread (`null` when no face is visible). Face data never
  * leaves memory. A detection failure is reported once and never breaks the preview.
@@ -39,7 +48,7 @@ export function useEyeTracking(onEyes: (eyes: EyeOpenness | null) => void): (fra
       try {
         const faces = detector.detectFaces(frame);
         try {
-          scheduleOnRN(onEyes, primaryFaceEyes(faces));
+          scheduleOnRN(onEyes, primaryFaceEyes(faces, EYES_SWAPPED));
         } finally {
           for (const face of faces) face.dispose();
         }
