@@ -35,8 +35,16 @@ const config: ExpoConfig = {
   version: packageJson.version,
   orientation: 'portrait',
   userInterfaceStyle: 'automatic',
-  ios: { bundleIdentifier: appId },
-  android: { package: appId },
+  ios: {
+    bundleIdentifier: appId,
+    infoPlist: {
+      NSCameraUsageDescription: '写真を撮影するためにカメラを使用します。',
+    },
+  },
+  android: {
+    package: appId,
+    permissions: ['android.permission.CAMERA'],
+  },
   plugins: ['expo-router'],
   experiments: { reactCompiler: true },
 };

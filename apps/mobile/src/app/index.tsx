@@ -1,5 +1,5 @@
-import { FilmPreview } from '@/features/film-preview/film-preview';
+import { CameraScreen } from '@/features/camera/camera-screen';
 
 export default function HomeScreen() {
-  return <FilmPreview />;
+  return <CameraScreen />;
 }
