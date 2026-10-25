@@ -12,43 +12,31 @@ updates:
     cooldown:
       default-days: 3
     open-pull-requests-limit: 5
-    # A dependency joins the first group whose patterns match it.
     groups:
-      expo-sdk:
-        patterns:
-          - expo
-          - expo-*
-          - '@expo/*'
-          - react
-          - react-dom
-          - '@types/react'
-          - react-native
-          - react-native-*
-          - '@shopify/react-native-skia'
-          - canvaskit-wasm
       tooling:
         patterns: ['*']
+        update-types: [minor, patch]
     ignore:
-      # Expo pins SDK-compatible versions; move them with `expo install --fix`
-      # during an SDK upgrade instead of individual bumps.
+      # Versions chosen by the Expo SDK. React Native refuses to start when react does
+      # not exactly match its bundled renderer, so update these only with
+      # `expo install --fix` (CI enforces this with `expo install --check`).
       - dependency-name: expo
-        update-types: [version-update:semver-major]
       - dependency-name: expo-*
-        update-types: [version-update:semver-major]
       - dependency-name: '@expo/*'
-        update-types: [version-update:semver-major]
       - dependency-name: react
-        update-types: [version-update:semver-major, version-update:semver-minor]
       - dependency-name: react-dom
-        update-types: [version-update:semver-major, version-update:semver-minor]
+      - dependency-name: '@types/react'
       - dependency-name: react-native
-        update-types: [version-update:semver-major, version-update:semver-minor]
       - dependency-name: react-native-*
-        update-types: [version-update:semver-major, version-update:semver-minor]
       - dependency-name: '@shopify/react-native-skia'
-        update-types: [version-update:semver-major, version-update:semver-minor]
+      # Pinned to the copy that @shopify/react-native-skia depends on.
       - dependency-name: canvaskit-wasm
-        update-types: [version-update:semver-major, version-update:semver-minor]
+      # Major versions must follow Expo and typescript-eslint support.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
+      # Must match the Node.js major in .node-version.
+      - dependency-name: '@types/node'
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /

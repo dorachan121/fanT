@@ -53,6 +53,13 @@ pnpm --filter @fant/mobile bundle    # iOS / Android の JS バンドルを作�
 | 複数のパッケージで使うツール（TypeScript、ESLint など） | `pnpm-workspace.yaml` の `catalog` にバージョンを書き、各 `package.json` では `"catalog:"` を指定する |
 | ワークスペース内のパッケージ                            | `"workspace:*"` で参照する                                                                            |
 
+Expo SDK が決めるパッケージ（`expo*`、`react`、`react-native*`、`@shopify/react-native-skia` など）は Dependabot の対象外です。
+React Native は `react` が内部のレンダラーと完全に一致しないと起動しないため、まとめて次のコマンドで更新します。CI は `expo install --check` で互換性を確認しています。
+
+```sh
+pnpm --filter @fant/mobile exec expo install --fix
+```
+
 ### サプライチェーン対策（`pnpm-workspace.yaml`）
 
 - **公開から24時間未満のバージョンは使わない**（`minimumReleaseAge`）
@@ -62,10 +69,10 @@ pnpm --filter @fant/mobile bundle    # iOS / Android の JS バンドルを作�
 
 ## CI
 
-| ワークフロー     | 内容                                                                     |
-| ---------------- | ------------------------------------------------------------------------ |
-| `ci.yml`         | フォーマット確認、lint・型チェック・テスト、iOS / Android の JS バンドル |
-| `security.yml`   | 依存関係の脆弱性監査（毎週月曜、lockfile 変更時）                        |
-| `dependabot.yml` | npm と GitHub Actions の更新（公開後3日の待機あり）                      |
+| ワークフロー     | 内容                                                                                          |
+| ---------------- | --------------------------------------------------------------------------------------------- |
+| `ci.yml`         | フォーマット確認、Expo SDK との互換性、lint・型チェック・テスト、iOS / Android の JS バンドル |
+| `security.yml`   | 依存関係の脆弱性監査（毎週月曜、lockfile 変更時）                                             |
+| `dependabot.yml` | npm と GitHub Actions の更新（公開後3日の待機あり）                                           |
 
 GitHub Actions はすべてコミット SHA で固定し、トークンは読み取り専用にしています。

@@ -28,6 +28,12 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup
       - run: pnpm format:check
+      - name: Check Expo SDK compatibility
+        run: pnpm --filter @fant/mobile exec expo install --check
+        env:
+          # Compare against the installed SDK's own version table: deterministic and
+          # independent of the Expo API being reachable.
+          EXPO_OFFLINE: '1'
       - run: pnpm turbo run lint typecheck test
 
   bundle:
