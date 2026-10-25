@@ -61,6 +61,11 @@ const config: ExpoConfig = {
           // VisionCamera and Skia compile their HardwareBuffer frame paths only when minSdk >= 26.
           // Android 10 is the planned floor (docs/requirements/03-non-functional-requirements.md, Q-07).
           minSdkVersion: 29,
+          // ML Kit creates its component registrars by reflection. firebase-components 16.1
+          // keeps those classes but not their constructors, which R8 full mode then removes,
+          // so face detection fails to start in release builds.
+          extraProguardRules:
+            '-keep class * implements com.google.firebase.components.ComponentRegistrar { <init>(); }',
         },
       },
     ],
