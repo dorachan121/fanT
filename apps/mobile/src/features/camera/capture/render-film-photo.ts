@@ -14,6 +14,11 @@ interface SkiaObject {
   dispose(): void;
 }
 
+export interface RenderOptions {
+  /** Flip horizontally, e.g. to match a mirrored front-camera preview. */
+  readonly mirror: boolean;
+}
+
 /**
  * Re-renders a captured photo through the film shader at full resolution and returns
  * it as JPEG, using the same parameters and seed as the live preview.
@@ -29,6 +34,7 @@ export function renderFilmPhoto(
   effect: SkRuntimeEffect,
   params: FilmParams,
   seed: number,
+  { mirror }: RenderOptions,
 ): Uint8Array {
   const owned: SkiaObject[] = [];
   const own = <T extends SkiaObject>(object: T): T => {
@@ -57,7 +63,12 @@ export function renderFilmPhoto(
     const shader = own(effect.makeShaderWithChildren(packUniforms(effect, uniforms), [source]));
     const paint = own(Skia.Paint());
     paint.setShader(shader);
-    surface.getCanvas().drawPaint(paint);
+    const canvas = surface.getCanvas();
+    if (mirror) {
+      canvas.translate(width, 0);
+      canvas.scale(-1, 1);
+    }
+    canvas.drawPaint(paint);
     surface.flush();
 
     const rendered = own(surface.makeImageSnapshot());

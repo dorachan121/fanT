@@ -8,6 +8,16 @@ import { saveToPhotoLibrary } from './save-to-photo-library';
 
 export type CaptureStatus = 'idle' | 'capturing' | 'saved';
 
+export interface CaptureOptions {
+  /** Whether the live preview is mirrored (front camera); the photo is saved the same way. */
+  readonly previewMirrored: boolean;
+}
+
+interface CapturedPhoto {
+  readonly encoded: Uint8Array;
+  readonly isMirrored: boolean;
+}
+
 const SAVED_NOTICE_MS = 1500;
 
 /**
@@ -29,11 +39,14 @@ export function useFilmCapture(effect: SkRuntimeEffect, params: FilmParams, seed
     };
   }, [status]);
 
-  const capture = async (): Promise<void> => {
+  const capture = async ({ previewMirrored }: CaptureOptions): Promise<void> => {
     setStatus('capturing');
     try {
-      const encodedPhoto = await takeEncodedPhoto(photoOutput);
-      await saveToPhotoLibrary(renderFilmPhoto(encodedPhoto, effect, params, seed));
+      const photo = await takePhoto(photoOutput);
+      // Platforms differ in whether still photos come out mirrored, so flip only when
+      // the captured photo disagrees with what the preview showed.
+      const mirror = photo.isMirrored !== previewMirrored;
+      await saveToPhotoLibrary(renderFilmPhoto(photo.encoded, effect, params, seed, { mirror }));
       setStatus('saved');
     } catch (error) {
       setStatus('idle');
@@ -44,10 +57,13 @@ export function useFilmCapture(effect: SkRuntimeEffect, params: FilmParams, seed
   return { photoOutput, status, capture };
 }
 
-async function takeEncodedPhoto(output: CameraPhotoOutput): Promise<Uint8Array> {
+async function takePhoto(output: CameraPhotoOutput): Promise<CapturedPhoto> {
   const photo = await output.capturePhoto({}, {});
   try {
-    return new Uint8Array(await photo.getFileDataAsync());
+    return {
+      encoded: new Uint8Array(await photo.getFileDataAsync()),
+      isMirrored: photo.isMirrored,
+    };
   } finally {
     photo.dispose();
   }

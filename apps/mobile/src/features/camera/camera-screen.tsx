@@ -43,7 +43,8 @@ function FilmCamera() {
   };
 
   const handleShutter = () => {
-    capture()
+    // SkiaCamera mirrors the front-camera preview.
+    capture({ previewMirrored: position === 'front' })
       .then(() => {
         setSeed(newSeed());
       })
