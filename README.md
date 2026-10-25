@@ -35,7 +35,7 @@ pnpm format           # Prettier で整形
 ### モバイルアプリ
 
 ```sh
-pnpm --filter @fant/mobile start     # Metro を起動（Expo Go または開発ビルドで開く）
+pnpm --filter @fant/mobile start     # Metro を起動（開発ビルドで開く）
 pnpm --filter @fant/mobile ios       # iOS の開発ビルドを作って起動（Xcode が必要）
 pnpm --filter @fant/mobile android   # Android の開発ビルドを作って起動（Android Studio が必要）
 pnpm --filter @fant/mobile bundle    # iOS / Android の JS バンドルを作成（CI でも実行）
@@ -44,6 +44,44 @@ pnpm --filter @fant/mobile bundle    # iOS / Android の JS バンドルを作�
 - ビルドの種類は環境変数 `APP_VARIANT`（`development` / `preview` / `production`）で切り替えます。EAS のプロファイル（`apps/mobile/eas.json`）が自動で設定します。
 - `ios/` と `android/` は Expo が生成するので、コミットしません。ネイティブの設定は `app.config.ts` と config plugin で行います。
 - アイコンとスプラッシュは、デザインが決まってから追加します（要件定義 Q-02）。
+
+### 実機ビルド
+
+VisionCamera や Skia などのネイティブモジュールを使うため、Expo Go では動きません。開発ビルド（`expo-dev-client` 入り）を実機にインストールして使います。
+
+#### Android
+
+| ツール               | バージョン    | 備考                                                                                |
+| -------------------- | ------------- | ----------------------------------------------------------------------------------- |
+| Android Studio       | 最新          | SDK Manager で下の SDK Platform と NDK を入れる                                     |
+| JDK                  | 17            | Azul Zulu 17 を推奨（`winget install Azul.Zulu.17.JDK`）。React Native が 17 を指定 |
+| Android SDK Platform | 37            | `platforms;android-37.0`（React Native 0.88 の `compileSdk`）                       |
+| NDK                  | 27.1.12297006 | React Native 0.88 が指定するバージョン                                              |
+
+環境変数 `ANDROID_HOME`（Windows では `%LOCALAPPDATA%\Android\Sdk`）と `JAVA_HOME`（JDK 17 のインストール先）を設定します。
+
+Windows では、さらに次の設定が必要です。
+
+- リポジトリを **ASCII 文字だけの短いパス**（例: `C:\dev\fanT`）に置く。日本語を含むパスは Android Gradle Plugin がエラーにし、NDK のビルドも失敗します。OneDrive などの同期フォルダも、ビルド成果物のロックで失敗するので避けます
+- 長いパスを有効にする（`git config core.longpaths true` と、レジストリの `LongPathsEnabled`）
+- **ninja を 1.12 以上にする**。pnpm の `node_modules` はパスが深く、CMake の依存ファイルが260文字を超えます。SDK の CMake 3.22.1 に同梱の ninja 1.10 は長いパスを扱えず、`manifest 'build.ninja' still dirty after 100 tries` で失敗します。SDK Manager で CMake 3.31.6 を入れ、同梱の `ninja.exe`（1.12.1）を `%ANDROID_HOME%\cmake\3.22.1\bin\` にコピーします（元のファイルは別名で残しておく）
+
+1. 端末の「開発者向けオプション」で USB デバッグを有効にし、USB で接続する（`adb devices` で `device` と表示されれば OK）
+2. `pnpm --filter @fant/mobile android` を実行する。接続中の端末向けにビルドしてインストールし、Metro を起動します。初回は C++ のビルドがあるため時間がかかります
+
+#### iOS
+
+Xcode が必要なので、Windows では EAS Build（クラウド）でビルドします。実機へのインストールには Apple Developer Program への登録が必要です。
+
+```sh
+npm install -g eas-cli
+eas login
+eas init                                         # 初回のみ。表示された projectId を app.config.ts の extra.eas.projectId に追加する
+eas device:create                                # 端末の UDID を登録（表示される URL を iPhone で開く）
+eas build --profile development --platform ios   # 完了後に表示される URL から iPhone にインストール
+```
+
+iPhone の「設定 > プライバシーとセキュリティ」でデベロッパモードを有効にしてから、`pnpm --filter @fant/mobile start` で Metro を起動して開きます。
 
 ## 依存関係のルール
 
