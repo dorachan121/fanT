@@ -1,8 +1,4 @@
-interface ParamRange {
-  readonly min: number;
-  readonly max: number;
-  readonly defaultValue: number;
-}
+import { defineParams, type ParamRange, type ParamValues } from '../params';
 
 /** Single source of truth for every film parameter: its bounds and default. */
 export const FILM_PARAM_RANGES = {
@@ -20,32 +16,10 @@ export const FILM_PARAM_RANGES = {
 
 export type FilmParamName = keyof typeof FILM_PARAM_RANGES;
 
-export type FilmParams = Readonly<Record<FilmParamName, number>>;
+export type FilmParams = ParamValues<FilmParamName>;
 
-const PARAM_NAMES = Object.keys(FILM_PARAM_RANGES) as readonly FilmParamName[];
+const filmParams = defineParams(FILM_PARAM_RANGES);
 
-export const DEFAULT_FILM_PARAMS: FilmParams = Object.freeze(
-  Object.fromEntries(
-    PARAM_NAMES.map((name) => [name, FILM_PARAM_RANGES[name].defaultValue]),
-  ) as Record<FilmParamName, number>,
-);
+export const DEFAULT_FILM_PARAMS: FilmParams = filmParams.defaults;
 
-/**
- * Turns untrusted input (e.g. downloaded film definitions) into safe shader parameters:
- * missing or non-finite values fall back to defaults, the rest are clamped to range,
- * and unknown keys are dropped.
- */
-export function normalizeFilmParams(
-  input: Partial<Record<FilmParamName, unknown>> = {},
-): FilmParams {
-  const params = {} as Record<FilmParamName, number>;
-  for (const name of PARAM_NAMES) {
-    const { min, max, defaultValue } = FILM_PARAM_RANGES[name];
-    const value = input[name];
-    params[name] =
-      typeof value === 'number' && Number.isFinite(value)
-        ? Math.min(max, Math.max(min, value))
-        : defaultValue;
-  }
-  return Object.freeze(params);
-}
+export const normalizeFilmParams = filmParams.normalize;
