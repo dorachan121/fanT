@@ -1,18 +1,30 @@
-import { BEAUTY_LEVELS, DEFAULT_FILM_PARAMS, type BeautyLevel } from '@fant/filters';
+import { BEAUTY_LEVELS, FILM_PRESETS, type BeautyLevel, type FilmPreset } from '@fant/filters';
+import * as Haptics from 'expo-haptics';
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Constraint, TargetCameraPosition } from 'react-native-vision-camera';
 import { SkiaCamera } from 'react-native-vision-camera-skia';
 
+import { useEyeTracking } from '../gestures/use-eye-tracking';
+import { useWinkGestures } from '../gestures/use-wink-gestures';
+import type { Eye } from '../gestures/wink-detector';
 import { BeautyLevelButton } from './beauty-level-button';
 import { CameraPermissionGate } from './camera-permission-gate';
 import { PhotoLibraryPermissionError } from './capture/save-to-photo-library';
 import { useCapture } from './capture/use-capture';
+import { FilmPresetButton } from './film-preset-button';
+import {
+  BEAUTY_LEVEL_LABELS,
+  FILM_PRESET_LABELS,
+  NEXT_BEAUTY_LEVEL,
+  NEXT_FILM_PRESET,
+} from './presets';
 import { ShutterButton } from './shutter-button';
 import { useCameraActive } from './use-camera-active';
 import { useFilterEffects } from './use-filter-effects';
 import { useFrameRenderer } from './use-frame-renderer';
+import { useNotice } from './use-notice';
 
 type LensPosition = Extract<TargetCameraPosition, 'front' | 'back'>;
 
@@ -36,17 +48,35 @@ function FilmCamera() {
   const isActive = useCameraActive();
   const { bottom } = useSafeAreaInsets();
   const [position, setPosition] = useState<LensPosition>('front');
+  const [filmPreset, setFilmPreset] = useState<FilmPreset>('natural');
   const [beautyLevel, setBeautyLevel] = useState<BeautyLevel>('medium');
   // Shared by the preview and the next capture so the photo matches what was shown.
   const [seed, setSeed] = useState(newSeed);
+  const [notice, showNotice] = useNotice();
 
   const effects = useFilterEffects();
   const params = useMemo(
-    () => ({ beauty: BEAUTY_LEVELS[beautyLevel], film: DEFAULT_FILM_PARAMS }),
-    [beautyLevel],
+    () => ({ beauty: BEAUTY_LEVELS[beautyLevel], film: FILM_PRESETS[filmPreset] }),
+    [beautyLevel, filmPreset],
   );
-  const onFrame = useFrameRenderer(effects, params, seed);
   const { photoOutput, status, capture } = useCapture(effects, params, seed);
+
+  // Right wink: next film. Left wink: next beauty strength (GST-01). The buttons do the same.
+  const handleWink = (eye: Eye) => {
+    if (status === 'capturing') return;
+    if (eye === 'right') {
+      const next = NEXT_FILM_PRESET[filmPreset];
+      setFilmPreset(next);
+      showNotice(`フィルム：${FILM_PRESET_LABELS[next]}`);
+    } else {
+      const next = NEXT_BEAUTY_LEVEL[beautyLevel];
+      setBeautyLevel(next);
+      showNotice(`美肌：${BEAUTY_LEVEL_LABELS[next]}`);
+    }
+    void Haptics.selectionAsync();
+  };
+  const analyzeFrame = useEyeTracking(useWinkGestures(handleWink));
+  const onFrame = useFrameRenderer(effects, params, seed, analyzeFrame);
   // A stable array keeps the camera session from being reconfigured on every render.
   const outputs = useMemo(() => [photoOutput], [photoOutput]);
 
@@ -59,6 +89,7 @@ function FilmCamera() {
     capture({ previewMirrored: position === 'front' })
       .then(() => {
         setSeed(newSeed());
+        showNotice('保存しました');
       })
       .catch((error: unknown) => {
         console.error('Capture failed', error);
@@ -73,28 +104,33 @@ function FilmCamera() {
         device={position}
         isActive={isActive}
         constraints={CAMERA_CONSTRAINTS}
+        // YUV frames are CPU-readable, which face detection needs (Android defaults to GPU-only).
+        pixelFormat="yuv"
         outputs={outputs}
         onFrame={onFrame}
       />
-      {status === 'saved' && (
+      {notice !== null && (
         <Text accessibilityLiveRegion="polite" style={styles.notice}>
-          保存しました
+          {notice}
         </Text>
       )}
       <View style={[styles.controls, { paddingBottom: bottom + 16 }]}>
-        <View style={styles.side}>
-          <BeautyLevelButton level={beautyLevel} onChange={setBeautyLevel} />
-        </View>
-        <ShutterButton disabled={status === 'capturing'} onPress={handleShutter} />
-        <View style={styles.side}>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel="前後のカメラを切り替える"
-            style={styles.iconButton}
-            onPress={toggleLens}
-          >
-            <Text style={styles.iconLabel}>⇄</Text>
-          </Pressable>
+        <FilmPresetButton preset={filmPreset} onChange={setFilmPreset} />
+        <View style={styles.row}>
+          <View style={styles.side}>
+            <BeautyLevelButton level={beautyLevel} onChange={setBeautyLevel} />
+          </View>
+          <ShutterButton disabled={status === 'capturing'} onPress={handleShutter} />
+          <View style={styles.side}>
+            <Pressable
+              accessibilityRole="button"
+              accessibilityLabel="前後のカメラを切り替える"
+              style={styles.iconButton}
+              onPress={toggleLens}
+            >
+              <Text style={styles.iconLabel}>⇄</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </View>
@@ -128,10 +164,15 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
     left: 0,
+    alignItems: 'center',
+    gap: 16,
+    paddingHorizontal: 24,
+  },
+  row: {
+    alignSelf: 'stretch',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 24,
   },
   side: { width: 48, alignItems: 'center' },
   iconButton: {

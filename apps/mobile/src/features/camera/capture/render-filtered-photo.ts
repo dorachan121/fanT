@@ -1,6 +1,10 @@
 import { FilterMode, ImageFormat, MipmapMode, Skia, TileMode } from '@shopify/react-native-skia';
 
-import { makeFilterShader, type FilterEffects, type FilterParams } from '../filter-pipeline';
+import {
+  makeFilterShader,
+  type FilterEffects,
+  type FilterParams,
+} from '../filter-pipeline.worklet';
 
 const JPEG_QUALITY = 92;
 

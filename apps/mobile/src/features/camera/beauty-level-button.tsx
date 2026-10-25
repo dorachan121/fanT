@@ -1,15 +1,7 @@
 import type { BeautyLevel } from '@fant/filters';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
-const LABELS: Record<BeautyLevel, string> = { off: 'オフ', low: '弱', medium: '中', high: '強' };
-
-/** Each tap moves to the next strength and wraps around after the strongest. */
-const NEXT_LEVEL: Record<BeautyLevel, BeautyLevel> = {
-  off: 'low',
-  low: 'medium',
-  medium: 'high',
-  high: 'off',
-};
+import { BEAUTY_LEVEL_LABELS, NEXT_BEAUTY_LEVEL } from './presets';
 
 interface BeautyLevelButtonProps {
   readonly level: BeautyLevel;
@@ -20,15 +12,15 @@ export function BeautyLevelButton({ level, onChange }: BeautyLevelButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel={`美肌の強さ：${LABELS[level]}`}
+      accessibilityLabel={`美肌の強さ：${BEAUTY_LEVEL_LABELS[level]}`}
       accessibilityHint="タップすると強さを切り替えます"
       style={styles.button}
       onPress={() => {
-        onChange(NEXT_LEVEL[level]);
+        onChange(NEXT_BEAUTY_LEVEL[level]);
       }}
     >
       <Text style={styles.caption}>美肌</Text>
-      <Text style={styles.value}>{LABELS[level]}</Text>
+      <Text style={styles.value}>{BEAUTY_LEVEL_LABELS[level]}</Text>
     </Pressable>
   );
 }

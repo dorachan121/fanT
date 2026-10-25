@@ -8,7 +8,7 @@ import {
 import { Skia } from '@shopify/react-native-skia';
 import { useMemo } from 'react';
 
-import type { FilterEffects } from './filter-pipeline';
+import type { FilterEffects } from './filter-pipeline.worklet';
 
 /**
  * Compiles the shared shaders once per mount. A compile failure throws during

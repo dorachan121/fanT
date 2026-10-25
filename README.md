@@ -83,6 +83,12 @@ eas build --profile development --platform ios   # 完了後に表示される U
 
 iPhone の「設定 > プライバシーとセキュリティ」でデベロッパモードを有効にしてから、`pnpm --filter @fant/mobile start` で Metro を起動して開きます。
 
+## コードの規約
+
+- **カメラのスレッドで動く関数（ワークレット）**には `'worklet';` を書き、そうした関数をまとめたファイルは `*.worklet.ts` と名付けます。ワークレットの Babel プラグインは関数宣言を巻き上げない変数に変えるため、補助関数を呼び出し元より後に書くと、カメラのスレッドで `undefined` になります。`packages/filters` と `*.worklet.ts` では、ESLint（`no-use-before-define`）がこれを検出します。
+- **Skia のオブジェクト**（シェーダー・Paint・画像など）は、使い終わったらその場で `dispose()` します。ネイティブのメモリは JS のガベージコレクターに見えないため、放置するとメモリが増え続けます。
+- React Native に依存しない純粋なロジックは、テスト（Vitest）を付けます。
+
 ## 依存関係のルール
 
 | 対象                                                    | 追加・更新の方法                                                                                      |
