@@ -21,7 +21,11 @@ export function CameraPermissionGate({ children }: CameraPermissionGateProps) {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.message}>写真を撮るには、カメラへのアクセスを許可してください。</Text>
+      <Text style={styles.message}>
+        {canRequestPermission
+          ? '写真を撮るには、カメラへのアクセスを許可してください。'
+          : 'カメラへのアクセスがオフになっています。設定アプリで「カメラ」をオンにしてください。'}
+      </Text>
       <Pressable accessibilityRole="button" style={styles.button} onPress={handlePress}>
         <Text style={styles.buttonLabel}>
           {canRequestPermission ? 'カメラを許可する' : '設定を開く'}
