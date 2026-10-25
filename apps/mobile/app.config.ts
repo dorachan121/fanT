@@ -44,8 +44,27 @@ const config: ExpoConfig = {
   android: {
     package: appId,
     permissions: ['android.permission.CAMERA'],
+    blockedPermissions: [
+      // Read access added by expo-media-library; saving with add-only access never uses it.
+      'android.permission.READ_EXTERNAL_STORAGE',
+      'android.permission.READ_MEDIA_VISUAL_USER_SELECTED',
+      // Draw-over-other-apps from the Expo template; the app has no overlays.
+      'android.permission.SYSTEM_ALERT_WINDOW',
+    ],
   },
-  plugins: ['expo-router'],
+  plugins: [
+    'expo-router',
+    [
+      'expo-media-library',
+      {
+        // Add-only access: the app saves photos but never reads the library.
+        photosPermission: false,
+        savePhotosPermission: '撮影した写真を保存するために使用します。',
+        isAccessMediaLocationEnabled: false,
+        granularPermissions: [],
+      },
+    ],
+  ],
   experiments: { reactCompiler: true },
 };
 

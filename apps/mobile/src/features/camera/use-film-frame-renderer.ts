@@ -1,16 +1,23 @@
 import { packUniforms, toFilmUniforms, type FilmParams } from '@fant/filters';
-import { FilterMode, MipmapMode, Skia, TileMode } from '@shopify/react-native-skia';
+import {
+  FilterMode,
+  MipmapMode,
+  Skia,
+  TileMode,
+  type SkRuntimeEffect,
+} from '@shopify/react-native-skia';
 import { useMemo } from 'react';
 import type { SkiaCameraProps } from 'react-native-vision-camera-skia';
-
-import { useFilmEffect } from './use-film-effect';
 
 /**
  * Returns a `SkiaCamera` frame callback that draws every camera frame through
  * the shared film shader. It runs as a worklet on the camera frame thread.
  */
-export function useFilmFrameRenderer(params: FilmParams, seed: number): SkiaCameraProps['onFrame'] {
-  const effect = useFilmEffect();
+export function useFilmFrameRenderer(
+  effect: SkRuntimeEffect,
+  params: FilmParams,
+  seed: number,
+): SkiaCameraProps['onFrame'] {
   const paint = useMemo(() => Skia.Paint(), []);
 
   return (frame, render) => {
