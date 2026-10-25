@@ -76,7 +76,7 @@
 |---|---|
 | 開発体制 | 個人開発（1名）。デザイン・素材制作も含む。開発者の TypeScript / React の経験は5年 |
 | 期間 | 6ヶ月で MVP をリリース（目標は2027年4月末） |
-| 技術 | TypeScript のモノレポ。アプリは Expo（React Native）＋ VisionCamera v5 ＋ react-native-skia、重い処理だけネイティブモジュール（MediaPipe）、フィルムスタジオは React（Web）、サーバーは Firebase。シェーダー（SkSL）はアプリと Web で共有する。詳細は [07-system-architecture](07-system-architecture.md) |
+| 技術 | TypeScript のモノレポ。アプリは Expo（React Native）＋ VisionCamera v5 ＋ react-native-skia、顔検出は既存のネイティブプラグイン（ML Kit）、フィルムスタジオは React（Web）、サーバーは Firebase。シェーダー（SkSL）はアプリと Web で共有する。詳細は [07-system-architecture](07-system-architecture.md) |
 | 予算 | 最小限（クラウドは従量課金・無料枠を活用する） |
 | 対象地域・言語 | 日本・日本語 |
 
@@ -96,7 +96,7 @@
 
 | 月 | 期間 | 主な成果物 |
 |---|---|---|
-| M1 | 2026/11 | **技術検証（PoC）と土台作り**: モノレポの構築（pnpm・Turborepo・CI）、VisionCamera v5 ＋ Skia ＋ MediaPipe のネイティブモジュール（最初に着手）、LUT・粒子・美肌のシェーダー、性能測定（[07](07-system-architecture.md) §10 の P-1〜P-5）。デザインの方向性 |
+| M1 | 2026/11 | **技術検証（PoC）と土台作り**: モノレポの構築（pnpm・Turborepo・CI）、VisionCamera v5 ＋ Skia ＋ 顔検出（ML Kit）、LUT・粒子・美肌のシェーダー、性能測定（[07](07-system-architecture.md) §10 の P-1〜P-5）。デザインの方向性 |
 | M2 | 2026/12 | フィルムモード（フィルム5種＋美肌）、撮影・保存（画面外でのかけ直し）、アルバム、フィルムスタジオの最小版 |
 | M3 | 2027/01 | 後から編集、デコ（日付・ペン・スタンプ）、キャラモード（ライト版） |
 | M4 | 2027/02 | プリモード（ライト版）、コンテンツ配信の基盤（content/ → CI → CDN） |

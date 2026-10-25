@@ -27,7 +27,7 @@ flowchart LR
     subgraph Mobile[apps/mobile: Expo / React Native]
         UI[画面・状態管理<br/>Expo Router・Zustand・TanStack Query]
         Engine[engine<br/>VisionCamera v5 + react-native-skia]
-        NM[ネイティブモジュール<br/>MediaPipe 顔の特徴点・人物の切り抜き<br/>Swift / Kotlin]
+        NM[ネイティブのプラグイン<br/>顔検出 ML Kit（既存）<br/>人物の切り抜き（必要時）]
         Local[(端末内<br/>写真ファイル・SQLite・MMKV)]
         UI <--> Engine
         Engine <-->|フレームプロセッサー<br/>プラグイン| NM
@@ -84,8 +84,7 @@ fanT/
 │   │   │   │                     ※外部ライブラリの API はここに閉じ込める
 │   │   │   └── lib/            … API クライアント・課金・分析・ストレージ
 │   │   └── modules/            … ローカルのネイティブモジュール
-│   │       ├── face-landmarker/ … MediaPipe Face Landmarker（Swift / Kotlin）
-│   │       └── segmenter/       … MediaPipe Image Segmenter（Swift / Kotlin）
+│   │       └── segmenter/       … 人物の切り抜き（PRI-04 で必要になったら。MediaPipe を検討）
 │   ├── studio/                 … フィルムスタジオ（社内ツール, Vite + React）
 │   └── web/                    … 宣伝用サイト（Next.js。リリース前に作る）
 ├── packages/
@@ -111,7 +110,7 @@ fanT/
 | アニメーション・ジェスチャー | Reanimated、Gesture Handler、react-native-worklets | スタンプの拡大縮小・回転、シートの操作 | UI スレッドで滑らかに動く |
 | カメラ制御 | **VisionCamera v5** | プレビュー・撮影・前後カメラの切り替え・ズーム・露出・フラッシュ | 両 OS 対応で最も成熟している。v5 で Nitro Modules を使って作り直され、フレームプロセッサーのプラグインも型安全になった |
 | リアルタイム加工 | **react-native-skia**（SkSL） | 美肌・フィルム・キャラのスタンプ・背景合成・日付印字 | 両 OS と Web で同じシェーダーが動く |
-| 顔の特徴点・人物の切り抜き | **ネイティブモジュール**（MediaPipe Tasks） | 顔ランドマーク、人物・肌のマスク | JS では性能が足りない。VisionCamera のフレームプロセッサーのプラグインとして実装する |
+| 顔検出 | `react-native-vision-camera-face-detector`（Google ML Kit） | 顔の位置・ランドマーク・輪郭・目の開き具合（ウィンク判定、キャラのスタンプ） | 既存の保守されたプラグインで、自作のネイティブコードが不要（D-09）。プレビューのフレーム処理の中で呼ぶ |
 | 端末内ストレージ | expo-file-system、expo-media-library、expo-sqlite、react-native-mmkv | 写真ファイル・アルバムの一覧・設定 | |
 | 課金 | react-native-purchases（RevenueCat） | 年額・買い切り・クレジットの購入、権利 | |
 | Firebase | @react-native-firebase | 匿名認証・App Check・Remote Config・Crashlytics・Analytics | |
@@ -124,7 +123,7 @@ fanT/
 
 ```
 VisionCamera のフレーム（フレームプロセッサー / worklet スレッド）
-  ├─▶ [ネイティブ] 顔の特徴点   … 低解像度で処理し、間引く（例: 2フレームに1回）。結果は補間する
+  ├─▶ [ネイティブ] 顔検出（ML Kit） … 2フレームに1回。目の開き具合（ウィンク）、ランドマーク（キャラ）
   ├─▶ [ネイティブ] 人物・肌のマスク … 美肌・プリの背景で必要なときだけ
   └─▶ Skia: フレームを SkImage として受け取る
         → 美肌シェーダー（肌マスク × エッジを保つ平滑化。1パスでの実装を目指す）
@@ -169,7 +168,7 @@ Skia で描いた加工は、カメラの撮影画像には直接乗りません
 
 | I/F | 種別 | 入出力 |
 |---|---|---|
-| `detectFaces(frame, { maxFaces, mode })` | VisionCamera のフレームプロセッサーのプラグイン（Nitro） | 正規化した顔の特徴点の配列、顔の矩形 |
+| `faceDetector.detectFaces(frame)` | 既存プラグイン（`react-native-vision-camera-face-detector`）。プレビューのフレーム処理の中で呼ぶ | 顔の位置・目の開き具合・ランドマーク。アプリ内の小さな型（目の開き具合など）に変換してから JS スレッドへ渡す |
 | `segmentPerson(frame, { kind })` | 同上 | 人物マスク / 肌マスク（ネイティブバッファー → Skia Image に**コピーせずに**変換することを目指す） |
 | `detectFacesInImage(uri)` / `segmentImage(uri)` | Expo Module | 静止画のかけ直し・後から編集用 |
 | Instagram ストーリーズへの共有 | Expo Module（または既存ライブラリ） | 画像を渡して共有する（SHR-03） |
@@ -212,7 +211,7 @@ Skia で描いた加工は、カメラの撮影画像には直接乗りません
 | 状態管理 | Zustand / TanStack Query |
 | カメラ | react-native-vision-camera v5（バージョンを固定して使う） |
 | 描画 | @shopify/react-native-skia（SkSL の RuntimeEffect） |
-| 顔の特徴点・切り抜き | MediaPipe Tasks（iOS / Android）を自作の Nitro モジュールで包む |
+| 顔検出 | react-native-vision-camera-face-detector（ML Kit）。人物の切り抜きは必要になったら MediaPipe を検討 |
 | 型と検証 | TypeScript（strict）、zod |
 | 課金 | RevenueCat（react-native-purchases） |
 | バックエンド | Firebase（匿名認証・Functions・Firestore・Storage・App Check・Remote Config・Crashlytics・Analytics） |
@@ -236,7 +235,7 @@ Skia で描いた加工は、カメラの撮影画像には直接乗りません
 
 | # | 検証項目 | 合格の基準 | 不合格だった場合 |
 |---|---|---|---|
-| P-1 | Skia の加工（LUT・粒子・美肌の1パス）と MediaPipe の顔検出を同時に動かしたときの性能 | 推奨端末・最低端末とも 24fps 固定を維持（D-07） | 美肌をネイティブモジュールに移す（Q-03） |
+| P-1 | Skia の加工（フィルム・美肌）と顔検出（ML Kit）を同時に動かしたときの性能 | 推奨端末・最低端末とも 24fps 固定を維持（D-07） | 美肌をネイティブモジュールに移す（Q-03） |
 | P-2 | ネイティブのマスクを Skia にコピーせずに渡せるか | 1フレームあたり 3ms 以内 | マスクを低解像度にする、または間引く |
 | P-3 | 1,200万画素の写真の画面外でのかけ直し | 推奨端末で2秒以内、メモリのピーク 600MB 以下 | 処理をタイル分割する |
 | P-4 | iOS・Android・Web（CanvasKit）の出力の一致 | ゴールデン画像との ΔE の平均が 3 以下 | プラットフォームごとに補正値を持つ |
@@ -249,4 +248,4 @@ Skia で描いた加工は、カメラの撮影画像には直接乗りません
 | P-1 | フィルムのみ：**合格**（24fps 固定を維持。暗い場所の背面カメラも含む）。美肌（beauty_v1）を加えた状態と、顔検出を加えた状態は未計測 | 2026-10-25 |
 | P-3 | **合格**（撮影から保存まで 0.8〜1.4秒。Skia のオブジェクトを明示的に破棄する修正の後、メモリのピークは基準内） | 2026-10-25 |
 | P-5 | 修正の後、10分間のプレビューでクラッシュなし。30分の連続操作は未実施 | 2026-10-25 |
-| P-2 / P-4 | 未実施（P-2 は MediaPipe の導入後） | — |
+| P-2 / P-4 | 未実施（P-2 は人物の切り抜きを入れるとき） | — |
