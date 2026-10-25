@@ -55,6 +55,16 @@ const config: ExpoConfig = {
   plugins: [
     'expo-router',
     [
+      'expo-build-properties',
+      {
+        android: {
+          // VisionCamera and Skia compile their HardwareBuffer frame paths only when minSdk >= 26.
+          // Android 10 is the planned floor (docs/requirements/03-non-functional-requirements.md, Q-07).
+          minSdkVersion: 29,
+        },
+      },
+    ],
+    [
       'expo-media-library',
       {
         // Add-only access: the app saves photos but never reads the library.
