@@ -69,6 +69,24 @@ describe(`${FILM_SHADER_NAME} shader`, () => {
     expect(luminance(output, 0, 0)).toBeLessThan(luminance(output, CENTER, CENTER) - 20);
   });
 
+  it('scales grain with the frame so high-resolution photos match the preview', () => {
+    // A frame whose short edge spans two grain cells per pixel (GRAIN_CELLS = 1080).
+    const uniforms = {
+      ...toFilmUniforms({ ...NO_EFFECTS, grain: 1 }, { width: 1, height: 1, seed: 0.25 }),
+      resolution: [2160, 2160],
+    };
+    const output = renderEffect(ck, effect, uniforms, GRAY);
+    for (const [x, y] of [
+      [0, 0],
+      [2, 0],
+      [0, 2],
+    ] as const) {
+      const cell = pixelAt(output, x, y);
+      expect(pixelAt(output, x + 1, y)).toEqual(cell);
+      expect(pixelAt(output, x, y + 1)).toEqual(cell);
+    }
+  });
+
   it('renders the same grain for the same seed and different grain for another seed', () => {
     const grainy = { ...NO_EFFECTS, grain: 1 };
     const first = render(grainy, GRAY, 0.25);

@@ -17,6 +17,9 @@ uniform float grain;
 uniform float seed;
 
 const half3 LUMA = half3(0.2126, 0.7152, 0.0722);
+// Grain cells along the short edge: keeps grain the same size in the preview
+// and in the full-resolution photo.
+const float GRAIN_CELLS = 1080.0;
 
 // Per-pixel hash in [0, 1), stable for a given seed.
 float hash(float2 p) {
@@ -41,7 +44,8 @@ half4 main(float2 coord) {
 
   // Grain: stronger in the shadows than in the highlights.
   half luma = dot(color, LUMA);
-  half noise = half(hash(floor(coord)) - 0.5);
+  float2 cell = floor(coord * (GRAIN_CELLS / min(resolution.x, resolution.y)));
+  half noise = half(hash(cell) - 0.5);
   color += noise * half(grain) * 0.25 * (1.0 - luma * 0.5);
 
   color = mix(source.rgb, saturate(color), half(intensity));
