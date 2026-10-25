@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_FILM_PARAMS, FILM_PARAM_RANGES, normalizeFilmParams } from './film-params';
+import {
+  DEFAULT_FILM_PARAMS,
+  FILM_PARAM_RANGES,
+  FILM_PRESETS,
+  normalizeFilmParams,
+} from './film-params';
 
 describe('normalizeFilmParams', () => {
   it('returns the defaults when nothing is given', () => {
@@ -38,5 +43,15 @@ describe('normalizeFilmParams', () => {
   it('returns an immutable object', () => {
     expect(Object.isFrozen(normalizeFilmParams())).toBe(true);
     expect(Object.isFrozen(DEFAULT_FILM_PARAMS)).toBe(true);
+  });
+});
+
+describe('FILM_PRESETS', () => {
+  it.each(Object.entries(FILM_PRESETS))('preset %s is already within range', (_, params) => {
+    expect(normalizeFilmParams(params)).toEqual(params);
+  });
+
+  it('starts from the default look', () => {
+    expect(FILM_PRESETS.natural).toBe(DEFAULT_FILM_PARAMS);
   });
 });

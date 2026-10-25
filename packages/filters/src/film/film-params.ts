@@ -23,3 +23,13 @@ const filmParams = defineParams(FILM_PARAM_RANGES);
 export const DEFAULT_FILM_PARAMS: FilmParams = filmParams.defaults;
 
 export const normalizeFilmParams = filmParams.normalize;
+
+/** Looks the user can switch between; all built on the film_v1 shader. */
+export const FILM_PRESETS = {
+  natural: DEFAULT_FILM_PARAMS,
+  warm: { intensity: 1, warmth: 0.55, fade: 0.12, vignette: 0.3, grain: 0.14 },
+  cool: { intensity: 1, warmth: -0.45, fade: 0.08, vignette: 0.2, grain: 0.1 },
+  faded: { intensity: 1, warmth: 0.2, fade: 0.45, vignette: 0.35, grain: 0.2 },
+} as const satisfies Record<string, FilmParams>;
+
+export type FilmPreset = keyof typeof FILM_PRESETS;

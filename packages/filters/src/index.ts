@@ -12,9 +12,11 @@ export { toBeautyUniforms, type BeautyUniforms } from './beauty/beauty-uniforms'
 export {
   DEFAULT_FILM_PARAMS,
   FILM_PARAM_RANGES,
+  FILM_PRESETS,
   normalizeFilmParams,
   type FilmParamName,
   type FilmParams,
+  type FilmPreset,
 } from './film/film-params';
 export { FILM_SHADER_NAME, FILM_SHADER_SOURCE } from './film/film-shader';
 export { toFilmUniforms, type FilmFrame, type FilmUniforms } from './film/film-uniforms';
