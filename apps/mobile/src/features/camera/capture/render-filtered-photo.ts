@@ -1,12 +1,6 @@
-import { packUniforms, toFilmUniforms, type FilmParams } from '@fant/filters';
-import {
-  FilterMode,
-  ImageFormat,
-  MipmapMode,
-  Skia,
-  TileMode,
-  type SkRuntimeEffect,
-} from '@shopify/react-native-skia';
+import { FilterMode, ImageFormat, MipmapMode, Skia, TileMode } from '@shopify/react-native-skia';
+
+import { makeFilterShader, type FilterEffects, type FilterParams } from '../filter-pipeline';
 
 const JPEG_QUALITY = 92;
 
@@ -20,8 +14,8 @@ export interface RenderOptions {
 }
 
 /**
- * Re-renders a captured photo through the film shader at full resolution and returns
- * it as JPEG, using the same parameters and seed as the live preview.
+ * Re-renders a captured photo through the filter pipeline at full resolution and
+ * returns it as JPEG, using the same parameters and seed as the live preview.
  *
  * Skia applies the EXIF orientation while decoding and writes no metadata when
  * encoding, so the result is upright and never carries location data.
@@ -29,10 +23,10 @@ export interface RenderOptions {
  * Every Skia object is disposed before returning: a full-resolution photo holds tens
  * of megabytes of native memory that the JS garbage collector does not account for.
  */
-export function renderFilmPhoto(
+export function renderFilteredPhoto(
   encodedPhoto: Uint8Array,
-  effect: SkRuntimeEffect,
-  params: FilmParams,
+  effects: FilterEffects,
+  params: FilterParams,
   seed: number,
   { mirror }: RenderOptions,
 ): Uint8Array {
@@ -59,10 +53,9 @@ export function renderFilmPhoto(
     const source = own(
       image.makeShaderOptions(TileMode.Clamp, TileMode.Clamp, FilterMode.Linear, MipmapMode.None),
     );
-    const uniforms = toFilmUniforms(params, { width, height, seed });
-    const shader = own(effect.makeShaderWithChildren(packUniforms(effect, uniforms), [source]));
+    const filter = own(makeFilterShader(effects, source, { width, height }, params, seed));
     const paint = own(Skia.Paint());
-    paint.setShader(shader);
+    paint.setShader(filter.shader);
     const canvas = surface.getCanvas();
     if (mirror) {
       canvas.translate(width, 0);

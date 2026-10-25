@@ -1,17 +1,18 @@
-import { DEFAULT_FILM_PARAMS } from '@fant/filters';
+import { BEAUTY_LEVELS, DEFAULT_FILM_PARAMS, type BeautyLevel } from '@fant/filters';
 import { useMemo, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { Constraint, TargetCameraPosition } from 'react-native-vision-camera';
 import { SkiaCamera } from 'react-native-vision-camera-skia';
 
+import { BeautyLevelButton } from './beauty-level-button';
 import { CameraPermissionGate } from './camera-permission-gate';
 import { PhotoLibraryPermissionError } from './capture/save-to-photo-library';
-import { useFilmCapture } from './capture/use-film-capture';
+import { useCapture } from './capture/use-capture';
 import { ShutterButton } from './shutter-button';
 import { useCameraActive } from './use-camera-active';
-import { useFilmEffect } from './use-film-effect';
-import { useFilmFrameRenderer } from './use-film-frame-renderer';
+import { useFilterEffects } from './use-filter-effects';
+import { useFrameRenderer } from './use-frame-renderer';
 
 type LensPosition = Extract<TargetCameraPosition, 'front' | 'back'>;
 
@@ -35,12 +36,17 @@ function FilmCamera() {
   const isActive = useCameraActive();
   const { bottom } = useSafeAreaInsets();
   const [position, setPosition] = useState<LensPosition>('front');
+  const [beautyLevel, setBeautyLevel] = useState<BeautyLevel>('medium');
   // Shared by the preview and the next capture so the photo matches what was shown.
   const [seed, setSeed] = useState(newSeed);
 
-  const effect = useFilmEffect();
-  const onFrame = useFilmFrameRenderer(effect, DEFAULT_FILM_PARAMS, seed);
-  const { photoOutput, status, capture } = useFilmCapture(effect, DEFAULT_FILM_PARAMS, seed);
+  const effects = useFilterEffects();
+  const params = useMemo(
+    () => ({ beauty: BEAUTY_LEVELS[beautyLevel], film: DEFAULT_FILM_PARAMS }),
+    [beautyLevel],
+  );
+  const onFrame = useFrameRenderer(effects, params, seed);
+  const { photoOutput, status, capture } = useCapture(effects, params, seed);
   // A stable array keeps the camera session from being reconfigured on every render.
   const outputs = useMemo(() => [photoOutput], [photoOutput]);
 
@@ -76,7 +82,9 @@ function FilmCamera() {
         </Text>
       )}
       <View style={[styles.controls, { paddingBottom: bottom + 16 }]}>
-        <View style={styles.side} />
+        <View style={styles.side}>
+          <BeautyLevelButton level={beautyLevel} onChange={setBeautyLevel} />
+        </View>
         <ShutterButton disabled={status === 'capturing'} onPress={handleShutter} />
         <View style={styles.side}>
           <Pressable
