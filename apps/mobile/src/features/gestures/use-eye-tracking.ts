@@ -6,6 +6,7 @@ import {
 } from 'react-native-vision-camera-face-detector';
 import { createSynchronizable, scheduleOnRN } from 'react-native-worklets';
 
+import type { FrameAnalyzer } from '../camera/use-frame-renderer';
 import { primaryFaceEyes } from './eye-openness.worklet';
 import type { EyeOpenness } from './wink-detector';
 
@@ -23,8 +24,9 @@ const DETECT_EVERY_N_FRAMES = 2;
  * Returns a frame-thread worklet that reads the primary face's eye openness and
  * reports it to the JS thread (`null` when no face is visible). Face data never
  * leaves memory. A detection failure is reported once and never breaks the preview.
+ * The worklet returns whether it ran detection on the frame.
  */
-export function useEyeTracking(onEyes: (eyes: EyeOpenness | null) => void): (frame: Frame) => void {
+export function useEyeTracking(onEyes: (eyes: EyeOpenness | null) => void): FrameAnalyzer {
   const detector = useFaceDetector(DETECTOR_OPTIONS);
   const frameCount = useMemo(() => createSynchronizable(0), []);
   const failureReported = useMemo(() => createSynchronizable(false), []);
@@ -34,7 +36,7 @@ export function useEyeTracking(onEyes: (eyes: EyeOpenness | null) => void): (fra
       'worklet';
       const count = frameCount.getBlocking();
       frameCount.setBlocking(count + 1);
-      if (count % DETECT_EVERY_N_FRAMES !== 0) return;
+      if (count % DETECT_EVERY_N_FRAMES !== 0) return false;
 
       try {
         const faces = detector.detectFaces(frame);
@@ -49,6 +51,7 @@ export function useEyeTracking(onEyes: (eyes: EyeOpenness | null) => void): (fra
           console.error('Face detection failed; wink gestures are unavailable', error);
         }
       }
+      return true;
     },
     [detector, frameCount, failureReported, onEyes],
   );

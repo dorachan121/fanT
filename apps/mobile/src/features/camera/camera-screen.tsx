@@ -9,6 +9,11 @@ import { SkiaCamera } from 'react-native-vision-camera-skia';
 import { useEyeTracking } from '../gestures/use-eye-tracking';
 import { useWinkGestures } from '../gestures/use-wink-gestures';
 import type { Eye } from '../gestures/wink-detector';
+import {
+  PERFORMANCE_OVERLAY_ENABLED,
+  PerformanceOverlay,
+} from '../performance/performance-overlay';
+import { useFrameStats } from '../performance/use-frame-stats';
 import { BeautyLevelButton } from './beauty-level-button';
 import { CameraPermissionGate } from './camera-permission-gate';
 import { PhotoLibraryPermissionError } from './capture/save-to-photo-library';
@@ -46,13 +51,16 @@ export function CameraScreen() {
 
 function FilmCamera() {
   const isActive = useCameraActive();
-  const { bottom } = useSafeAreaInsets();
+  const { top, bottom } = useSafeAreaInsets();
   const [position, setPosition] = useState<LensPosition>('front');
   const [filmPreset, setFilmPreset] = useState<FilmPreset>('natural');
   const [beautyLevel, setBeautyLevel] = useState<BeautyLevel>('medium');
   // Shared by the preview and the next capture so the photo matches what was shown.
   const [seed, setSeed] = useState(newSeed);
   const [notice, showNotice] = useNotice();
+  // Face detection can be turned off from the performance overlay to measure its cost.
+  const [analysisEnabled, setAnalysisEnabled] = useState(true);
+  const frameStats = useFrameStats();
 
   const effects = useFilterEffects();
   const params = useMemo(
@@ -76,7 +84,13 @@ function FilmCamera() {
     void Haptics.selectionAsync();
   };
   const analyzeFrame = useEyeTracking(useWinkGestures(handleWink));
-  const onFrame = useFrameRenderer(effects, params, seed, analyzeFrame);
+  const onFrame = useFrameRenderer(
+    effects,
+    params,
+    seed,
+    analysisEnabled ? analyzeFrame : undefined,
+    PERFORMANCE_OVERLAY_ENABLED ? frameStats.record : undefined,
+  );
   // A stable array keeps the camera session from being reconfigured on every render.
   const outputs = useMemo(() => [photoOutput], [photoOutput]);
 
@@ -109,6 +123,16 @@ function FilmCamera() {
         outputs={outputs}
         onFrame={onFrame}
       />
+      {PERFORMANCE_OVERLAY_ENABLED && (
+        <PerformanceOverlay
+          stats={frameStats.stats}
+          analysisEnabled={analysisEnabled}
+          onToggleAnalysis={() => {
+            setAnalysisEnabled((enabled) => !enabled);
+          }}
+          top={top}
+        />
+      )}
       {notice !== null && (
         <Text accessibilityLiveRegion="polite" style={styles.notice}>
           {notice}

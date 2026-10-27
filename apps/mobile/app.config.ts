@@ -25,7 +25,8 @@ function resolveVariant(value: string | undefined): AppVariant {
   );
 }
 
-const { name, suffix } = VARIANTS[resolveVariant(process.env.APP_VARIANT)];
+const appVariant = resolveVariant(process.env.APP_VARIANT);
+const { name, suffix } = VARIANTS[appVariant];
 const appId = suffix ? `${BASE_APP_ID}.${suffix}` : BASE_APP_ID;
 
 const config: ExpoConfig = {
@@ -76,6 +77,8 @@ const config: ExpoConfig = {
     ],
   ],
   experiments: { reactCompiler: true },
+  // Read at runtime through expo-constants (e.g. to hide the performance overlay in store builds).
+  extra: { appVariant },
 };
 
 export default config;
