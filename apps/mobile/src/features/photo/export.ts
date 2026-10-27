@@ -8,7 +8,7 @@ import { resizeJpeg } from '../../engine/photo';
 /** The device album photos are saved into (SHR-01). */
 const DEVICE_ALBUM = 'fanT';
 /** Long edge of "for social media" exports (SHR-04). */
-export const SNS_LONG_EDGE = 2048;
+const SNS_LONG_EDGE = 2048;
 
 export class PhotoLibraryPermissionError extends Error {
   override readonly name = 'PhotoLibraryPermissionError';

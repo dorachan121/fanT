@@ -119,6 +119,7 @@ export function TextComposer({
         style={[styles.input, { color }]}
         onChangeText={setText}
       />
+      <Text style={styles.label}>{strings.deco.phrases}</Text>
       <FlatList
         horizontal
         data={phrases}

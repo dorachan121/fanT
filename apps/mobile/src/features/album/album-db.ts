@@ -62,11 +62,11 @@ function photoDirectory(id: string): Directory {
   return new Directory(ALBUM_ROOT, id);
 }
 
-export function outputFile(id: string): File {
+function outputFile(id: string): File {
   return new File(photoDirectory(id), 'output.jpg');
 }
 
-export function originalFile(id: string): File {
+function originalFile(id: string): File {
   return new File(photoDirectory(id), 'original.jpg');
 }
 

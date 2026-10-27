@@ -2,7 +2,7 @@ import { BEAUTY_LEVELS } from '@fant/filters';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import {
   GestureDetector,
   usePinchGesture,
@@ -319,6 +319,13 @@ function FilmCamera() {
         <ModeTabs />
       </View>
 
+      {locked && <Text style={styles.trial}>{strings.camera.premiumTrial}</Text>}
+      {shutter.status === 'capturing' && !shutter.screenFlash && (
+        <View style={styles.saving} pointerEvents="none">
+          <ActivityIndicator color={colors.text} />
+          <Text style={styles.savingText}>{strings.camera.saving}</Text>
+        </View>
+      )}
       {shutter.screenFlash && <ScreenFlash />}
       <Notice text={notice} />
       {showPerformance && (
@@ -367,6 +374,33 @@ const styles = StyleSheet.create({
   previewBox: { position: 'absolute', overflow: 'hidden', backgroundColor: '#000' },
   exposure: { position: 'absolute', left: spacing.lg, right: spacing.lg, bottom: spacing.sm },
   controls: { gap: spacing.sm, paddingTop: spacing.sm },
+  // Premium content can be tried in the preview (PAY-07); saving asks for premium.
+  trial: {
+    position: 'absolute',
+    top: '18%',
+    alignSelf: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: 12,
+    overflow: 'hidden',
+    color: colors.background,
+    fontSize: 12,
+    fontWeight: '700',
+    backgroundColor: colors.premium,
+  },
+  saving: {
+    position: 'absolute',
+    top: '40%',
+    alignSelf: 'center',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    borderRadius: 16,
+    backgroundColor: colors.scrim,
+  },
+  savingText: { color: colors.text, fontSize: 15 },
   shutterRow: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -61,3 +61,19 @@ export function findAssetRefs(value: unknown): { path: string; sha256: string }[
   }
   return Object.values(record).flatMap(findAssetRefs);
 }
+
+/** Returns a copy of a JSON value with every `{ path, sha256 }` replaced by `map(ref)`. */
+export function mapAssetRefs<T>(
+  value: T,
+  map: (ref: { path: string; sha256: string }) => { path: string; sha256: string },
+): T {
+  if (Array.isArray(value)) return value.map((item: unknown) => mapAssetRefs(item, map)) as T;
+  if (value === null || typeof value !== 'object') return value;
+  const record = value as Record<string, unknown>;
+  if (typeof record.path === 'string' && typeof record.sha256 === 'string') {
+    return map(record as { path: string; sha256: string }) as T;
+  }
+  return Object.fromEntries(
+    Object.entries(record).map(([key, child]) => [key, mapAssetRefs(child, map)]),
+  ) as T;
+}

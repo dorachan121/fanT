@@ -38,7 +38,7 @@ export interface FaceGeometry {
 }
 
 /** Faces drawn per frame at most (BTY-05/CHR-05). */
-export const MAX_FACES = 4;
+const MAX_FACES = 4;
 
 function sortedPair(a: Point | undefined, b: Point | undefined): readonly [Point, Point] | null {
   'worklet';

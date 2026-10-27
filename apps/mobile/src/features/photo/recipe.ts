@@ -61,7 +61,7 @@ const decoTextSchema = z.strictObject({
   rotation: z.number().min(-360).max(360),
 });
 
-export const decoLayerSchema = z.discriminatedUnion('type', [
+const decoLayerSchema = z.discriminatedUnion('type', [
   decoStrokeSchema,
   decoStampSchema,
   decoTextSchema,
@@ -98,7 +98,7 @@ const dateStampSchema = z.strictObject({
  * photo and validated when read back. Face positions are never stored (03 §6); they
  * are detected again when rendering.
  */
-export const photoRecipeSchema = z.strictObject({
+const photoRecipeSchema = z.strictObject({
   version: z.literal(1),
   film: z.strictObject({ id: contentIdSchema, intensity: unit }),
   /** Fixes grain and light leaks so every render of this shot looks the same (FLM-06). */

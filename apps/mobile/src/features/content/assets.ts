@@ -8,7 +8,7 @@ import { APP_CONFIG } from '../../config';
 /** Downloaded assets, named by content hash: immutable and shared between items. */
 const CACHE = new Directory(Paths.cache, 'content-assets');
 
-export class AssetUnavailableError extends Error {
+class AssetUnavailableError extends Error {
   override readonly name = 'AssetUnavailableError';
 }
 

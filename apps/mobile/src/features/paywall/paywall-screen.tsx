@@ -68,7 +68,10 @@ export function PaywallScreen({ trigger }: { readonly trigger: string }) {
     if (chosen === null) return;
     setBusy(true);
     try {
-      if ((await purchase(chosen.id)) === 'purchased') router.back();
+      if ((await purchase(chosen.id)) === 'purchased') {
+        showMessage(strings.paywall.purchased);
+        router.back();
+      }
     } catch (error) {
       reportError(error, 'paywall.purchase');
       showError();

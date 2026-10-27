@@ -10,7 +10,6 @@ export type WinkAction = (typeof WINK_ACTIONS)[number];
 
 /** Days to keep originals (ALB-03); `null` keeps them. */
 export const RETENTION_CHOICES = [30, 90, null] as const;
-export type RetentionDays = (typeof RETENTION_CHOICES)[number];
 
 const settingsSchema = z.object({
   onboardingCompleted: z.boolean(),
@@ -39,7 +38,7 @@ const settingsSchema = z.object({
 
 export type Settings = z.infer<typeof settingsSchema>;
 
-export const DEFAULT_SETTINGS: Settings = {
+const DEFAULT_SETTINGS: Settings = {
   onboardingCompleted: false,
   saveSize: 'full',
   shutterFeedback: true,

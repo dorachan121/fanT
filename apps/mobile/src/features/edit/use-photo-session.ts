@@ -11,7 +11,7 @@ import type { PhotoRecipe } from '../photo/recipe';
 import { commit, redo, replace, startHistory, undo, type History } from './history';
 
 /** Long edge of the live preview while editing; the saved photo is full resolution. */
-export const PREVIEW_LONG_EDGE = 1080;
+const PREVIEW_LONG_EDGE = 1080;
 const RENDER_DEBOUNCE_MS = 80;
 /** Changes to one control closer together than this are one undo step. */
 const COALESCE_MS = 800;

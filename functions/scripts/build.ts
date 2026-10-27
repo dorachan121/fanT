@@ -3,7 +3,7 @@
  * are inlined, Firebase SDKs stay external and are installed by Cloud Build from the
  * generated package.json, which has no workspace references.
  */
-import { readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { copyFileSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { build } from 'esbuild';
@@ -55,4 +55,9 @@ writeFileSync(
     2,
   )}\n`,
 );
+// Parameter values per project (`.env.<projectId>`, not committed) travel with the
+// bundle, because `firebase deploy` reads them from the functions source directory.
+for (const name of readdirSync(root).filter((file) => /^\.env\.[\w-]+$/.test(file))) {
+  copyFileSync(join(root, name), join(dist, name));
+}
 console.log('dist/index.js');

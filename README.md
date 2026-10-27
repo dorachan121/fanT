@@ -11,15 +11,19 @@
 
 TypeScript のモノレポ（pnpm workspaces + Turborepo）です。
 
-| パス               | 内容                                                                                                  |
-| ------------------ | ----------------------------------------------------------------------------------------------------- |
-| `apps/mobile`      | Expo SDK 58（React Native）アプリ。Expo Router、react-native-skia                                     |
-| `packages/filters` | SkSL シェーダーとパラメーター処理。Skia の実装に依存せず、アプリと Web（CanvasKit）で同じコードを使う |
-| `packages/config`  | 共有の tsconfig と ESLint 設定                                                                        |
-| `.github/`         | CI・依存関係の監査・Dependabot                                                                        |
-| `docs/`            | 市場調査・要件定義                                                                                    |
-
-`apps/studio`（フィルムスタジオ）、`packages/content-schema`、`functions` などは、必要になった時点で追加します（[システム構成](docs/requirements/07-system-architecture.md) §3）。
+| パス                      | 内容                                                                                                                         |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `apps/mobile`             | Expo SDK 58（React Native）アプリ。カメラ・プリ・AI・編集・デコ・アルバム・課金・設定                                        |
+| `apps/studio`             | フィルムスタジオ（社内ツール、Vite + React + CanvasKit）。アプリと同じシェーダーでフィルムを作り、JSON と LUT を書き出す     |
+| `packages/filters`        | SkSL シェーダー（フィルム・美肌・日付印字・基本補正）とシェーダーの連結。Skia の実装に依存せず、アプリとスタジオで同じコード |
+| `packages/content-schema` | 配信コンテンツ（フィルム・キャラ・台紙・スタンプ・AI スタイル）の型と検証（zod）                                             |
+| `packages/api-types`      | アプリとサーバーの API の型と検証（zod）                                                                                     |
+| `packages/config`         | 共有の tsconfig と ESLint 設定                                                                                               |
+| `content/`                | 配信コンテンツの原本。`builtin/` はアプリに同梱、`remote/` は配信のみ                                                        |
+| `functions/`              | Cloud Functions（AI 生成の中継・クレジット・購入 Webhook・分析の受け口）                                                     |
+| `firebase/`               | Firestore / Storage のルールとインデックス                                                                                   |
+| `.github/`                | CI・コンテンツ配信・依存関係の監査・Dependabot                                                                               |
+| `docs/`                   | 市場調査・要件定義・[実装状況](docs/requirements/08-implementation-status.md)・[運用手順](docs/operations/README.md)         |
 
 ## 開発環境
 
@@ -39,11 +43,23 @@ pnpm --filter @fant/mobile start     # Metro を起動（開発ビルドで開�
 pnpm --filter @fant/mobile ios       # iOS の開発ビルドを作って起動（Xcode が必要）
 pnpm --filter @fant/mobile android   # Android の開発ビルドを作って起動（Android Studio が必要）
 pnpm --filter @fant/mobile bundle    # iOS / Android の JS バンドルを作成（CI でも実行）
+pnpm --filter @fant/mobile check:native  # expo prebuild して、権限の設定を検査（CI でも実行）
 ```
 
 - ビルドの種類は環境変数 `APP_VARIANT`（`development` / `preview` / `production`）で切り替えます。EAS のプロファイル（`apps/mobile/eas.json`）が自動で設定します。
 - `ios/` と `android/` は Expo が生成するので、コミットしません。ネイティブの設定は `app.config.ts` と config plugin で行います。
 - アイコンとスプラッシュは、デザインが決まってから追加します（要件定義 Q-02）。
+- サーバーや課金の接続先は、ビルド時の環境変数で渡します（未設定の機能はオフになり、ほかの機能は動きます）。一覧は [運用手順](docs/operations/README.md) を参照してください。
+
+### フィルムスタジオ・コンテンツ・サーバー
+
+```sh
+pnpm --filter @fant/studio dev             # フィルムスタジオを http://127.0.0.1:5173 で起動
+pnpm --filter @fant/content generate:luts  # 内蔵フィルムの LUT を作り直す
+pnpm --filter @fant/content hash           # 素材の SHA-256 を JSON に書き込む（素材を変えたら必ず実行）
+pnpm --filter @fant/content build          # 配信用の manifest.json と素材を content/dist に作る
+pnpm --filter @fant/functions build        # Cloud Functions を functions/dist にまとめる（firebase deploy が使う）
+```
 
 ### 実機ビルド
 
@@ -88,6 +104,9 @@ iPhone の「設定 > プライバシーとセキュリティ」でデベロッ�
 - **カメラのスレッドで動く関数（ワークレット）**には `'worklet';` を書き、そうした関数をまとめたファイルは `*.worklet.ts` と名付けます。ワークレットの Babel プラグインは関数宣言を巻き上げない変数に変えるため、補助関数を呼び出し元より後に書くと、カメラのスレッドで `undefined` になります。`packages/filters` と `*.worklet.ts` では、ESLint（`no-use-before-define`）がこれを検出します。
 - **Skia のオブジェクト**（シェーダー・Paint・画像など）は、使い終わったらその場で `dispose()` します。ネイティブのメモリは JS のガベージコレクターに見えないため、放置するとメモリが増え続けます。
 - React Native に依存しない純粋なロジックは、テスト（Vitest）を付けます。
+- **カメラと描画のライブラリ**（VisionCamera・Skia・worklets）は `apps/mobile/src/engine/` からだけ使います（非機能要件 §8）。ESLint（`no-restricted-imports`）がほかの場所からの import を止めます。
+- **外から来るデータはすべて検証してから使う**: ダウンロードしたコンテンツ（zod とハッシュ）、サーバーの応答、端末に保存した設定や写真のレシピ。壊れていても既定値や内蔵コンテンツで動き続けます。
+- 画面の文言は `src/i18n/strings.ts` に集めます（英語への対応は辞書を足すだけにする）。
 
 ## 依存関係のルール
 
@@ -113,10 +132,11 @@ pnpm --filter @fant/mobile exec expo install --fix
 
 ## CI
 
-| ワークフロー     | 内容                                                                                          |
-| ---------------- | --------------------------------------------------------------------------------------------- |
-| `ci.yml`         | フォーマット確認、Expo SDK との互換性、lint・型チェック・テスト、iOS / Android の JS バンドル |
-| `security.yml`   | 依存関係の脆弱性監査（毎週月曜、lockfile 変更時）                                             |
-| `dependabot.yml` | npm と GitHub Actions の更新（公開後3日の待機あり）                                           |
+| ワークフロー     | 内容                                                                                                                                                             |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ci.yml`         | フォーマット確認、Expo SDK との互換性、lint・型チェック・テスト、iOS / Android の JS バンドル、Functions / スタジオ / コンテンツのビルド、ネイティブの権限の検査 |
+| `content.yml`    | `content/` の変更を検証して、コンテンツ用のバケット（CDN）へ配信（設定がある場合のみ）                                                                           |
+| `security.yml`   | 依存関係の脆弱性監査（毎週月曜、lockfile 変更時）                                                                                                                |
+| `dependabot.yml` | npm と GitHub Actions の更新（公開後3日の待機あり）                                                                                                              |
 
 GitHub Actions はすべてコミット SHA で固定し、トークンは読み取り専用にしています。

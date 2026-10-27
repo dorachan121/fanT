@@ -1,5 +1,5 @@
 /** A download that took too long or was too large; the caller keeps what it has. */
-export class DownloadError extends Error {
+class DownloadError extends Error {
   override readonly name = 'DownloadError';
 }
 

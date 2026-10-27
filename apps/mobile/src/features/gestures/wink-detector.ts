@@ -17,7 +17,7 @@ export interface WinkDetectorOptions {
   readonly cooldownMs: number;
 }
 
-export const DEFAULT_WINK_OPTIONS: WinkDetectorOptions = {
+const DEFAULT_WINK_OPTIONS: WinkDetectorOptions = {
   closedBelow: 0.3,
   openAbove: 0.6,
   holdMs: 700,

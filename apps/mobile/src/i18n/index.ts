@@ -5,7 +5,7 @@ import type { LocalizedText } from '@fant/content-schema';
  * content text is per language, so adding English means adding a dictionary and
  * choosing it here.
  */
-export const LOCALE = 'ja' as const;
+const LOCALE = 'ja' as const;
 
 /** Text of a content item in the app's language. */
 export function localized(text: LocalizedText): string {

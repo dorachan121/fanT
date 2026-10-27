@@ -269,3 +269,35 @@ Skia で描いた加工は、カメラの撮影画像には直接乗りません
    - 美肌オフ・顔検出オン（顔検出の負荷）
    - 美肌「中」・顔検出オン（実際の使い方。P-1 の判定はこれで行う）
 3. 1フレームの持ち時間は約41.7ms（24fps）。描画と顔検出の合計が、この時間に近づいていないかも見る
+
+## 11. 実装との差分（2026-10-27）
+
+実装で上の構成から変えた点です。理由は [06](06-open-issues.md) の決定事項にあります。
+
+| 項目 | 構成案 | 実装 |
+|---|---|---|
+| 状態管理 | Zustand ＋ TanStack Query | Zustand だけ（D-10）。設定とカメラの選択は SQLite のキーバリューに保存し、読み込み時に検証する |
+| 端末内の保存 | SQLite・MMKV | SQLite（アルバムの一覧とレシピ、設定）とファイル（元画像・仕上がり）。MMKV は使わない |
+| 認証 | Firebase 匿名認証 | 端末の秘密鍵による匿名アカウント（D-11） |
+| 分析・クラッシュ | Firebase Analytics / Crashlytics | 自前の API とログ（D-12） |
+| リモート設定 | Remote Config | 使わない（ANL-03 は Phase 2）。コンテンツ配信で代用できる |
+| App Check | 使う | リリース前に追加（[運用手順](../operations/README.md) §5） |
+| ネイティブモジュール | 人物の切り抜き（必要時） | 音量ボタンでの撮影だけ（D-14）。人物の切り抜き（PRI-04）は Phase 2 |
+| コンテンツ配信 | Cloud Storage ＋ CDN | 同じ。素材はハッシュ名で無期限キャッシュ（D-15） |
+| 描画パイプライン | §5.1 の順 | 補正 → 美肌 → キャラ → フィルム → 日付 → デコ。顔の微調整（BTY-04）と背景の差し替え（PRI-04）は Phase 2 |
+
+### 11.1 アプリの構成
+
+```
+apps/mobile/
+├── src/app/          … 画面（Expo Router）
+├── src/engine/       … VisionCamera・Skia・顔検出・worklets を使うのはここだけ（lint で強制）
+│                       カメラ、フレームの描画、写真のレンダリング、キャラ・デコ・日付の描画
+├── src/features/     … camera / character / puri / ai / edit / deco / album / photo /
+│                       content / purchases / settings / analytics / legal / onboarding / paywall
+├── src/ui/           … ボタン・スライダー・シートなどの部品
+├── src/i18n/         … 画面の文言
+└── modules/volume-shutter/ … 音量ボタンでの撮影（ローカル Expo モジュール）
+```
+
+写真は「元画像 ＋ レシピ（フィルム・強さ・乱数シード・美肌・補正・日付・キャラ・切り抜き・回転・デコ）」として保存し、表示用の仕上がり画像はレシピから作ります。編集・デコは元画像から作り直すので、何度直しても画質が落ちません。

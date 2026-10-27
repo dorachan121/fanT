@@ -28,7 +28,7 @@ export interface FrameStatsSummary {
 }
 
 /** How often the totals are summarized and restarted. */
-export const STATS_WINDOW_MS = 1000;
+const STATS_WINDOW_MS = 1000;
 
 /**
  * Pure helpers for measuring the preview on the camera frame thread (P-1 in

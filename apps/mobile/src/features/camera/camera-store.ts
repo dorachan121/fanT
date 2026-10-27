@@ -19,7 +19,6 @@ export const FLASH_MODES = ['off', 'on', 'auto'] as const;
 export type FlashMode = (typeof FLASH_MODES)[number];
 
 export const TIMER_SECONDS = [0, 3, 10] as const;
-export type TimerSeconds = (typeof TIMER_SECONDS)[number];
 
 const beautySchema = z.object(
   Object.fromEntries(
@@ -58,7 +57,7 @@ const cameraSchema = z.object({
 
 export type CameraSettings = z.infer<typeof cameraSchema>;
 
-export const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
+const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
   mode: 'film',
   lens: 'front',
   aspect: '3:4',

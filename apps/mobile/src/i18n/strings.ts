@@ -7,12 +7,10 @@ export const strings = {
     close: '閉じる',
     cancel: 'キャンセル',
     done: '完了',
-    retry: 'もう一度',
     delete: '削除',
     save: '保存',
     share: '共有',
     back: '戻る',
-    ok: 'OK',
     premium: 'プレミアム',
     new: 'NEW',
     errorTitle: 'うまくいきませんでした',
@@ -69,9 +67,7 @@ export const strings = {
     rosiness: '血色',
   },
   character: {
-    title: 'キャラ',
     colors: 'カラー',
-    noFace: '顔が見つかりません。カメラに顔を向けてください。',
   },
   photo: {
     title: '写真',
@@ -96,7 +92,6 @@ export const strings = {
     original: '元の比率',
     undo: '元に戻す',
     redo: 'やり直す',
-    rendering: '仕上げ中…',
   },
   deco: {
     title: 'デコ',
@@ -125,17 +120,13 @@ export const strings = {
     import: '写真を読み込む',
   },
   puri: {
-    title: 'プリ',
     chooseLayout: '台紙を選ぶ',
     shots: (count: number) => `${String(count)}コマ`,
     start: '撮影スタート',
     shotOf: (index: number, total: number) => `${String(index)} / ${String(total)}`,
     retakeShot: 'このコマを撮り直す',
-    next: '次へ',
     finish: '仕上げる',
-    saveSheet: '台紙を保存',
     saveCell: 'このコマを保存',
-    composing: '台紙を作っています…',
     deco: 'らくがき',
   },
   ai: {
@@ -161,7 +152,6 @@ export const strings = {
       other: 'その他',
     },
     notEnoughCredits: 'クレジットが足りません',
-    unavailable: 'AI変身は現在ご利用いただけません。',
     failed: '生成できませんでした。クレジットは戻っています。',
     blocked: 'この写真では生成できません。別の写真でお試しください（クレジットは戻っています）。',
     aiLabel: 'AIで生成',
@@ -268,12 +258,5 @@ export const strings = {
   },
   legal: {
     title: '規約とポリシー',
-    terms: '利用規約',
-    privacy: 'プライバシーポリシー',
-    commerce: '特定商取引法に基づく表記',
-    licenses: 'ライセンス',
-  },
-  review: {
-    prompt: 'fanT を気に入っていただけましたか？',
   },
 } as const;
