@@ -26,7 +26,7 @@ export function builtInManifest(): Manifest {
   builtIn ??= parseManifest({
     schemaVersion: 1,
     // Free films first: the order the camera offers them in.
-    films: [natural, ccd2005, disposable, instant, keitai, puri, mono, vhs, nightFlash],
+    films: [natural, ccd2005, disposable, instant, puri, keitai, mono, vhs, nightFlash],
     characters,
     layouts,
     stamps,

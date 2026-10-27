@@ -2,6 +2,7 @@ import type { Film } from '@fant/content-schema';
 import {
   calendarDateOf,
   DATE_STAMP_ORANGE,
+  type BeautyParams,
   type DateStamp,
   type FilterSettings,
 } from '@fant/filters';
@@ -17,9 +18,19 @@ import { findCharacter, findFilm, type ResolvedCharacter } from '../content/look
 import { filterSettingsFor } from '../photo/filter-settings';
 import { filmIntensityOf, useCameraSettings } from './camera-store';
 
+/** What a shot should look like, by content ID. */
+export interface LookSpec {
+  readonly filmId: string;
+  readonly intensity: number;
+  readonly beauty: BeautyParams;
+  readonly dateStamp: DateStamp | null;
+  readonly character: { readonly id: string; readonly variantId: string | undefined } | null;
+}
+
 export interface CameraLook {
   readonly film: Film;
   readonly intensity: number;
+  readonly beauty: BeautyParams;
   readonly dateStamp: DateStamp | null;
   readonly character: ResolvedCharacter | null;
   readonly settings: FilterSettings;
@@ -28,49 +39,10 @@ export interface CameraLook {
   readonly characterDrawing: CharacterDrawing | null;
 }
 
-/**
- * Everything that decides how the preview (and the next photo) looks, derived from
- * the camera settings and content. `seed` is fixed per shot (FLM-06).
- */
-export function useCameraLook(seed: number): CameraLook {
-  const manifest = useContent((state) => state.manifest);
-  const filmId = useCameraSettings((state) => state.filmId);
-  const filmIntensity = useCameraSettings((state) => state.filmIntensity);
-  const beauty = useCameraSettings((state) => state.beauty);
-  const dateSettings = useCameraSettings((state) => state.dateStamp);
-  const mode = useCameraSettings((state) => state.mode);
-  const characterId = useCameraSettings((state) => state.characterId);
-  const characterVariants = useCameraSettings((state) => state.characterVariants);
-
-  const film = findFilm(manifest, filmId);
-  const intensity = filmIntensityOf({ filmIntensity }, film.id);
-  const lut = useFilmLut(film);
-
-  const dateStamp = useMemo<DateStamp | null>(
-    () =>
-      dateSettings.enabled
-        ? {
-            date: dateSettings.customDate ?? calendarDateOf(new Date()),
-            format: dateSettings.format,
-            color: DATE_STAMP_ORANGE,
-          }
-        : null,
-    [dateSettings],
-  );
-
-  const character = useMemo(
-    () =>
-      mode === 'character'
-        ? findCharacter(manifest, characterId, characterVariants[characterId])
-        : null,
-    [mode, manifest, characterId, characterVariants],
-  );
-
-  const settings = useMemo(
-    () => filterSettingsFor({ film, intensity, seed, beauty, dateStamp }),
-    [film, intensity, seed, beauty, dateStamp],
-  );
-
+/** Image parts of a character, loaded for drawing. */
+function useCharacterImages(
+  character: ResolvedCharacter | null,
+): Readonly<Record<string, SkImage>> {
   const [images, setImages] = useState<Readonly<Record<string, SkImage>>>({});
   useEffect(() => {
     const refs =
@@ -90,11 +62,67 @@ export function useCameraLook(seed: number): CameraLook {
       current = false;
     };
   }, [character]);
+  return images;
+}
 
+/**
+ * Resolves a look against the current content: the film, its LUT, the character
+ * and the shader settings shared by the preview and the photo. `seed` is fixed
+ * per shot (FLM-06).
+ */
+export function useLook(spec: LookSpec, seed: number): CameraLook {
+  const manifest = useContent((state) => state.manifest);
+  const film = findFilm(manifest, spec.filmId);
+  const lut = useFilmLut(film);
+  const { intensity, beauty, dateStamp } = spec;
+  const characterId = spec.character?.id;
+  const variantId = spec.character?.variantId;
+
+  const character = useMemo(
+    () => (characterId === undefined ? null : findCharacter(manifest, characterId, variantId)),
+    [manifest, characterId, variantId],
+  );
+  const images = useCharacterImages(character);
+  const settings = useMemo(
+    () => filterSettingsFor({ film, intensity, seed, beauty, dateStamp }),
+    [film, intensity, seed, beauty, dateStamp],
+  );
   const characterDrawing = useMemo<CharacterDrawing | null>(
     () => (character === null ? null : { ...character, images }),
     [character, images],
   );
 
-  return { film, intensity, dateStamp, character, settings, lut, characterDrawing };
+  return { film, intensity, beauty, dateStamp, character, settings, lut, characterDrawing };
+}
+
+/** The look chosen on the camera screen (S-10). */
+export function useCameraLook(seed: number): CameraLook {
+  const filmId = useCameraSettings((state) => state.filmId);
+  const intensity = useCameraSettings((state) => filmIntensityOf(state, state.filmId));
+  const beauty = useCameraSettings((state) => state.beauty);
+  const dateSettings = useCameraSettings((state) => state.dateStamp);
+  const mode = useCameraSettings((state) => state.mode);
+  const characterId = useCameraSettings((state) => state.characterId);
+  const variantId = useCameraSettings((state) => state.characterVariants[state.characterId]);
+
+  const dateStamp = useMemo<DateStamp | null>(
+    () =>
+      dateSettings.enabled
+        ? {
+            date: dateSettings.customDate ?? calendarDateOf(new Date()),
+            format: dateSettings.format,
+            color: DATE_STAMP_ORANGE,
+          }
+        : null,
+    [dateSettings],
+  );
+  const character = useMemo(
+    () => (mode === 'character' ? { id: characterId, variantId } : null),
+    [mode, characterId, variantId],
+  );
+  const spec = useMemo<LookSpec>(
+    () => ({ filmId, intensity, beauty, dateStamp, character }),
+    [filmId, intensity, beauty, dateStamp, character],
+  );
+  return useLook(spec, seed);
 }

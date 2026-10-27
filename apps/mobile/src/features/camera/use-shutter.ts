@@ -3,6 +3,7 @@ import { router } from 'expo-router';
 import { useRef, useState, type RefObject } from 'react';
 
 import type { CameraViewHandle, Lens } from '../../engine/camera-view';
+import { sleep } from '../../lib/sleep';
 import { strings } from '../../i18n';
 import { showError } from '../../ui/dialogs';
 import { reportError, track } from '../analytics/analytics';
@@ -16,11 +17,6 @@ import type { CameraLook } from './use-camera-look';
 export type ShutterStatus = 'idle' | 'countdown' | 'capturing';
 
 const SCREEN_FLASH_MS = 350;
-
-const sleep = (ms: number) =>
-  new Promise<void>((resolve) => {
-    setTimeout(resolve, ms);
-  });
 
 interface ShutterOptions {
   readonly camera: RefObject<CameraViewHandle | null>;

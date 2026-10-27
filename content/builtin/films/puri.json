@@ -5,7 +5,7 @@
     "ja": "プリ",
     "en": "Purikura"
   },
-  "tier": "premium",
+  "tier": "free",
   "pipeline": "film_v1",
   "lut": {
     "path": "luts/puri.png",
