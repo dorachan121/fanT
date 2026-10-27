@@ -1,15 +1,6 @@
-import Constants from 'expo-constants';
 import { Pressable, StyleSheet, Text } from 'react-native';
 
 import type { FrameStatsSummary } from './frame-stats.worklet';
-
-/**
- * The overlay is for measuring on real devices (P-1), so development and preview
- * builds show it and store builds never do. Preview builds are release builds,
- * which is what measurements should use.
- */
-export const PERFORMANCE_OVERLAY_ENABLED: boolean =
-  Constants.expoConfig?.extra?.appVariant !== 'production';
 
 interface PerformanceOverlayProps {
   readonly stats: FrameStatsSummary | null;
@@ -19,7 +10,8 @@ interface PerformanceOverlayProps {
 }
 
 /**
- * Preview frame rate and frame-thread timings, refreshed every second. Tapping it
+ * Preview frame rate and frame-thread timings for measuring on devices (P-1), shown
+ * in internal builds only. Refreshed every second. Tapping it
  * turns face detection on and off so its cost can be measured on its own.
  */
 export function PerformanceOverlay({

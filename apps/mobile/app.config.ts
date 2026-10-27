@@ -25,6 +25,21 @@ function resolveVariant(value: string | undefined): AppVariant {
   );
 }
 
+/** Optional HTTPS endpoints and keys, set per EAS profile; features without them stay off. */
+function optionalHttpsUrl(name: string): string | null {
+  const value = process.env[name];
+  if (value === undefined || value === '') return null;
+  if (!/^https:\/\/[^\s]+[^/]$/.test(value)) {
+    throw new Error(`${name} must be an https URL without a trailing slash`);
+  }
+  return value;
+}
+
+function optional(name: string): string | null {
+  const value = process.env[name];
+  return value === undefined || value === '' ? null : value;
+}
+
 const appVariant = resolveVariant(process.env.APP_VARIANT);
 const { name, suffix } = VARIANTS[appVariant];
 const appId = suffix ? `${BASE_APP_ID}.${suffix}` : BASE_APP_ID;
@@ -35,7 +50,8 @@ const config: ExpoConfig = {
   scheme: suffix ? `fant-${suffix}` : 'fant',
   version: packageJson.version,
   orientation: 'portrait',
-  userInterfaceStyle: 'automatic',
+  // The UI is dark so photos stand out; status bar and system UI follow it.
+  userInterfaceStyle: 'dark',
   ios: {
     bundleIdentifier: appId,
     infoPlist: {
@@ -65,6 +81,19 @@ const config: ExpoConfig = {
         },
       },
     ],
+    'expo-sqlite',
+    'expo-sharing',
+    'expo-secure-store',
+    'expo-image',
+    [
+      'expo-image-picker',
+      {
+        // The system photo picker needs no library permission; the app never uses the camera through it.
+        photosPermission: false,
+        cameraPermission: false,
+        microphonePermission: false,
+      },
+    ],
     [
       'expo-media-library',
       {
@@ -77,8 +106,17 @@ const config: ExpoConfig = {
     ],
   ],
   experiments: { reactCompiler: true },
-  // Read at runtime through expo-constants (e.g. to hide the performance overlay in store builds).
-  extra: { appVariant },
+  // Read at runtime through expo-constants and validated in src/config.ts.
+  extra: {
+    appVariant,
+    contentBaseUrl: optionalHttpsUrl('CONTENT_BASE_URL'),
+    apiBaseUrl: optionalHttpsUrl('API_BASE_URL'),
+    revenueCatApiKey: {
+      ios: optional('REVENUECAT_IOS_API_KEY'),
+      android: optional('REVENUECAT_ANDROID_API_KEY'),
+    },
+    supportEmail: optional('SUPPORT_EMAIL'),
+  },
 };
 
 export default config;

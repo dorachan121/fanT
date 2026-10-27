@@ -1,31 +1,30 @@
-import type { BeautyLevel, FilmPreset } from '@fant/filters';
+import { BEAUTY_LEVELS, type BeautyLevel, type BeautyParams } from '@fant/filters';
 
-export const FILM_PRESET_LABELS: Record<FilmPreset, string> = {
-  natural: 'ナチュラル',
-  warm: 'ウォーム',
-  cool: 'クール',
-  faded: 'フェード',
-};
+/** Beauty strengths in the order a tap or a wink steps through them (BTY-02). */
+export const BEAUTY_LEVEL_ORDER: readonly BeautyLevel[] = ['off', 'low', 'medium', 'high'];
 
-export const BEAUTY_LEVEL_LABELS: Record<BeautyLevel, string> = {
-  off: 'オフ',
-  low: '弱',
-  medium: '中',
-  high: '強',
-};
+/** The level these parameters match, or `null` when the user fine-tuned them (BTY-03). */
+export function beautyLevelOf(params: BeautyParams): BeautyLevel | null {
+  return (
+    BEAUTY_LEVEL_ORDER.find((level) => {
+      const preset = BEAUTY_LEVELS[level];
+      return (Object.keys(preset) as (keyof BeautyParams)[]).every(
+        (key) => preset[key] === params[key],
+      );
+    }) ?? null
+  );
+}
 
-/** Each step moves to the next look and wraps around after the last. */
-export const NEXT_FILM_PRESET: Record<FilmPreset, FilmPreset> = {
-  natural: 'warm',
-  warm: 'cool',
-  cool: 'faded',
-  faded: 'natural',
-};
+/** The item after `current`, wrapping around; the first one when `current` is not listed. */
+export function nextItem<T>(items: readonly T[], current: T): T {
+  const index = items.indexOf(current);
+  const next = items[(index + 1) % items.length];
+  if (next === undefined) throw new Error('Cannot step through an empty list');
+  return next;
+}
 
-/** Each step moves to the next strength and wraps around after the strongest. */
-export const NEXT_BEAUTY_LEVEL: Record<BeautyLevel, BeautyLevel> = {
-  off: 'low',
-  low: 'medium',
-  medium: 'high',
-  high: 'off',
-};
+/** The next strength; fine-tuned values step to "off". */
+export function nextBeautyLevel(params: BeautyParams): BeautyLevel {
+  const level = beautyLevelOf(params);
+  return level === null ? 'off' : nextItem(BEAUTY_LEVEL_ORDER, level);
+}

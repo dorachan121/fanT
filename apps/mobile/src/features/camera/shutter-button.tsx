@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { strings } from '../../i18n';
+
 interface ShutterButtonProps {
   readonly disabled: boolean;
   readonly onPress: () => void;
@@ -9,7 +11,7 @@ export function ShutterButton({ disabled, onPress }: ShutterButtonProps) {
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="撮影する"
+      accessibilityLabel={strings.camera.shutter}
       accessibilityState={{ disabled }}
       disabled={disabled}
       hitSlop={8}

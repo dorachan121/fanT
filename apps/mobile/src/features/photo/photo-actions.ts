@@ -1,0 +1,54 @@
+import { File } from 'expo-file-system';
+import * as StoreReview from 'expo-store-review';
+
+import { strings } from '../../i18n';
+import { showError } from '../../ui/dialogs';
+import { reportError, track } from '../analytics/analytics';
+import type { AlbumPhoto } from '../album/album-types';
+import { useSettings } from '../settings/settings-store';
+import { PhotoLibraryPermissionError, saveToLibrary, sharePhoto } from './export';
+
+/** Asks for a store review after this many saves (ANL-04): a moment the user is happy. */
+const REVIEW_AFTER_SAVES = 5;
+
+async function maybeRequestReview(savedCount: number): Promise<void> {
+  const { reviewRequested, update } = useSettings.getState();
+  if (reviewRequested || savedCount < REVIEW_AFTER_SAVES) return;
+  if (await StoreReview.hasAction()) {
+    update({ reviewRequested: true });
+    await StoreReview.requestReview();
+  }
+}
+
+/** Saves to the device library (SHR-01/04); returns whether it worked. */
+export async function savePhoto(photo: AlbumPhoto): Promise<boolean> {
+  const { saveSize, savedCount, update } = useSettings.getState();
+  try {
+    await saveToLibrary(new File(photo.outputUri), saveSize);
+    track({ name: 'photo_saved', kind: photo.kind });
+    update({ savedCount: savedCount + 1 });
+    void maybeRequestReview(savedCount + 1).catch((error: unknown) => {
+      reportError(error, 'review.request');
+    });
+    return true;
+  } catch (error) {
+    if (error instanceof PhotoLibraryPermissionError) {
+      showError(strings.photo.libraryDenied);
+    } else {
+      reportError(error, 'photo.save');
+      showError();
+    }
+    return false;
+  }
+}
+
+/** Opens the share sheet (SHR-02). */
+export async function sharePhotoFile(photo: AlbumPhoto): Promise<void> {
+  try {
+    await sharePhoto(new File(photo.outputUri), useSettings.getState().saveSize);
+    track({ name: 'photo_shared', kind: photo.kind });
+  } catch (error) {
+    reportError(error, 'photo.share');
+    showError();
+  }
+}

@@ -1,36 +1,30 @@
 import type { ReactNode } from 'react';
-import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
-import { useCameraPermission } from 'react-native-vision-camera';
+import { Linking, StyleSheet, Text, View } from 'react-native';
 
-interface CameraPermissionGateProps {
-  readonly children: ReactNode;
-}
+import { useCameraPermission } from '../../engine/camera-view';
+import { strings } from '../../i18n';
+import { Button } from '../../ui/button';
+import { colors, spacing } from '../../ui/theme';
 
 /**
  * Renders its children only once camera access is granted. Otherwise it asks for
- * access, or links to the system settings when the OS will no longer prompt.
+ * access, or links to the system settings when the OS will no longer prompt (ONB-02, S-03).
  */
-export function CameraPermissionGate({ children }: CameraPermissionGateProps) {
+export function CameraPermissionGate({ children }: { readonly children: ReactNode }) {
   const { hasPermission, canRequestPermission, requestPermission } = useCameraPermission();
-
   if (hasPermission) return children;
-
-  const handlePress = () => {
-    void (canRequestPermission ? requestPermission() : Linking.openSettings());
-  };
-
+  const { permission } = strings.camera;
   return (
     <View style={styles.container}>
       <Text style={styles.message}>
-        {canRequestPermission
-          ? '写真を撮るには、カメラへのアクセスを許可してください。'
-          : 'カメラへのアクセスがオフになっています。設定アプリで「カメラ」をオンにしてください。'}
+        {canRequestPermission ? permission.request : permission.denied}
       </Text>
-      <Pressable accessibilityRole="button" style={styles.button} onPress={handlePress}>
-        <Text style={styles.buttonLabel}>
-          {canRequestPermission ? 'カメラを許可する' : '設定を開く'}
-        </Text>
-      </Pressable>
+      <Button
+        label={canRequestPermission ? permission.allow : permission.openSettings}
+        onPress={() => {
+          void (canRequestPermission ? requestPermission() : Linking.openSettings());
+        }}
+      />
     </View>
   );
 }
@@ -40,17 +34,9 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 24,
-    padding: 32,
-    backgroundColor: '#000',
+    gap: spacing.lg,
+    padding: spacing.xl,
+    backgroundColor: colors.background,
   },
-  message: { color: '#fff', fontSize: 16, textAlign: 'center', lineHeight: 24 },
-  button: {
-    minHeight: 48,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    borderRadius: 24,
-    backgroundColor: '#fff',
-  },
-  buttonLabel: { color: '#000', fontSize: 16, fontWeight: '600' },
+  message: { color: colors.text, fontSize: 16, textAlign: 'center', lineHeight: 24 },
 });

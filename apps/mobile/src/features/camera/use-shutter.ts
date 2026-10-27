@@ -1,0 +1,108 @@
+import * as Haptics from 'expo-haptics';
+import { router } from 'expo-router';
+import { useRef, useState, type RefObject } from 'react';
+
+import type { CameraViewHandle, Lens } from '../../engine/camera-view';
+import { strings } from '../../i18n';
+import { showError } from '../../ui/dialogs';
+import { reportError, track } from '../analytics/analytics';
+import { ASPECT_VALUES, centerCrop } from '../photo/geometry';
+import { createPhoto } from '../photo/photo-service';
+import { newRecipe } from '../photo/recipe';
+import { useSettings } from '../settings/settings-store';
+import { useCameraSettings } from './camera-store';
+import type { CameraLook } from './use-camera-look';
+
+export type ShutterStatus = 'idle' | 'countdown' | 'capturing';
+
+const SCREEN_FLASH_MS = 350;
+
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+
+interface ShutterOptions {
+  readonly camera: RefObject<CameraViewHandle | null>;
+  readonly look: CameraLook;
+  readonly seed: number;
+  readonly lens: Lens;
+  /** Called with the new seed after each shot, so the next one gets new grain (FLM-06). */
+  readonly onShot: () => void;
+}
+
+/**
+ * The shutter (CAM-03): self-timer (CAM-07), flash or screen flash (CAM-06), the
+ * full-resolution capture with the previewed look (07 §5.2), then the result (S-20).
+ */
+export function useShutter({ camera, look, seed, lens, onShot }: ShutterOptions) {
+  const [status, setStatus] = useState<ShutterStatus>('idle');
+  const [countdown, setCountdown] = useState<number | null>(null);
+  const [screenFlash, setScreenFlash] = useState(false);
+  const busy = useRef(false);
+
+  const shoot = async () => {
+    if (busy.current) return;
+    busy.current = true;
+    const { timer, flash, aspect, beauty, mode } = useCameraSettings.getState();
+    const { shutterFeedback } = useSettings.getState();
+    try {
+      if (timer > 0) {
+        setStatus('countdown');
+        for (let remaining = timer; remaining > 0; remaining--) {
+          setCountdown(remaining);
+          if (shutterFeedback) void Haptics.selectionAsync();
+          await sleep(1000);
+        }
+        setCountdown(null);
+      }
+      setStatus('capturing');
+      const useScreenFlash = lens === 'front' && flash !== 'off';
+      if (useScreenFlash) {
+        setScreenFlash(true);
+        await sleep(SCREEN_FLASH_MS);
+      }
+      const handle = camera.current;
+      if (handle === null) throw new Error('Camera is not ready');
+      const captured = await handle
+        .capture({ flash: lens === 'back' ? flash : 'off' })
+        .finally(() => {
+          setScreenFlash(false);
+        });
+      // A film-advance tap (CAM-11).
+      if (shutterFeedback) void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+      const photo = await createPhoto({
+        kind: 'camera',
+        original: captured.bytes,
+        recipeFor: (size) =>
+          newRecipe({
+            filmId: look.film.id,
+            intensity: look.intensity,
+            beauty,
+            dateStamp: look.dateStamp,
+            character:
+              mode === 'character' && look.character !== null
+                ? { id: look.character.character.id, variantId: look.character.variant.id }
+                : null,
+            seed,
+            // Saved as previewed (D-08): mirrored for the front camera.
+            mirror: (lens === 'front') !== captured.isMirrored,
+            crop: centerCrop(size, ASPECT_VALUES[aspect]),
+          }),
+      });
+      track({ name: 'photo_taken', mode, filmId: look.film.id });
+      onShot();
+      router.push({ pathname: '/photo/[id]', params: { id: photo.id, from: 'camera' } });
+    } catch (error) {
+      reportError(error, 'camera.capture');
+      showError(strings.camera.captureFailed);
+    } finally {
+      setCountdown(null);
+      setStatus('idle');
+      busy.current = false;
+    }
+  };
+
+  return { status, countdown, screenFlash, shoot };
+}

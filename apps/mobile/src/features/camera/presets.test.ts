@@ -1,29 +1,32 @@
+import { BEAUTY_LEVELS } from '@fant/filters';
 import { describe, expect, it } from 'vitest';
 
-import {
-  BEAUTY_LEVEL_LABELS,
-  FILM_PRESET_LABELS,
-  NEXT_BEAUTY_LEVEL,
-  NEXT_FILM_PRESET,
-} from './presets';
+import { beautyLevelOf, nextBeautyLevel, nextItem } from './presets';
 
-/** Follows `next` from `start` until it returns to `start`. */
-function cycleFrom<T extends string>(next: Record<T, T>, start: T): T[] {
-  const visited: T[] = [start];
-  for (let current = next[start]; current !== start; current = next[current]) {
-    if (visited.length > Object.keys(next).length) throw new Error('Cycle never returns');
-    visited.push(current);
-  }
-  return visited;
-}
+describe('nextItem', () => {
+  it('steps forward and wraps around', () => {
+    expect(nextItem(['a', 'b', 'c'], 'b')).toBe('c');
+    expect(nextItem(['a', 'b', 'c'], 'c')).toBe('a');
+  });
 
-describe.each([
-  ['film presets', NEXT_FILM_PRESET, FILM_PRESET_LABELS],
-  ['beauty levels', NEXT_BEAUTY_LEVEL, BEAUTY_LEVEL_LABELS],
-] as const)('%s', (_, next, labels) => {
-  it('cycle through every option exactly once from any starting point', () => {
-    for (const start of Object.keys(labels) as (keyof typeof labels)[]) {
-      expect(cycleFrom<string>(next, start).sort()).toEqual(Object.keys(labels).sort());
-    }
+  it('starts at the first item when the current one is not listed', () => {
+    expect(nextItem(['a', 'b'], 'z')).toBe('a');
+  });
+
+  it('rejects an empty list', () => {
+    expect(() => nextItem([], 'a')).toThrow();
+  });
+});
+
+describe('beauty levels', () => {
+  it('recognizes each preset and fine-tuned values', () => {
+    expect(beautyLevelOf(BEAUTY_LEVELS.high)).toBe('high');
+    expect(beautyLevelOf({ ...BEAUTY_LEVELS.low, rosiness: 0.9 })).toBeNull();
+  });
+
+  it('cycles off → low → medium → high → off, and fine-tuned → off', () => {
+    expect(nextBeautyLevel(BEAUTY_LEVELS.off)).toBe('low');
+    expect(nextBeautyLevel(BEAUTY_LEVELS.high)).toBe('off');
+    expect(nextBeautyLevel({ smoothing: 0.42, brightness: 0, rosiness: 0 })).toBe('off');
   });
 });
