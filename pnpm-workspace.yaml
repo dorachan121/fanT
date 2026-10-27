@@ -2,6 +2,7 @@ packages:
   - apps/*
   - packages/*
   - content
+  - functions
 
 # --- Supply-chain hardening ---------------------------------------------------
 # Ignore versions published less than 24h ago (most malicious releases are
@@ -17,6 +18,9 @@ trustPolicyExclude:
 allowBuilds:
   # The platform binary comes from @esbuild/<platform>; the script only re-checks it.
   esbuild: false
+  # Firebase Admin: writes optional browser defaults / prints a version notice; not needed.
+  '@firebase/util': false
+  protobufjs: false
 # Fail installs on an incompatible Node.js instead of warning.
 engineStrict: true
 
@@ -38,6 +42,7 @@ catalog:
   '@types/node': ^24.19.2
   canvaskit-wasm: 0.41.0 # keep in sync with @shopify/react-native-skia's dependency
   eslint: ^10.13.0
+  esbuild: ^0.28.2
   prettier: ^3.9.10
   tsx: ^4.23.15
   turbo: ^2.11.10

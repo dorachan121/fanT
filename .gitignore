@@ -1,6 +1,7 @@
 # Dependencies & caches
 node_modules/
 .turbo/
+.firebase/
 coverage/
 dist/
 *.log
