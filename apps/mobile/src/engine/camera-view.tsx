@@ -6,6 +6,7 @@ import {
   usePhotoOutput,
   type CameraPhotoOutput,
   type Constraint,
+  type DeviceFilter,
 } from 'react-native-vision-camera';
 import {
   SkiaCamera,
@@ -46,6 +47,13 @@ export interface CameraViewHandle {
  * stretching exposure down to ~16fps. VisionCamera v5 only supports a fixed rate.
  */
 const CONSTRAINTS: Constraint[] = [{ fps: 24 }];
+
+/**
+ * The plain wide-angle camera: zoom 1 is then always the normal 1× view (on a
+ * multi-lens virtual camera it would be the ultra-wide lens), and a single physical
+ * camera is the lightest for the preview (P-1). Pinch zoom is digital.
+ */
+const WIDE_ANGLE_ONLY: DeviceFilter = { physicalDevices: ['wide-angle'] };
 
 /**
  * 4:3 preview frames, the same shape as the photos, so the preview shows exactly what
@@ -91,7 +99,7 @@ export function CameraView({
   style,
 }: CameraViewProps) {
   const camera = useRef<SkiaCameraRef>(null);
-  const device = useCameraDevice(lens);
+  const device = useCameraDevice(lens, WIDE_ANGLE_ONLY);
   // JPEG keeps decoding portable (Skia has no HEIC codec on every platform).
   const photoOutput = usePhotoOutput({ containerFormat: 'jpeg', qualityPrioritization: 'quality' });
   // A stable array keeps the camera session from being reconfigured on every render.
