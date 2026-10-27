@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "start": "expo start",
     "test": "vitest run",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "check:native": "expo prebuild --no-install --platform all --clean && node scripts/check-native-config.mjs"
   },
   "dependencies": {
     "@expo/metro-runtime": "~58.0.15",
@@ -38,6 +39,7 @@
     "expo-sharing": "~58.0.20",
     "expo-sqlite": "~58.0.14",
     "expo-store-review": "~58.0.2",
+    "expo-system-ui": "~58.0.6",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-native": "0.88.0",

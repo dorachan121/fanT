@@ -40,6 +40,9 @@ function optional(name: string): string | null {
   return value === undefined || value === '' ? null : value;
 }
 
+/** Shown when the camera permission is requested (ONB-02). */
+const CAMERA_USAGE = '写真を撮影するためにカメラを使用します。';
+
 const appVariant = resolveVariant(process.env.APP_VARIANT);
 const { name, suffix } = VARIANTS[appVariant];
 const appId = suffix ? `${BASE_APP_ID}.${suffix}` : BASE_APP_ID;
@@ -55,7 +58,7 @@ const config: ExpoConfig = {
   ios: {
     bundleIdentifier: appId,
     infoPlist: {
-      NSCameraUsageDescription: '写真を撮影するためにカメラを使用します。',
+      NSCameraUsageDescription: CAMERA_USAGE,
     },
   },
   android: {
@@ -83,14 +86,16 @@ const config: ExpoConfig = {
     ],
     'expo-sqlite',
     'expo-sharing',
-    'expo-secure-store',
+    // Keys are stored without biometrics, so no Face ID prompt text is declared.
+    ['expo-secure-store', { faceIDPermission: false }],
     'expo-image',
     [
       'expo-image-picker',
       {
-        // The system photo picker needs no library permission; the app never uses the camera through it.
+        // The system photo picker needs no library permission. `false` for the camera
+        // would block the camera permission for the whole app, so it gets the real text.
         photosPermission: false,
-        cameraPermission: false,
+        cameraPermission: CAMERA_USAGE,
         microphonePermission: false,
       },
     ],

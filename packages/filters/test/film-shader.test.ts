@@ -190,6 +190,21 @@ describe(`${FILM_SHADER_NAME} shader`, () => {
     );
   });
 
+  it('keeps a similar bloom at reduced quality', () => {
+    const spot = createBitmap(SIZE, SIZE, (x, y) =>
+      Math.hypot(x - CENTER, y - CENTER) < 3 ? [255, 255, 255, 255] : [40, 40, 40, 255],
+    );
+    const params = { ...NO_EFFECTS, bloom: 1 };
+    const uniforms = (quality: number) =>
+      toFilmUniforms(params, { width: 400, height: 400, seed: 0.5, lutSize: 2, quality });
+    const full = renderEffect(ck, effect, uniforms(1), spot, [lutBitmap(IDENTITY_LUT)]);
+    const reduced = renderEffect(ck, effect, uniforms(0), spot, [lutBitmap(IDENTITY_LUT)]);
+    expect(maxChannelDifference(full, reduced)).toBeGreaterThan(0);
+    // Overall glow stays about the same; only its sampling is coarser.
+    const total = (bitmap: Bitmap) => bitmap.pixels.reduce((sum, value) => sum + value, 0);
+    expect(total(reduced) / total(full)).toBeCloseTo(1, 1);
+  });
+
   it('pixelates into blocks at low resolution', () => {
     // At lowRes 1 a 32px frame keeps its size, so pretend the frame is 3200px wide.
     const output = render({ ...NO_EFFECTS, lowRes: 1 }, { input: GRADIENT, resolution: 3200 });

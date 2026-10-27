@@ -1,15 +1,13 @@
 import type { Layout } from '@fant/content-schema';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { CameraView, type CameraViewHandle, type Lens } from '../../engine/camera-view';
 import { useFaceTracking } from '../../engine/face-tracking';
-import { filterEffects } from '../../engine/filter-effects';
-import { useFrameRenderer } from '../../engine/frame-renderer';
 import { localized, strings } from '../../i18n';
 import { sleep } from '../../lib/sleep';
 import { Button } from '../../ui/button';
@@ -22,6 +20,7 @@ import { CameraPermissionGate } from '../camera/camera-permission-gate';
 import { Countdown, ScreenFlash } from '../camera/preview-overlays';
 import { useCameraActive } from '../camera/use-camera-active';
 import { useLook, type LookSpec } from '../camera/use-camera-look';
+import { usePreviewRenderer } from '../camera/use-preview-renderer';
 import { useContent } from '../content/content-store';
 import { containRect } from '../photo/geometry';
 import { PURI_BEAUTY, PURI_FILM_ID, renderPuriShot } from './puri-look';
@@ -71,17 +70,7 @@ function PuriCamera({ retake }: { readonly retake: number | null }) {
   const zoom = useSharedValue(1);
   const look = useLook(SPEC, seed);
   const tracking = useFaceTracking({ onEyes: null, trackFaces: false });
-  const inputs = useMemo(
-    () => ({ effects: filterEffects(), settings: look.settings, seed, lut: look.lut }),
-    [look, seed],
-  );
-  const onFrame = useFrameRenderer({
-    inputs,
-    character: null,
-    faces: tracking.faces,
-    analyze: null,
-    recordStats: null,
-  });
+  const { onFrame } = usePreviewRenderer({ look, seed, tracking, showCharacter: false });
 
   if (layout === undefined) return null;
   const retakeIndex = retake !== null && retake < layout.cells.length ? retake : null;

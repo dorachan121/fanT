@@ -13,6 +13,7 @@ uniform float2 resolution;
 uniform float smoothing;
 uniform float brightness;
 uniform float rosiness;
+uniform float quality;
 
 const half3 LUMA = half3(0.2126, 0.7152, 0.0722);
 // Blur radius as a fraction of the short edge: the same look in the preview
@@ -45,6 +46,7 @@ half4 main(float2 coord) {
     float3 sum = color;
     float weightSum = 1.0;
     for (int ring = 1; ring <= 2; ring++) {
+      if (ring == 2 && quality < 0.5) break;
       float ringRadius = radius * float(ring) * 0.5;
       float ringWeight = ring == 1 ? 1.0 : 0.6;
       for (int i = 0; i < RING_SAMPLES; i++) {

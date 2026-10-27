@@ -44,6 +44,7 @@ export {
 } from './film/film-params';
 export { FILM_SHADER_NAME, FILM_SHADER_SOURCE } from './film/film-shader';
 export { toFilmUniforms, type FilmFrame, type FilmUniforms } from './film/film-uniforms';
+export { FULL_QUALITY, REDUCED_QUALITY } from './frame';
 export { IDENTITY_LUT, LUT_SIZE_RANGE, makeLut, parseCubeLut, type LutImage } from './lut';
 export { defineParams, type ParamRange, type ParamSpec, type ParamValues } from './params';
 export {

@@ -38,6 +38,8 @@ export interface FilterFrame {
   readonly height: number;
   /** Fixed at shutter time so the saved photo matches the preview (FLM-06). */
   readonly seed: number;
+  /** Preview quality (see `REDUCED_QUALITY`); full when omitted. */
+  readonly quality?: number;
 }
 
 export interface FilterChain<TShader> {

@@ -1,7 +1,7 @@
 import { BEAUTY_LEVELS } from '@fant/filters';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import {
   GestureDetector,
@@ -12,10 +12,10 @@ import {
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { listenToVolumeShutter } from '../../../modules/volume-shutter/src';
+import { APP_CONFIG } from '../../config';
 import { CameraView, type CameraViewHandle, type LensCapabilities } from '../../engine/camera-view';
 import { useFaceTracking } from '../../engine/face-tracking';
-import { filterEffects } from '../../engine/filter-effects';
-import { useFrameRenderer } from '../../engine/frame-renderer';
 import { localized, strings } from '../../i18n';
 import { IconButton } from '../../ui/icon-button';
 import { Notice, useNotice } from '../../ui/notice';
@@ -25,7 +25,6 @@ import { track } from '../analytics/analytics';
 import { useContent } from '../content/content-store';
 import { available } from '../content/lookup';
 import { PerformanceOverlay } from '../performance/performance-overlay';
-import { useFrameStats } from '../performance/use-frame-stats';
 import { ASPECT_VALUES, containRect } from '../photo/geometry';
 import { isLocked, usePremium } from '../purchases/purchases-store';
 import { useSettings } from '../settings/settings-store';
@@ -43,9 +42,9 @@ import { ShutterButton } from './shutter-button';
 import { TopBar } from './top-bar';
 import { useCameraActive } from './use-camera-active';
 import { useCameraLook } from './use-camera-look';
+import { usePreviewRenderer } from './use-preview-renderer';
 import { useShutter } from './use-shutter';
 import { useWinkActions } from './use-wink-actions';
-import { APP_CONFIG } from '../../config';
 
 type SheetName = 'film' | 'beauty' | 'character' | null;
 
@@ -118,6 +117,18 @@ function FilmCamera() {
     void shutter.shoot();
   };
 
+  // The volume buttons also take a photo while the camera is on screen (CAM-03).
+  const shootRef = useRef(shoot);
+  useEffect(() => {
+    shootRef.current = shoot;
+  });
+  useEffect(() => {
+    if (!isActive) return;
+    return listenToVolumeShutter(() => {
+      shootRef.current();
+    });
+  }, [isActive]);
+
   const selectFilm = useCallback(
     (filmId: string) => {
       const film = films.find(({ id }) => id === filmId);
@@ -153,18 +164,7 @@ function FilmCamera() {
     onEyes: analysisEnabled ? onEyes : null,
     trackFaces: analysisEnabled && mode === 'character',
   });
-  const frameStats = useFrameStats();
-  const inputs = useMemo(
-    () => ({ effects: filterEffects(), settings: look.settings, seed, lut: look.lut }),
-    [look.settings, seed, look.lut],
-  );
-  const onFrame = useFrameRenderer({
-    inputs,
-    character: mode === 'character' ? look.characterDrawing : null,
-    faces: tracking.faces,
-    analyze: tracking.analyze,
-    recordStats: showPerformance ? frameStats.record : null,
-  });
+  const preview = usePreviewRenderer({ look, seed, tracking, showCharacter: mode === 'character' });
 
   const box = containRect(
     { width: ASPECT_VALUES[aspect], height: 1 },
@@ -235,7 +235,7 @@ function FilmCamera() {
               isActive={isActive}
               zoom={zoom}
               exposure={exposure}
-              onFrame={onFrame}
+              onFrame={preview.onFrame}
               onCapabilities={setCapabilities}
             />
             {grid && <GridOverlay />}
@@ -323,7 +323,7 @@ function FilmCamera() {
       <Notice text={notice} />
       {showPerformance && (
         <PerformanceOverlay
-          stats={frameStats.stats}
+          stats={preview.stats}
           analysisEnabled={analysisEnabled}
           onToggleAnalysis={() => {
             setAnalysisEnabled((enabled) => !enabled);

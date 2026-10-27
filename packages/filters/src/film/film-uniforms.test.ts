@@ -17,6 +17,7 @@ describe('toFilmUniforms', () => {
       resolution: [1080, 1440],
       seed: 0.42,
       lutSize: 33,
+      quality: 1,
     });
   });
 

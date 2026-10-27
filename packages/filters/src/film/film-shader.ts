@@ -35,6 +35,7 @@ uniform float grain;
 uniform float grainSize;
 uniform float lowRes;
 uniform float jpegNoise;
+uniform float quality;
 ${LUMA_SKSL}
 ${HASH_SKSL}
 ${GRADE_SKSL}
@@ -118,10 +119,13 @@ half4 main(float2 coord) {
   if (bloom > 0.0) {
     float radius = BLOOM_RADIUS * shortEdge;
     half3 glow = half3(0.0);
+    // Reduced quality samples every other tap and doubles their weight.
+    float tapWeight = quality < 0.5 ? 2.0 : 1.0;
     for (int i = 0; i < 8; i++) {
+      if (quality < 0.5 && mod(float(i), 2.0) > 0.5) continue;
       float angle = float(i) * 0.785398;
       half3 s = sampleRgb(p + radius * float2(cos(angle), sin(angle)));
-      glow += s * max(dot(s, LUMA) - half(BLOOM_THRESHOLD), 0.0);
+      glow += s * max(dot(s, LUMA) - half(BLOOM_THRESHOLD), 0.0) * half(tapWeight);
     }
     color += glow * half(bloom * 0.6);
   }

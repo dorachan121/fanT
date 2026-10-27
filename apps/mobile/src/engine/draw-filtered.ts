@@ -15,6 +15,8 @@ export interface FilterInputs {
   readonly settings: FilterSettings;
   readonly seed: number;
   readonly lut: LoadedLut;
+  /** Lower for a struggling live preview (03 §2); omitted (full) for photos. */
+  readonly quality?: number;
   /**
    * Drawn over the retouched image and under the film look, e.g. character
    * stickers (CHR-04): they get the film's texture but are not smoothed.
@@ -37,8 +39,8 @@ export function drawFiltered(
   inputs: FilterInputs,
 ): void {
   'worklet';
-  const { effects, settings, seed, lut, overlay } = inputs;
-  const frame = { width: size.width, height: size.height, seed };
+  const { effects, settings, seed, lut, overlay, quality } = inputs;
+  const frame = { width: size.width, height: size.height, seed, quality };
   const bounds = Skia.XYWHRect(0, 0, size.width, size.height);
   const paint = Skia.Paint();
   const disposables: { dispose(): void }[] = [paint];

@@ -9,7 +9,7 @@ import {
   type FrameSample,
   type FrameStatsSummary,
   type FrameStatsWindow,
-} from './frame-stats.worklet';
+} from '../features/performance/frame-stats.worklet';
 
 export interface FrameStats {
   /** The latest one-second summary; `null` until the first one arrives. */
