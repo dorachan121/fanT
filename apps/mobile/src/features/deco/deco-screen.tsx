@@ -6,7 +6,7 @@ import {
 } from '@fant/filters';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { strings } from '../../i18n';
@@ -15,6 +15,7 @@ import { showError } from '../../ui/dialogs';
 import { IconButton } from '../../ui/icon-button';
 import { ScreenHeader } from '../../ui/screen-header';
 import { colors, spacing } from '../../ui/theme';
+import { Toggle } from '../../ui/toggle';
 import { reportError } from '../analytics/analytics';
 import { useContent } from '../content/content-store';
 import { usePhotoSession } from '../edit/use-photo-session';
@@ -22,6 +23,7 @@ import { saveEdit } from '../photo/photo-service';
 import type { PhotoRecipe } from '../photo/recipe';
 import { usePremium } from '../purchases/purchases-store';
 import { DecoEditor } from './deco-editor';
+import { Text } from '../../ui/text';
 
 /** Whether the decorations use premium stamps the user does not have. */
 function usesLockedStamps(recipe: PhotoRecipe, premiumStampIds: ReadonlySet<string>): boolean {
@@ -41,7 +43,7 @@ export function DecoScreen({ id }: { readonly id: string }) {
     return (
       <View style={styles.container}>
         <ScreenHeader title={strings.deco.title} />
-        <ActivityIndicator style={styles.loading} color={colors.text} />
+        <ActivityIndicator style={styles.loading} color={colors.accent} />
       </View>
     );
   }
@@ -73,10 +75,10 @@ export function DecoScreen({ id }: { readonly id: string }) {
         <Text style={styles.label}>
           {date === null ? strings.deco.dateOn : strings.deco.dateOff}
         </Text>
-        <Switch
-          accessibilityLabel={strings.deco.dateOn}
+        <Toggle
+          label={strings.deco.dateOn}
           value={date !== null}
-          onValueChange={(enabled) => {
+          onChange={(enabled) => {
             session.change({
               ...recipe,
               dateStamp: enabled
@@ -147,7 +149,7 @@ export function DecoScreen({ id }: { readonly id: string }) {
           session.change({ ...recipe, deco }, key);
         }}
       />
-      {saving && <ActivityIndicator style={StyleSheet.absoluteFill} color={colors.text} />}
+      {saving && <ActivityIndicator style={StyleSheet.absoluteFill} color={colors.accent} />}
     </View>
   );
 }
@@ -163,5 +165,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  label: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  label: { color: colors.text, fontSize: 15, fontWeight: '700' },
 });

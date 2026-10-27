@@ -1,10 +1,11 @@
 import type { ReactNode } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { strings } from '../i18n';
 import { IconButton } from './icon-button';
-import { colors, spacing } from './theme';
+import { Text } from './text';
+import { colors, radius, spacing } from './theme';
 
 interface SheetProps {
   readonly visible: boolean;
@@ -14,7 +15,7 @@ interface SheetProps {
 }
 
 /**
- * A bottom sheet over the camera (S-11/S-12/S-13). The camera stays visible
+ * A rounded bottom sheet over the camera (S-11/S-12/S-13). The camera stays visible
  * above it so changes show live in the preview.
  */
 export function Sheet({ visible, title, onClose, children }: SheetProps) {
@@ -27,11 +28,12 @@ export function Sheet({ visible, title, onClose, children }: SheetProps) {
         onPress={onClose}
       />
       <View style={[styles.sheet, { paddingBottom: bottom + spacing.md }]}>
+        <View style={styles.handle} />
         <View style={styles.header}>
           <Text accessibilityRole="header" style={styles.title}>
             {title}
           </Text>
-          <IconButton icon="close" label={strings.common.close} onPress={onClose} />
+          <IconButton icon="close" label={strings.common.close} size={20} onPress={onClose} />
         </View>
         <ScrollView contentContainerStyle={styles.content}>{children}</ScrollView>
       </View>
@@ -43,10 +45,18 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1 },
   sheet: {
     maxHeight: '55%',
-    paddingHorizontal: spacing.md,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.lg,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    backgroundColor: colors.background,
+  },
+  handle: {
+    alignSelf: 'center',
+    width: 44,
+    height: 5,
+    marginTop: spacing.sm,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accentSoft,
   },
   header: {
     flexDirection: 'row',
@@ -54,6 +64,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: spacing.sm,
   },
-  title: { color: colors.text, fontSize: 17, fontWeight: '700' },
+  title: { color: colors.text, fontSize: 18, fontWeight: '800' },
   content: { gap: spacing.md, paddingBottom: spacing.md },
 });

@@ -3,7 +3,7 @@ import { File } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { composeSheet, renderCell, type SheetCell } from '../../engine/compose-sheet';
@@ -14,7 +14,8 @@ import { Button } from '../../ui/button';
 import { showError } from '../../ui/dialogs';
 import { IconButton } from '../../ui/icon-button';
 import { ScreenHeader } from '../../ui/screen-header';
-import { colors, spacing } from '../../ui/theme';
+import { Bouncy } from '../../ui/bouncy';
+import { colors, radius, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { addPhoto } from '../album/album-db';
 import { useContent } from '../content/content-store';
@@ -156,7 +157,7 @@ export function FinishScreen() {
       />
       <ScrollView horizontal style={styles.thumbs} contentContainerStyle={styles.thumbsContent}>
         {shots.map((current, index) => (
-          <Pressable
+          <Bouncy
             key={String(index)}
             accessibilityRole="button"
             accessibilityLabel={strings.puri.shotOf(index + 1, shots.length)}
@@ -173,7 +174,7 @@ export function FinishScreen() {
                 style={[styles.thumb, index === selected && styles.selected]}
               />
             )}
-          </Pressable>
+          </Bouncy>
         ))}
       </ScrollView>
       {shot !== null && shot !== undefined && image !== null ? (
@@ -187,7 +188,7 @@ export function FinishScreen() {
           }}
         />
       ) : (
-        <ActivityIndicator style={styles.loading} color={colors.text} />
+        <ActivityIndicator style={styles.loading} color={colors.accent} />
       )}
       <View style={styles.footer}>
         <Button
@@ -205,9 +206,20 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   thumbs: { flexGrow: 0 },
   thumbsContent: { gap: spacing.sm, paddingHorizontal: spacing.md, paddingBottom: spacing.sm },
-  thumb: { width: 48, height: 64, borderRadius: 6, borderWidth: 2, borderColor: 'transparent' },
-  selected: { borderColor: colors.text },
+  thumb: {
+    width: 48,
+    height: 64,
+    borderRadius: radius.sm,
+    borderWidth: 3,
+    borderColor: colors.surface,
+  },
+  selected: { borderColor: colors.accent },
   missing: { backgroundColor: colors.surfaceRaised },
   loading: { flex: 1 },
-  footer: { padding: spacing.md, backgroundColor: colors.surface },
+  footer: {
+    padding: spacing.md,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    backgroundColor: colors.surface,
+  },
 });

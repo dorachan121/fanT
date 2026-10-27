@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { strings } from '../../i18n';
@@ -7,6 +7,7 @@ import { ScreenHeader } from '../../ui/screen-header';
 import { colors, spacing } from '../../ui/theme';
 import { LinkRow, Section } from '../settings/settings-rows';
 import { LEGAL_DOCUMENTS, type LegalDocument } from './documents';
+import { Text } from '../../ui/text';
 
 /** The legal documents (S-71, SET-02). */
 export function LegalListScreen() {

@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 
-import { colors, spacing } from './theme';
+import { Gradient } from './gradient';
+import { haptics } from './haptics';
+import { Text } from './text';
+import { colors, radius, softShadow, spacing } from './theme';
 
 interface SliderProps {
   readonly label: string;
@@ -17,10 +20,12 @@ interface SliderProps {
 }
 
 const STEPS = 20;
+const THUMB = 28;
 
 /**
- * A horizontal slider driven by touch, and by swipe up/down for screen readers
- * (accessibility "adjustable").
+ * A candy slider with a heart thumb, driven by touch, and by swipe up/down for
+ * screen readers (accessibility "adjustable"). Ticks lightly at the ends and the
+ * centre so the limits can be felt.
  */
 export function Slider({ label, value, min, max, onChange, formatValue, centered }: SliderProps) {
   const [width, setWidth] = useState(0);
@@ -30,14 +35,20 @@ export function Slider({ label, value, min, max, onChange, formatValue, centered
     const clamped = Math.min(1, Math.max(0, width > 0 ? x / width : 0));
     return min + clamped * (max - min);
   };
+  const update = (x: number) => {
+    const next = valueAt(x);
+    const landmarks = centered === true ? [min, (min + max) / 2, max] : [min, max];
+    if (landmarks.some((mark) => next === mark && value !== mark)) haptics.select();
+    onChange(next);
+  };
   const pan = usePanGesture({
     runOnJS: true,
     minDistance: 0,
     onBegin: (event) => {
-      onChange(valueAt(event.x));
+      update(event.x);
     },
     onUpdate: (event) => {
-      onChange(valueAt(event.x));
+      update(event.x);
     },
   });
 
@@ -70,37 +81,47 @@ export function Slider({ label, value, min, max, onChange, formatValue, centered
         >
           <View style={styles.track}>
             {centered === true && <View style={styles.center} />}
-            <View style={[styles.fill, { width: `${String(fraction * 100)}%` }]} />
+            <Gradient style={[styles.fill, { width: `${String(fraction * 100)}%` }]} />
           </View>
-          <View style={[styles.thumb, { left: fraction * width - THUMB / 2 }]} />
+          <View style={[styles.thumb, softShadow, { left: fraction * width - THUMB / 2 }]}>
+            <Text style={styles.heart}>♥</Text>
+          </View>
         </View>
       </GestureDetector>
     </View>
   );
 }
 
-const THUMB = 22;
-
 const styles = StyleSheet.create({
   container: { gap: spacing.xs },
   header: { flexDirection: 'row', justifyContent: 'space-between' },
-  label: { color: colors.text, fontSize: 13, fontWeight: '600' },
-  value: { color: colors.textMuted, fontSize: 13, fontVariant: ['tabular-nums'] },
-  hitArea: { height: 32, justifyContent: 'center' },
-  track: { height: 4, borderRadius: 2, backgroundColor: colors.surfaceRaised, overflow: 'hidden' },
+  label: { color: colors.text, fontSize: 13, fontWeight: '700' },
+  value: { color: colors.accent, fontSize: 13, fontWeight: '700', fontVariant: ['tabular-nums'] },
+  hitArea: { height: 36, justifyContent: 'center' },
+  track: {
+    height: 8,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surfaceRaised,
+    overflow: 'hidden',
+  },
   center: {
     position: 'absolute',
     left: '50%',
     width: 2,
-    height: 4,
+    height: 8,
     backgroundColor: colors.textMuted,
   },
-  fill: { height: 4, backgroundColor: colors.accent },
+  fill: { height: 8, borderRadius: radius.pill },
   thumb: {
     position: 'absolute',
     width: THUMB,
     height: THUMB,
+    alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: THUMB / 2,
-    backgroundColor: colors.text,
+    borderWidth: 2,
+    borderColor: colors.accentSoft,
+    backgroundColor: colors.surface,
   },
+  heart: { color: colors.accent, fontSize: 13, lineHeight: 16 },
 });

@@ -1,7 +1,9 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { ComponentProps } from 'react';
-import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
 
+import { Bouncy } from './bouncy';
+import { Text } from './text';
 import { colors, TOUCH_TARGET } from './theme';
 
 export type IconName = ComponentProps<typeof Ionicons>['name'];
@@ -10,15 +12,17 @@ interface IconButtonProps {
   readonly icon: IconName;
   readonly label: string;
   readonly onPress: () => void;
-  /** Small text under or beside the icon, e.g. "3s". */
+  /** A small tag on the corner, e.g. "3s". */
   readonly badge?: string;
   readonly active?: boolean;
   readonly disabled?: boolean;
   readonly size?: number;
+  /** `plain` drops the round background (e.g. inside headers). */
+  readonly variant?: 'round' | 'plain';
   readonly style?: StyleProp<ViewStyle>;
 }
 
-/** A round icon button with a screen-reader label (03 §9). */
+/** A round, squishy icon button with a screen-reader label (03 §9). */
 export function IconButton({
   icon,
   label,
@@ -27,28 +31,35 @@ export function IconButton({
   active,
   disabled,
   size = 24,
+  variant = 'round',
   style,
 }: IconButtonProps) {
   return (
-    <Pressable
+    <Bouncy
       accessibilityRole="button"
       accessibilityLabel={label}
       accessibilityState={{ disabled, selected: active }}
       disabled={disabled}
       hitSlop={4}
-      style={({ pressed }) => [
+      squash={0.85}
+      style={[
         styles.button,
-        pressed && styles.pressed,
+        variant === 'round' && styles.round,
+        active === true && styles.active,
         disabled && styles.disabled,
         style,
       ]}
       onPress={onPress}
     >
       <View>
-        <Ionicons name={icon} size={size} color={active === true ? colors.accent : colors.text} />
+        <Ionicons
+          name={icon}
+          size={size}
+          color={active === true ? colors.accentText : colors.accent}
+        />
         {badge !== undefined && <Text style={styles.badge}>{badge}</Text>}
       </View>
-    </Pressable>
+    </Bouncy>
   );
 }
 
@@ -59,16 +70,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: TOUCH_TARGET / 2,
-    backgroundColor: colors.overlay,
   },
-  pressed: { opacity: 0.6 },
+  round: { backgroundColor: colors.overlay },
+  active: { backgroundColor: colors.accent },
   disabled: { opacity: 0.35 },
   badge: {
     position: 'absolute',
-    right: -10,
-    bottom: -6,
-    color: colors.text,
-    fontSize: 10,
-    fontWeight: '700',
+    right: -12,
+    bottom: -8,
+    paddingHorizontal: 4,
+    borderRadius: 6,
+    overflow: 'hidden',
+    color: colors.accentText,
+    fontSize: 9,
+    fontWeight: '800',
+    backgroundColor: colors.lavender,
   },
 });

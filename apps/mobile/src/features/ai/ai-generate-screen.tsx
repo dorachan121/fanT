@@ -3,7 +3,7 @@ import { File } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Alert, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { markAiGenerated } from '../../engine/photo';
@@ -11,13 +11,15 @@ import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { showError } from '../../ui/dialogs';
 import { ScreenHeader } from '../../ui/screen-header';
-import { colors, spacing } from '../../ui/theme';
+import { HeroEmoji } from '../../ui/hero-emoji';
+import { colors, radius, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { addPhoto } from '../album/album-db';
 import { newPhotoId } from '../photo/photo-service';
 import { useSettings } from '../settings/settings-store';
 import { reportGeneration } from './ai-client';
 import { useGeneration } from './use-generation';
+import { Text } from '../../ui/text';
 
 /** Progress with cancel (S-43) and the result with save, report and retry (S-44). */
 export function AiGenerateScreen({
@@ -81,6 +83,7 @@ export function AiGenerateScreen({
       <View style={styles.body}>
         {state.phase === 'running' && (
           <>
+            <HeroEmoji emoji="🪄" tint={colors.lavenderSoft} />
             <ActivityIndicator size="large" color={colors.accent} />
             <Text accessibilityLiveRegion="polite" style={styles.message}>
               {strings.ai.generating}
@@ -88,12 +91,9 @@ export function AiGenerateScreen({
           </>
         )}
         {state.phase === 'done' && (
-          <Image
-            source={{ uri: state.resultUri }}
-            style={StyleSheet.absoluteFill}
-            contentFit="contain"
-          />
+          <Image source={{ uri: state.resultUri }} style={styles.result} contentFit="contain" />
         )}
+        {state.phase === 'failed' && <HeroEmoji emoji="🥺" />}
         {state.phase === 'failed' && (
           <Text style={styles.message}>
             {state.code === 'moderation_blocked'
@@ -139,6 +139,17 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     padding: spacing.lg,
   },
-  message: { color: colors.text, fontSize: 16, textAlign: 'center', lineHeight: 24 },
+  message: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 26,
+  },
+  result: {
+    ...StyleSheet.absoluteFill,
+    margin: spacing.md,
+    borderRadius: radius.lg,
+  },
   actions: { gap: spacing.sm, paddingHorizontal: spacing.md },
 });

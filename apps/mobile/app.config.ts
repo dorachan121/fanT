@@ -53,8 +53,9 @@ const config: ExpoConfig = {
   scheme: suffix ? `fant-${suffix}` : 'fant',
   version: packageJson.version,
   orientation: 'portrait',
-  // The UI is dark so photos stand out; status bar and system UI follow it.
-  userInterfaceStyle: 'dark',
+  // Pastel UI on cream; the system UI follows the light style.
+  userInterfaceStyle: 'light',
+  backgroundColor: '#FFF6FB',
   ios: {
     bundleIdentifier: appId,
     infoPlist: {

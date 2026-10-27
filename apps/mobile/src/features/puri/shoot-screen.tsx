@@ -1,8 +1,7 @@
 import type { Layout } from '@fant/content-schema';
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -13,8 +12,9 @@ import { sleep } from '../../lib/sleep';
 import { Button } from '../../ui/button';
 import { Chip } from '../../ui/chip';
 import { showError } from '../../ui/dialogs';
+import { haptics } from '../../ui/haptics';
 import { IconButton } from '../../ui/icon-button';
-import { colors, spacing } from '../../ui/theme';
+import { colors, radius, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { CameraPermissionGate } from '../camera/camera-permission-gate';
 import { Countdown, ScreenFlash } from '../camera/preview-overlays';
@@ -25,6 +25,7 @@ import { useContent } from '../content/content-store';
 import { containRect } from '../photo/geometry';
 import { PURI_BEAUTY, PURI_FILM_ID, renderPuriShot } from './puri-look';
 import { usePuriSession } from './puri-session';
+import { Text } from '../../ui/text';
 
 const INTERVALS = [3, 5, 10] as const;
 const SPEC: LookSpec = {
@@ -89,7 +90,7 @@ function PuriCamera({ retake }: { readonly retake: number | null }) {
         setCurrent(index);
         for (let remaining = interval; remaining > 0; remaining--) {
           setCountdown(remaining);
-          void Haptics.selectionAsync();
+          haptics.select();
           await sleep(1000);
         }
         setCountdown(null);
@@ -102,7 +103,7 @@ function PuriCamera({ retake }: { readonly retake: number | null }) {
         const captured = await handle.capture({ flash: 'off' }).finally(() => {
           setFlash(false);
         });
-        void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        haptics.press();
         // Rendering overlaps the next countdown.
         pending.push(
           renderPuriShot({
@@ -202,13 +203,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
   },
-  progress: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  progress: {
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    color: colors.accent,
+    fontSize: 16,
+    fontWeight: '800',
+    backgroundColor: colors.accentSoft,
+  },
   previewArea: { flex: 1, margin: spacing.md },
   previewBox: {
     position: 'absolute',
     overflow: 'hidden',
-    borderRadius: 12,
-    backgroundColor: '#000',
+    borderRadius: radius.lg,
+    backgroundColor: colors.text,
   },
   pose: {
     position: 'absolute',
@@ -216,9 +226,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
-    borderRadius: 16,
+    borderRadius: radius.pill,
     overflow: 'hidden',
-    color: colors.text,
+    color: colors.accentText,
     fontSize: 18,
     fontWeight: '800',
     backgroundColor: colors.accent,

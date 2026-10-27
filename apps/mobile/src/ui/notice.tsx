@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
+import Animated, { ZoomIn, ZoomOut } from 'react-native-reanimated';
 
-import { colors, spacing } from './theme';
+import { Text } from './text';
+import { colors, radius, softShadow, spacing } from './theme';
 
 const VISIBLE_MS = 1500;
 
@@ -11,7 +13,7 @@ interface NoticeState {
 }
 
 /** A short message that hides itself; showing it again restarts the timer. */
-export function useNotice(): [text: string | null, show: (text: string) => void] {
+export function useNotice(): [notice: NoticeState | null, show: (text: string) => void] {
   const [notice, setNotice] = useState<NoticeState | null>(null);
 
   useEffect(() => {
@@ -28,30 +30,38 @@ export function useNotice(): [text: string | null, show: (text: string) => void]
     setNotice((previous) => ({ text, id: (previous?.id ?? 0) + 1 }));
   }, []);
 
-  return [notice?.text ?? null, show];
+  return [notice, show];
 }
 
-/** Announced to screen readers as it appears. */
-export function Notice({ text }: { readonly text: string | null }) {
-  if (text === null) return null;
+/** A bubble that pops in and out; announced to screen readers as it appears. */
+export function Notice({ notice }: { readonly notice: NoticeState | null }) {
+  if (notice === null) return null;
   return (
-    <Text accessibilityLiveRegion="polite" style={styles.notice}>
-      {text}
-    </Text>
+    <Animated.View
+      key={notice.id}
+      entering={ZoomIn.springify().damping(12)}
+      exiting={ZoomOut.duration(150)}
+      pointerEvents="none"
+      style={[styles.bubble, softShadow]}
+    >
+      <Text accessibilityLiveRegion="polite" style={styles.text}>
+        {notice.text}
+      </Text>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  notice: {
+  bubble: {
     position: 'absolute',
-    top: '42%',
+    top: '40%',
     alignSelf: 'center',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 16,
-    overflow: 'hidden',
-    color: colors.text,
-    fontSize: 16,
-    backgroundColor: colors.scrim,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm + 2,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    borderColor: colors.accentSoft,
+    backgroundColor: colors.surface,
   },
+  text: { color: colors.accent, fontSize: 16, fontWeight: '800' },
 });

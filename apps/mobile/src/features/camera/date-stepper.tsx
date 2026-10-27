@@ -1,9 +1,10 @@
 import type { CalendarDate } from '@fant/filters';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { IconButton } from '../../ui/icon-button';
 import { colors, spacing } from '../../ui/theme';
 import { stepDate } from './calendar';
+import { Text } from '../../ui/text';
 
 const FIELDS = [
   { field: 'year', label: '年' },

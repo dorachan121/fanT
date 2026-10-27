@@ -1,17 +1,21 @@
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
+import { FlatList, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { strings } from '../../i18n';
+import { Bouncy } from '../../ui/bouncy';
 import { confirmDestructive, showError } from '../../ui/dialogs';
 import { IconButton } from '../../ui/icon-button';
 import { ScreenHeader } from '../../ui/screen-header';
-import { colors, spacing } from '../../ui/theme';
+import { HeroEmoji } from '../../ui/hero-emoji';
+import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { importPhoto } from '../photo/import-photo';
 import { deletePhotos } from './album-db';
 import { useAlbum } from './use-album';
+import { Text } from '../../ui/text';
 
 const COLUMNS = 3;
 
@@ -22,7 +26,7 @@ export function AlbumScreen() {
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [importing, setImporting] = useState(false);
-  const size = (width - spacing.xs * (COLUMNS + 1)) / COLUMNS;
+  const size = (width - spacing.sm * (COLUMNS + 1)) / COLUMNS;
 
   const toggle = (id: string) => {
     setSelected((current) => {
@@ -101,11 +105,16 @@ export function AlbumScreen() {
         keyExtractor={(photo) => photo.id}
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.gridRow}
-        ListEmptyComponent={<Text style={styles.empty}>{strings.album.empty}</Text>}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <HeroEmoji emoji="📷" tint={colors.lavenderSoft} />
+            <Text style={styles.emptyText}>{strings.album.empty}</Text>
+          </View>
+        }
         renderItem={({ item }) => {
           const isSelected = selected.has(item.id);
           return (
-            <Pressable
+            <Bouncy
               accessibilityRole={selecting ? 'checkbox' : 'imagebutton'}
               accessibilityState={selecting ? { checked: isSelected } : undefined}
               accessibilityLabel={new Date(item.createdAt).toLocaleString('ja-JP')}
@@ -120,12 +129,20 @@ export function AlbumScreen() {
             >
               <Image
                 source={{ uri: item.outputUri, cacheKey: `${item.id}-${String(item.updatedAt)}` }}
-                style={{ width: size, height: size }}
+                style={[
+                  styles.tile,
+                  { width: size, height: size },
+                  isSelected && styles.selectedTile,
+                ]}
                 contentFit="cover"
                 recyclingKey={item.id}
               />
-              {selecting && <View style={[styles.check, isSelected && styles.checked]} />}
-            </Pressable>
+              {selecting && (
+                <View style={[styles.check, isSelected && styles.checked]}>
+                  {isSelected && <Ionicons name="heart" size={14} color={colors.accentText} />}
+                </View>
+              )}
+            </Bouncy>
           );
         }}
       />
@@ -135,23 +152,32 @@ export function AlbumScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  grid: { gap: spacing.xs, padding: spacing.xs },
-  gridRow: { gap: spacing.xs },
-  empty: {
+  grid: { gap: spacing.sm, padding: spacing.sm },
+  gridRow: { gap: spacing.sm },
+  tile: { borderRadius: radius.md, borderWidth: 3, borderColor: colors.surface },
+  selectedTile: { borderColor: colors.accent },
+  empty: { alignItems: 'center', gap: spacing.lg, marginTop: spacing.xl * 2 },
+  emptyText: {
     color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 26,
     textAlign: 'center',
-    marginTop: spacing.xl,
     paddingHorizontal: spacing.lg,
   },
   check: {
     position: 'absolute',
-    top: spacing.xs,
-    right: spacing.xs,
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    top: spacing.sm,
+    right: spacing.sm,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
     borderWidth: 2,
-    borderColor: colors.text,
+    borderColor: colors.surface,
+    backgroundColor: colors.overlay,
+    ...softShadow,
   },
   checked: { backgroundColor: colors.accent },
 });

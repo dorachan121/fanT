@@ -1,6 +1,7 @@
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import type { FrameStatsSummary } from './frame-stats.worklet';
+import { Text } from '../../ui/text';
 
 interface PerformanceOverlayProps {
   readonly stats: FrameStatsSummary | null;

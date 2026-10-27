@@ -1,14 +1,16 @@
 import { TEXT_STAMP_STYLES, type Stamp, type TextStampStyle } from '@fant/content-schema';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 import { localized, strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { Chip } from '../../ui/chip';
-import { colors, spacing } from '../../ui/theme';
+import { Bouncy } from '../../ui/bouncy';
+import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { useContent } from '../content/content-store';
 import { available } from '../content/lookup';
 import { DECO_COLORS, PEN_WIDTHS } from './deco-ops';
+import { Text, TextInput } from '../../ui/text';
 
 export function ColorPalette({
   color,
@@ -20,7 +22,7 @@ export function ColorPalette({
   return (
     <View style={styles.row}>
       {DECO_COLORS.map((candidate) => (
-        <Pressable
+        <Bouncy
           key={candidate}
           accessibilityRole="button"
           accessibilityLabel={candidate}
@@ -50,7 +52,7 @@ export function WidthPicker({
     <View style={styles.row}>
       <Text style={styles.label}>{strings.deco.width}</Text>
       {PEN_WIDTHS.map((candidate, index) => (
-        <Pressable
+        <Bouncy
           key={candidate}
           accessibilityRole="button"
           accessibilityLabel={`${strings.deco.width} ${String(index + 1)}`}
@@ -61,7 +63,7 @@ export function WidthPicker({
           }}
         >
           <View style={[styles.dot, { width: 6 + index * 6, height: 6 + index * 6 }]} />
-        </Pressable>
+        </Bouncy>
       ))}
     </View>
   );
@@ -162,31 +164,34 @@ export function TextComposer({
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
-  label: { color: colors.text, fontSize: 13, fontWeight: '600' },
+  label: { color: colors.text, fontSize: 13, fontWeight: '700' },
   swatch: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: colors.surfaceRaised,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 3,
+    borderColor: colors.surface,
+    ...softShadow,
   },
-  selectedSwatch: { borderColor: colors.text, transform: [{ scale: 1.15 }] },
+  selectedSwatch: { borderColor: colors.accent, borderWidth: 4 },
   widthButton: {
     width: 44,
     height: 44,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 22,
+    borderWidth: 2,
+    borderColor: 'transparent',
     backgroundColor: colors.surfaceRaised,
   },
-  selectedWidth: { borderWidth: 2, borderColor: colors.text },
-  dot: { borderRadius: 12, backgroundColor: colors.text },
+  selectedWidth: { borderColor: colors.accent, backgroundColor: colors.accentSoft },
+  dot: { borderRadius: 12, backgroundColor: colors.accent },
   stamps: { gap: spacing.sm },
   composer: { gap: spacing.sm },
   input: {
     minHeight: 44,
     paddingHorizontal: spacing.md,
-    borderRadius: 12,
+    borderRadius: radius.pill,
     fontSize: 16,
     backgroundColor: colors.surfaceRaised,
   },

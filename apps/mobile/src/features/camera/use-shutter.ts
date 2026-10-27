@@ -1,4 +1,3 @@
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useRef, useState, type RefObject } from 'react';
 
@@ -6,11 +5,11 @@ import type { CameraViewHandle, Lens } from '../../engine/camera-view';
 import { sleep } from '../../lib/sleep';
 import { strings } from '../../i18n';
 import { showError } from '../../ui/dialogs';
+import { haptics } from '../../ui/haptics';
 import { reportError, track } from '../analytics/analytics';
 import { ASPECT_VALUES, centerCrop } from '../photo/geometry';
 import { createPhoto } from '../photo/photo-service';
 import { newRecipe } from '../photo/recipe';
-import { useSettings } from '../settings/settings-store';
 import { useCameraSettings } from './camera-store';
 import type { CameraLook } from './use-camera-look';
 
@@ -41,13 +40,12 @@ export function useShutter({ camera, look, seed, lens, onShot }: ShutterOptions)
     if (busy.current) return;
     busy.current = true;
     const { timer, flash, aspect, beauty, mode } = useCameraSettings.getState();
-    const { shutterFeedback } = useSettings.getState();
     try {
       if (timer > 0) {
         setStatus('countdown');
         for (let remaining = timer; remaining > 0; remaining--) {
           setCountdown(remaining);
-          if (shutterFeedback) void Haptics.selectionAsync();
+          haptics.select();
           await sleep(1000);
         }
         setCountdown(null);
@@ -66,7 +64,7 @@ export function useShutter({ camera, look, seed, lens, onShot }: ShutterOptions)
           setScreenFlash(false);
         });
       // A film-advance tap (CAM-11).
-      if (shutterFeedback) void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+      haptics.press();
 
       const photo = await createPhoto({
         kind: 'camera',

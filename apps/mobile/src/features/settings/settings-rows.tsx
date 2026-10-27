@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react';
-import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
+import { Bouncy } from '../../ui/bouncy';
 import { Chip } from '../../ui/chip';
-import { colors, spacing, TOUCH_TARGET } from '../../ui/theme';
+import { Toggle } from '../../ui/toggle';
+import { colors, radius, softShadow, spacing, TOUCH_TARGET } from '../../ui/theme';
+import { Text } from '../../ui/text';
 
 export function Section({
   title,
@@ -33,7 +36,7 @@ export function SwitchRow({
   return (
     <View style={styles.row}>
       <Text style={styles.label}>{label}</Text>
-      <Switch accessibilityLabel={label} value={value} onValueChange={onChange} />
+      <Toggle label={label} value={value} onChange={onChange} />
     </View>
   );
 }
@@ -80,10 +83,10 @@ export function LinkRow({
   readonly onPress: () => void;
 }) {
   return (
-    <Pressable accessibilityRole="button" style={styles.row} onPress={onPress}>
+    <Bouncy accessibilityRole="button" squash={0.97} style={styles.row} onPress={onPress}>
       <Text style={styles.label}>{label}</Text>
-      <Text style={styles.value}>{value ?? '›'}</Text>
-    </Pressable>
+      <Text style={[styles.value, value === undefined && styles.chevron]}>{value ?? '›'}</Text>
+    </Bouncy>
   );
 }
 
@@ -99,12 +102,12 @@ export function InfoRow({ label, value }: { readonly label: string; readonly val
 const styles = StyleSheet.create({
   section: { gap: spacing.sm },
   sectionTitle: {
-    color: colors.textMuted,
-    fontSize: 13,
-    fontWeight: '700',
+    color: colors.accent,
+    fontSize: 14,
+    fontWeight: '800',
     paddingHorizontal: spacing.sm,
   },
-  card: { borderRadius: 16, overflow: 'hidden', backgroundColor: colors.surface },
+  card: { borderRadius: radius.lg, backgroundColor: colors.surface, ...softShadow },
   row: {
     minHeight: TOUCH_TARGET + 8,
     flexDirection: 'row',
@@ -113,15 +116,16 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.surfaceRaised,
+    borderBottomColor: colors.border,
   },
   choice: {
     gap: spacing.sm,
     padding: spacing.md,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.surfaceRaised,
+    borderBottomColor: colors.border,
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  label: { flexShrink: 1, color: colors.text, fontSize: 15 },
+  label: { flexShrink: 1, color: colors.text, fontSize: 15, fontWeight: '700' },
   value: { color: colors.textMuted, fontSize: 14 },
+  chevron: { color: colors.accent, fontSize: 22, fontWeight: '800' },
 });

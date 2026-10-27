@@ -1,8 +1,7 @@
 import { BEAUTY_LEVELS } from '@fant/filters';
-import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import {
   GestureDetector,
   usePinchGesture,
@@ -18,9 +17,10 @@ import { CameraView, type CameraViewHandle, type LensCapabilities } from '../../
 import { useFaceTracking } from '../../engine/face-tracking';
 import { localized, strings } from '../../i18n';
 import { IconButton } from '../../ui/icon-button';
+import { haptics } from '../../ui/haptics';
 import { Notice, useNotice } from '../../ui/notice';
 import { Slider } from '../../ui/slider';
-import { colors, spacing } from '../../ui/theme';
+import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { track } from '../analytics/analytics';
 import { useContent } from '../content/content-store';
 import { available } from '../content/lookup';
@@ -45,6 +45,7 @@ import { useCameraLook } from './use-camera-look';
 import { usePreviewRenderer } from './use-preview-renderer';
 import { useShutter } from './use-shutter';
 import { useWinkActions } from './use-wink-actions';
+import { Text } from '../../ui/text';
 
 type SheetName = 'film' | 'beauty' | 'character' | null;
 
@@ -157,7 +158,7 @@ function FilmCamera() {
     } else {
       shoot();
     }
-    void Haptics.selectionAsync();
+    haptics.select();
   });
 
   const tracking = useFaceTracking({
@@ -322,12 +323,12 @@ function FilmCamera() {
       {locked && <Text style={styles.trial}>{strings.camera.premiumTrial}</Text>}
       {shutter.status === 'capturing' && !shutter.screenFlash && (
         <View style={styles.saving} pointerEvents="none">
-          <ActivityIndicator color={colors.text} />
+          <ActivityIndicator color={colors.accent} />
           <Text style={styles.savingText}>{strings.camera.saving}</Text>
         </View>
       )}
       {shutter.screenFlash && <ScreenFlash />}
-      <Notice text={notice} />
+      <Notice notice={notice} />
       {showPerformance && (
         <PerformanceOverlay
           stats={preview.stats}
@@ -370,10 +371,32 @@ function FilmCamera() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  previewArea: { flex: 1 },
-  previewBox: { position: 'absolute', overflow: 'hidden', backgroundColor: '#000' },
-  exposure: { position: 'absolute', left: spacing.lg, right: spacing.lg, bottom: spacing.sm },
-  controls: { gap: spacing.sm, paddingTop: spacing.sm },
+  previewArea: { flex: 1, marginHorizontal: spacing.sm },
+  // The preview sits like a rounded print on the cream background.
+  previewBox: {
+    position: 'absolute',
+    overflow: 'hidden',
+    borderRadius: radius.lg,
+    backgroundColor: colors.text,
+  },
+  exposure: {
+    position: 'absolute',
+    left: spacing.lg,
+    right: spacing.lg,
+    bottom: spacing.sm,
+    padding: spacing.sm,
+    borderRadius: radius.md,
+    backgroundColor: colors.overlay,
+  },
+  controls: {
+    gap: spacing.md,
+    paddingTop: spacing.md,
+    marginTop: spacing.sm,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
+    backgroundColor: colors.surface,
+    ...softShadow,
+  },
   // Premium content can be tried in the preview (PAY-07); saving asks for premium.
   trial: {
     position: 'absolute',
@@ -381,9 +404,9 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
-    borderRadius: 12,
+    borderRadius: radius.pill,
     overflow: 'hidden',
-    color: colors.background,
+    color: colors.accentText,
     fontSize: 12,
     fontWeight: '700',
     backgroundColor: colors.premium,
@@ -395,16 +418,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
-    borderRadius: 16,
-    backgroundColor: colors.scrim,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    ...softShadow,
   },
-  savingText: { color: colors.text, fontSize: 15 },
+  savingText: { color: colors.accent, fontSize: 15, fontWeight: '700' },
   shutterRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
   },
 });

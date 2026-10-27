@@ -1,15 +1,17 @@
 import type { Film } from '@fant/content-schema';
 import { calendarDateOf, DATE_STAMP_FORMATS, formatDateStamp } from '@fant/filters';
 import { router } from 'expo-router';
-import { StyleSheet, Switch, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { localized, strings } from '../../i18n';
 import { Chip } from '../../ui/chip';
 import { Sheet } from '../../ui/sheet';
 import { Slider } from '../../ui/slider';
 import { colors, spacing } from '../../ui/theme';
+import { Toggle } from '../../ui/toggle';
 import { filmIntensityOf, useCameraSettings } from './camera-store';
 import { DateStepper } from './date-stepper';
+import { Text } from '../../ui/text';
 
 interface FilmSheetProps {
   readonly film: Film;
@@ -40,10 +42,10 @@ export function FilmSheet({ film, premium, visible, onClose }: FilmSheetProps) {
       />
       <View style={styles.row}>
         <Text style={styles.label}>{strings.film.dateStamp}</Text>
-        <Switch
-          accessibilityLabel={strings.film.dateStamp}
+        <Toggle
+          label={strings.film.dateStamp}
           value={dateStamp.enabled}
-          onValueChange={(enabled) => {
+          onChange={(enabled) => {
             update({ dateStamp: { ...dateStamp, enabled } });
           }}
         />
@@ -98,10 +100,10 @@ export function FilmSheet({ film, premium, visible, onClose }: FilmSheetProps) {
       )}
       <View style={styles.row}>
         <Text style={styles.label}>{strings.film.favorites}</Text>
-        <Switch
-          accessibilityLabel={favorite ? strings.film.removeFavorite : strings.film.addFavorite}
+        <Toggle
+          label={favorite ? strings.film.removeFavorite : strings.film.addFavorite}
           value={favorite}
-          onValueChange={() => {
+          onChange={() => {
             toggleFavorite(film.id);
           }}
         />
@@ -112,6 +114,6 @@ export function FilmSheet({ film, premium, visible, onClose }: FilmSheetProps) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  label: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  label: { color: colors.text, fontSize: 15, fontWeight: '700' },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 });

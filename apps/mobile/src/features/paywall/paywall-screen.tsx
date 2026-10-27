@@ -1,13 +1,15 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { strings } from '../../i18n';
+import { Bouncy } from '../../ui/bouncy';
 import { Button } from '../../ui/button';
 import { showError, showMessage } from '../../ui/dialogs';
+import { HeroEmoji } from '../../ui/hero-emoji';
 import { IconButton } from '../../ui/icon-button';
-import { colors, spacing } from '../../ui/theme';
+import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError, track } from '../analytics/analytics';
 import {
   purchase,
@@ -16,6 +18,7 @@ import {
   usePurchases,
   type StorePackage,
 } from '../purchases/purchases-store';
+import { Text } from '../../ui/text';
 
 /** One plan with its price, period and terms in plain view (04 §5). */
 function Plan({
@@ -32,7 +35,7 @@ function Plan({
   readonly onPress: () => void;
 }) {
   return (
-    <Pressable
+    <Bouncy
       accessibilityRole="radio"
       accessibilityState={{ checked: selected }}
       accessibilityLabel={`${title}、${price}`}
@@ -40,10 +43,13 @@ function Plan({
       style={[styles.plan, selected && styles.selectedPlan]}
       onPress={onPress}
     >
-      <Text style={styles.planTitle}>{title}</Text>
+      <Text style={styles.planTitle}>
+        {selected ? '💗 ' : ''}
+        {title}
+      </Text>
       <Text style={styles.price}>{price}</Text>
       <Text style={styles.note}>{note}</Text>
-    </Pressable>
+    </Bouncy>
   );
 }
 
@@ -104,17 +110,20 @@ export function PaywallScreen({ trigger }: { readonly trigger: string }) {
         }}
       />
       <ScrollView contentContainerStyle={[styles.content, { paddingBottom: bottom + spacing.lg }]}>
+        <HeroEmoji emoji="👑" tint={colors.lemon} />
         <Text accessibilityRole="header" style={styles.title}>
           {strings.paywall.title}
         </Text>
         <Text style={styles.lead}>
           {trigger === 'settings' ? strings.paywall.lead : strings.paywall.locked}
         </Text>
-        {strings.paywall.features.map((feature) => (
-          <Text key={feature} style={styles.feature}>
-            ✓ {feature}
-          </Text>
-        ))}
+        <View style={styles.features}>
+          {strings.paywall.features.map((feature) => (
+            <Text key={feature} style={styles.feature}>
+              {feature}
+            </Text>
+          ))}
+        </View>
         {premium ? (
           <Text style={styles.lead}>{strings.settings.premiumActive}</Text>
         ) : !available ? (
@@ -149,6 +158,7 @@ export function PaywallScreen({ trigger }: { readonly trigger: string }) {
             )}
             <Button
               label={strings.paywall.subscribe}
+              variant="premium"
               busy={busy}
               disabled={chosen === null}
               onPress={() => void buy()}
@@ -186,18 +196,32 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   close: { alignSelf: 'flex-end', margin: spacing.md },
   content: { gap: spacing.md, paddingHorizontal: spacing.lg },
-  title: { color: colors.premium, fontSize: 26, fontWeight: '800' },
-  lead: { color: colors.text, fontSize: 16, lineHeight: 24 },
-  feature: { color: colors.text, fontSize: 15 },
+  title: { color: colors.text, fontSize: 26, fontWeight: '800', textAlign: 'center' },
+  lead: {
+    color: colors.accent,
+    fontSize: 16,
+    fontWeight: '700',
+    lineHeight: 24,
+    textAlign: 'center',
+  },
+  features: {
+    gap: spacing.sm,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    ...softShadow,
+  },
+  feature: { color: colors.text, fontSize: 15, fontWeight: '700' },
   plan: {
     gap: spacing.xs,
     padding: spacing.md,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: colors.surfaceRaised,
+    borderRadius: radius.lg,
+    borderWidth: 3,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
-  selectedPlan: { borderColor: colors.accent },
-  planTitle: { color: colors.text, fontSize: 17, fontWeight: '700' },
+  selectedPlan: { borderColor: colors.accent, backgroundColor: colors.accentSoft },
+  planTitle: { color: colors.text, fontSize: 17, fontWeight: '800' },
   // Price and renewal period in large type (03 §7).
   price: { color: colors.text, fontSize: 22, fontWeight: '800' },
   note: { color: colors.textMuted, fontSize: 13, lineHeight: 19 },

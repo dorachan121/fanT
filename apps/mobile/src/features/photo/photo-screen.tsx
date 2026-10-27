@@ -1,20 +1,22 @@
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useState, type ComponentProps } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { APP_CONFIG } from '../../config';
 import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { confirmDestructive } from '../../ui/dialogs';
+import { haptics } from '../../ui/haptics';
 import { IconButton } from '../../ui/icon-button';
 import { Notice, useNotice } from '../../ui/notice';
 import { ScreenHeader } from '../../ui/screen-header';
-import { colors, spacing } from '../../ui/theme';
+import { colors, radius, spacing } from '../../ui/theme';
 import { deletePhotos } from '../album/album-db';
 import { useAlbumPhoto } from '../album/use-album';
 import { savePhoto, sharePhotoFile } from './photo-actions';
+import { Text } from '../../ui/text';
 
 interface PhotoScreenProps {
   readonly id: string;
@@ -48,7 +50,7 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
       <ScreenHeader
         title={fromCamera ? '' : new Date(photo.createdAt).toLocaleDateString('ja-JP')}
         actions={
-          <IconButton
+          <PhotoAction
             icon="trash-outline"
             label={fromCamera ? strings.photo.retake : strings.common.delete}
             onPress={() => {
@@ -68,16 +70,16 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
       </View>
       <View style={[styles.actions, { paddingBottom: bottom + spacing.md }]}>
         <View style={styles.row}>
-          <IconButton
-            icon="color-wand-outline"
+          <PhotoAction
+            icon="color-palette"
             label={strings.photo.edit}
             disabled={photo.kind !== 'camera' && photo.kind !== 'import'}
             onPress={() => {
               router.push({ pathname: '/edit/[id]', params: { id: photo.id } });
             }}
           />
-          <IconButton
-            icon="brush-outline"
+          <PhotoAction
+            icon="brush"
             label={strings.photo.deco}
             disabled={photo.recipe === null}
             onPress={() => {
@@ -85,16 +87,16 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
             }}
           />
           {APP_CONFIG.apiBaseUrl !== null && (
-            <IconButton
-              icon="planet-outline"
+            <PhotoAction
+              icon="sparkles"
               label={strings.photo.ai}
               onPress={() => {
                 router.push({ pathname: '/ai/styles', params: { photoId: photo.id } });
               }}
             />
           )}
-          <IconButton
-            icon="share-outline"
+          <PhotoAction
+            icon="share-social"
             label={strings.common.share}
             onPress={() => {
               void sharePhotoFile(photo);
@@ -108,7 +110,9 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
             setSaving(true);
             void savePhoto(photo)
               .then((saved) => {
-                if (saved) showNotice(strings.photo.saved);
+                if (!saved) return;
+                haptics.success();
+                showNotice(strings.photo.saved);
               })
               .finally(() => {
                 setSaving(false);
@@ -116,26 +120,55 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
           }}
         />
       </View>
-      <Notice text={notice} />
+      <Notice notice={notice} />
+    </View>
+  );
+}
+
+/** A round action with its name underneath (the button itself carries the label). */
+function PhotoAction(props: ComponentProps<typeof IconButton>) {
+  return (
+    <View style={styles.action}>
+      <IconButton {...props} size={26} style={styles.actionButton} />
+      <Text
+        accessibilityElementsHidden
+        importantForAccessibility="no"
+        style={[styles.actionLabel, props.disabled === true && styles.disabledLabel]}
+      >
+        {props.label}
+      </Text>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  imageArea: { flex: 1 },
+  // The photo as a framed print.
+  imageArea: {
+    flex: 1,
+    marginHorizontal: spacing.md,
+    borderRadius: radius.lg,
+    borderWidth: 6,
+    borderColor: colors.surface,
+    overflow: 'hidden',
+    backgroundColor: colors.surface,
+  },
   aiLabel: {
     position: 'absolute',
     right: spacing.md,
     bottom: spacing.md,
     paddingHorizontal: spacing.sm,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: radius.pill,
     overflow: 'hidden',
-    color: colors.text,
+    color: colors.onPhoto,
     fontSize: 11,
     backgroundColor: colors.scrim,
   },
-  actions: { gap: spacing.md, paddingHorizontal: spacing.md, paddingTop: spacing.md },
+  actions: { gap: spacing.md, paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   row: { flexDirection: 'row', justifyContent: 'space-around' },
+  action: { alignItems: 'center', gap: spacing.xs },
+  actionButton: { width: 56, height: 56, borderRadius: 28, backgroundColor: colors.accentSoft },
+  actionLabel: { color: colors.text, fontSize: 12, fontWeight: '700' },
+  disabledLabel: { opacity: 0.35 },
 });

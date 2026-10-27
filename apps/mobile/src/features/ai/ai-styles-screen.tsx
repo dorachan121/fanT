@@ -1,17 +1,19 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Modal, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { localized, strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { ScreenHeader } from '../../ui/screen-header';
-import { colors, spacing } from '../../ui/theme';
+import { Bouncy } from '../../ui/bouncy';
+import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { useContent } from '../content/content-store';
 import { available } from '../content/lookup';
 import { useSettings } from '../settings/settings-store';
 import { useAi } from './ai-store';
 import { AI_CONSENT_VERSION } from './consent';
+import { Text } from '../../ui/text';
 
 /** Consent before the first generation (S-42, AI-03). */
 function ConsentModal({
@@ -73,7 +75,7 @@ export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
       <ScreenHeader
         title={strings.ai.chooseStyle}
         actions={
-          <Pressable
+          <Bouncy
             accessibilityRole="button"
             style={styles.balance}
             onPress={() => {
@@ -83,7 +85,7 @@ export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
             <Text style={styles.balanceText}>
               {credits === null ? '…' : strings.ai.credits(credits.total)}
             </Text>
-          </Pressable>
+          </Bouncy>
         }
       />
       <FlatList
@@ -91,8 +93,9 @@ export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
         keyExtractor={(style) => style.id}
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
-          <Pressable
+          <Bouncy
             accessibilityRole="button"
+            squash={0.96}
             accessibilityLabel={`${localized(item.name)}、${strings.ai.cost(item.credits)}`}
             accessibilityHint={localized(item.description)}
             style={styles.card}
@@ -103,7 +106,7 @@ export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
             <Text style={styles.name}>{localized(item.name)}</Text>
             <Text style={styles.description}>{localized(item.description)}</Text>
             <Text style={styles.cost}>{strings.ai.cost(item.credits)}</Text>
-          </Pressable>
+          </Bouncy>
         )}
       />
       <ConsentModal
@@ -125,20 +128,41 @@ export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
-  balance: { justifyContent: 'center', paddingHorizontal: spacing.sm, minHeight: 48 },
-  balanceText: { color: colors.premium, fontSize: 14, fontWeight: '700' },
+  balance: {
+    justifyContent: 'center',
+    minHeight: 40,
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.pill,
+    backgroundColor: colors.lavenderSoft,
+  },
+  balanceText: { color: colors.text, fontSize: 14, fontWeight: '800' },
   list: { gap: spacing.md, padding: spacing.md },
-  card: { gap: spacing.xs, padding: spacing.md, borderRadius: 16, backgroundColor: colors.surface },
-  name: { color: colors.text, fontSize: 18, fontWeight: '700' },
+  card: {
+    gap: spacing.xs,
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surface,
+    ...softShadow,
+  },
+  name: { color: colors.text, fontSize: 18, fontWeight: '800' },
   description: { color: colors.textMuted, fontSize: 14 },
-  cost: { color: colors.accent, fontSize: 13, fontWeight: '700' },
+  cost: {
+    alignSelf: 'flex-start',
+    paddingHorizontal: spacing.sm,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    color: colors.accent,
+    fontSize: 13,
+    fontWeight: '800',
+    backgroundColor: colors.accentSoft,
+  },
   scrim: { flex: 1, justifyContent: 'center', padding: spacing.lg, backgroundColor: colors.scrim },
   dialog: {
     gap: spacing.md,
     padding: spacing.lg,
-    borderRadius: 20,
+    borderRadius: radius.lg,
     backgroundColor: colors.surface,
   },
-  title: { color: colors.text, fontSize: 18, fontWeight: '700' },
+  title: { color: colors.text, fontSize: 18, fontWeight: '800' },
   body: { color: colors.text, fontSize: 14, lineHeight: 21 },
 });

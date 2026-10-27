@@ -1,15 +1,17 @@
 import type { Character } from '@fant/content-schema';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 
 import { CharacterPreview } from '../../engine/character-preview';
 import { localized, strings } from '../../i18n';
 import { Chip } from '../../ui/chip';
 import { Sheet } from '../../ui/sheet';
-import { colors, spacing } from '../../ui/theme';
+import { Bouncy } from '../../ui/bouncy';
+import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { findCharacter } from '../content/lookup';
 import { isLocked } from '../purchases/purchases-store';
 import { useCameraSettings } from './camera-store';
 import { useContent } from '../content/content-store';
+import { Text } from '../../ui/text';
 
 const SIZE = 64;
 
@@ -44,7 +46,7 @@ export function CharacterStrip({
         const name = localized(item.name);
         const locked = isLocked(item, premium);
         return (
-          <Pressable
+          <Bouncy
             accessibilityRole="button"
             accessibilityLabel={locked ? `${name}（${strings.common.premium}）` : name}
             accessibilityState={{ selected }}
@@ -63,7 +65,7 @@ export function CharacterStrip({
             <Text numberOfLines={1} style={[styles.name, selected && styles.selectedName]}>
               {name}
             </Text>
-          </Pressable>
+          </Bouncy>
         );
       }}
     />
@@ -108,22 +110,28 @@ export function CharacterSheet({
 }
 
 const styles = StyleSheet.create({
-  list: { gap: spacing.sm, paddingHorizontal: spacing.md },
+  list: { gap: spacing.sm, paddingHorizontal: spacing.md, paddingVertical: spacing.xs },
   item: { width: SIZE + 8, alignItems: 'center', gap: 4 },
   thumb: {
     width: SIZE,
     height: SIZE,
     borderRadius: SIZE / 2,
-    borderWidth: 2,
-    borderColor: 'transparent',
+    borderWidth: 3,
+    borderColor: colors.surface,
     overflow: 'hidden',
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: colors.lavenderSoft,
+    ...softShadow,
   },
-  selected: { borderColor: colors.text },
+  selected: { borderColor: colors.accent },
   lock: { position: 'absolute', top: 2, left: 6, fontSize: 11 },
   name: { color: colors.textMuted, fontSize: 11 },
-  selectedName: { color: colors.text, fontWeight: '700' },
-  label: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  selectedName: { color: colors.accent, fontWeight: '800' },
+  label: { color: colors.text, fontSize: 15, fontWeight: '700' },
   variants: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  preview: { alignItems: 'center' },
+  preview: {
+    alignItems: 'center',
+    padding: spacing.md,
+    borderRadius: radius.lg,
+    backgroundColor: colors.lavenderSoft,
+  },
 });

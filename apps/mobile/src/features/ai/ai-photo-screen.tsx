@@ -1,13 +1,14 @@
 import { File, Paths } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
-import { FlatList, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { FlatList, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { showError } from '../../ui/dialogs';
 import { ScreenHeader } from '../../ui/screen-header';
-import { colors, spacing } from '../../ui/theme';
+import { Bouncy } from '../../ui/bouncy';
+import { colors, radius, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { useAlbum } from '../album/use-album';
 import { pickImageFile } from '../photo/import-photo';
@@ -18,7 +19,7 @@ const COLUMNS = 3;
 export function AiPhotoScreen() {
   const photos = useAlbum().filter(({ kind }) => kind !== 'ai');
   const { width } = useWindowDimensions();
-  const size = (width - spacing.xs * (COLUMNS + 1)) / COLUMNS;
+  const size = (width - spacing.sm * (COLUMNS + 1)) / COLUMNS;
 
   const choose = (uri: string) => {
     router.push({ pathname: '/ai/styles', params: { uri } });
@@ -55,7 +56,7 @@ export function AiPhotoScreen() {
         contentContainerStyle={styles.grid}
         columnWrapperStyle={styles.row}
         renderItem={({ item }) => (
-          <Pressable
+          <Bouncy
             accessibilityRole="imagebutton"
             accessibilityLabel={new Date(item.createdAt).toLocaleString('ja-JP')}
             onPress={() => {
@@ -64,10 +65,10 @@ export function AiPhotoScreen() {
           >
             <Image
               source={{ uri: item.outputUri, cacheKey: `${item.id}-${String(item.updatedAt)}` }}
-              style={{ width: size, height: size }}
+              style={[styles.tile, { width: size, height: size }]}
               contentFit="cover"
             />
-          </Pressable>
+          </Bouncy>
         )}
       />
     </View>
@@ -77,6 +78,7 @@ export function AiPhotoScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   actions: { padding: spacing.md },
-  grid: { gap: spacing.xs, padding: spacing.xs },
-  row: { gap: spacing.xs },
+  grid: { gap: spacing.sm, padding: spacing.sm },
+  row: { gap: spacing.sm },
+  tile: { borderRadius: radius.md, borderWidth: 3, borderColor: colors.surface },
 });

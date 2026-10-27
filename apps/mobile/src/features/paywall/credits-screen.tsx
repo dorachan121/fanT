@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { strings } from '../../i18n';
@@ -8,10 +8,12 @@ import { sleep } from '../../lib/sleep';
 import { Button } from '../../ui/button';
 import { showError, showMessage } from '../../ui/dialogs';
 import { ScreenHeader } from '../../ui/screen-header';
+import { HeroEmoji } from '../../ui/hero-emoji';
 import { colors, spacing } from '../../ui/theme';
 import { useAi } from '../ai/ai-store';
 import { reportError } from '../analytics/analytics';
 import { purchase, usePurchases } from '../purchases/purchases-store';
+import { Text } from '../../ui/text';
 
 /** Credit packs and the annual plan's monthly credits (S-61, PAY-03). */
 export function CreditsScreen() {
@@ -50,6 +52,7 @@ export function CreditsScreen() {
       contentContainerStyle={[styles.content, { paddingBottom: bottom + spacing.lg }]}
     >
       <ScreenHeader title={strings.credits.title} />
+      <HeroEmoji emoji="💎" tint={colors.lavenderSoft} />
       <Text style={styles.balance}>
         {credits === null ? '…' : strings.credits.balance(credits.total)}
       </Text>
@@ -58,6 +61,7 @@ export function CreditsScreen() {
         <Button
           key={pack.id}
           label={`${strings.credits.pack(pack.credits ?? 0)} ${pack.priceString}`}
+          variant="premium"
           busy={busy === pack.id}
           disabled={busy !== null}
           onPress={() => void buy(pack.id)}
@@ -78,6 +82,6 @@ export function CreditsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.background },
   content: { gap: spacing.md, paddingHorizontal: spacing.md },
-  balance: { color: colors.premium, fontSize: 24, fontWeight: '800', textAlign: 'center' },
+  balance: { color: colors.accent, fontSize: 24, fontWeight: '800', textAlign: 'center' },
   note: { color: colors.textMuted, fontSize: 13, textAlign: 'center' },
 });

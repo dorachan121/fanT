@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { Linking, StyleSheet, View } from 'react-native';
 
 import { useCameraPermission } from '../../engine/camera-view';
 import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
+import { HeroEmoji } from '../../ui/hero-emoji';
+import { Text } from '../../ui/text';
 import { colors, spacing } from '../../ui/theme';
 
 /**
@@ -16,11 +18,13 @@ export function CameraPermissionGate({ children }: { readonly children: ReactNod
   const { permission } = strings.camera;
   return (
     <View style={styles.container}>
+      <HeroEmoji emoji={canRequestPermission ? '📷' : '🥺'} />
       <Text style={styles.message}>
         {canRequestPermission ? permission.request : permission.denied}
       </Text>
       <Button
         label={canRequestPermission ? permission.allow : permission.openSettings}
+        style={styles.button}
         onPress={() => {
           void (canRequestPermission ? requestPermission() : Linking.openSettings());
         }}
@@ -38,5 +42,12 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
     backgroundColor: colors.background,
   },
-  message: { color: colors.text, fontSize: 16, textAlign: 'center', lineHeight: 24 },
+  message: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+    lineHeight: 26,
+  },
+  button: { alignSelf: 'stretch' },
 });

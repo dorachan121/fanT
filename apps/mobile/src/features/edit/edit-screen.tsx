@@ -1,7 +1,7 @@
 import { calendarDateOf, DATE_STAMP_ORANGE, type AdjustParamName } from '@fant/filters';
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PhotoCanvas } from '../../engine/photo-canvas';
@@ -12,7 +12,8 @@ import { showError } from '../../ui/dialogs';
 import { IconButton } from '../../ui/icon-button';
 import { ScreenHeader } from '../../ui/screen-header';
 import { Slider } from '../../ui/slider';
-import { colors, spacing } from '../../ui/theme';
+import { colors, radius, softShadow, spacing } from '../../ui/theme';
+import { Toggle } from '../../ui/toggle';
 import { reportError } from '../analytics/analytics';
 import { BeautyControls } from '../camera/beauty-sheet';
 import { FilmStrip } from '../camera/film-strip';
@@ -24,6 +25,7 @@ import { saveEdit } from '../photo/photo-service';
 import { ASPECT_RATIOS, FULL_CROP, type AspectRatio, type PhotoRecipe } from '../photo/recipe';
 import { isLocked, usePremium } from '../purchases/purchases-store';
 import { usePhotoSession } from './use-photo-session';
+import { Text } from '../../ui/text';
 
 type Tab = 'film' | 'beauty' | 'adjust' | 'crop';
 const TABS: readonly Tab[] = ['film', 'beauty', 'adjust', 'crop'];
@@ -49,7 +51,7 @@ export function EditScreen({ id }: { readonly id: string }) {
     return (
       <View style={styles.container}>
         <ScreenHeader title={strings.edit.title} />
-        <ActivityIndicator style={styles.loading} color={colors.text} />
+        <ActivityIndicator style={styles.loading} color={colors.accent} />
       </View>
     );
   }
@@ -152,10 +154,10 @@ export function EditScreen({ id }: { readonly id: string }) {
               />
               <View style={styles.row}>
                 <Text style={styles.label}>{strings.film.dateStamp}</Text>
-                <Switch
-                  accessibilityLabel={strings.film.dateStamp}
+                <Toggle
+                  label={strings.film.dateStamp}
                   value={recipe.dateStamp !== null}
-                  onValueChange={(enabled) => {
+                  onChange={(enabled) => {
                     update({
                       dateStamp: enabled
                         ? {
@@ -254,11 +256,14 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
+    borderTopLeftRadius: radius.lg,
+    borderTopRightRadius: radius.lg,
     backgroundColor: colors.surface,
+    ...softShadow,
   },
   tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   controls: { maxHeight: 220 },
   controlsContent: { gap: spacing.md },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  label: { color: colors.text, fontSize: 15, fontWeight: '600' },
+  label: { color: colors.text, fontSize: 15, fontWeight: '700' },
 });
