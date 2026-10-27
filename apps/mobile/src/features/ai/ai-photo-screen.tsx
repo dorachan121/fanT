@@ -1,0 +1,82 @@
+import { File, Paths } from 'expo-file-system';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
+import { FlatList, Pressable, StyleSheet, useWindowDimensions, View } from 'react-native';
+
+import { strings } from '../../i18n';
+import { Button } from '../../ui/button';
+import { showError } from '../../ui/dialogs';
+import { ScreenHeader } from '../../ui/screen-header';
+import { colors, spacing } from '../../ui/theme';
+import { reportError } from '../analytics/analytics';
+import { useAlbum } from '../album/use-album';
+import { pickImageFile } from '../photo/import-photo';
+
+const COLUMNS = 3;
+
+/** Choose the photo to transform, from the album or the device (S-40, AI-01). */
+export function AiPhotoScreen() {
+  const photos = useAlbum().filter(({ kind }) => kind !== 'ai');
+  const { width } = useWindowDimensions();
+  const size = (width - spacing.xs * (COLUMNS + 1)) / COLUMNS;
+
+  const choose = (uri: string) => {
+    router.push({ pathname: '/ai/styles', params: { uri } });
+  };
+
+  const pickFromDevice = async () => {
+    try {
+      const picked = await pickImageFile();
+      if (picked === null) return;
+      // A private copy: the picker's file may be removed when the app is backgrounded.
+      const copy = new File(Paths.cache, `ai-source-${String(Date.now())}.jpg`);
+      picked.copySync(copy);
+      choose(copy.uri);
+    } catch (error) {
+      reportError(error, 'ai.pick');
+      showError();
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <ScreenHeader title={strings.ai.choosePhoto} />
+      <View style={styles.actions}>
+        <Button
+          label={strings.ai.fromDevice}
+          variant="secondary"
+          onPress={() => void pickFromDevice()}
+        />
+      </View>
+      <FlatList
+        data={photos}
+        numColumns={COLUMNS}
+        keyExtractor={(photo) => photo.id}
+        contentContainerStyle={styles.grid}
+        columnWrapperStyle={styles.row}
+        renderItem={({ item }) => (
+          <Pressable
+            accessibilityRole="imagebutton"
+            accessibilityLabel={new Date(item.createdAt).toLocaleString('ja-JP')}
+            onPress={() => {
+              choose(item.outputUri);
+            }}
+          >
+            <Image
+              source={{ uri: item.outputUri, cacheKey: `${item.id}-${String(item.updatedAt)}` }}
+              style={{ width: size, height: size }}
+              contentFit="cover"
+            />
+          </Pressable>
+        )}
+      />
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  actions: { padding: spacing.md },
+  grid: { gap: spacing.xs, padding: spacing.xs },
+  row: { gap: spacing.xs },
+});

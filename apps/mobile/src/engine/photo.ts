@@ -17,6 +17,7 @@ import { compose, scale, toMatrix3 } from './affine.worklet';
 import { drawCharacter, type CharacterDrawing } from './draw-character';
 import { drawDeco, type DecoAssets } from './draw-deco';
 import { drawFiltered } from './draw-filtered';
+import { drawStyledText } from './draw-text';
 import { filterEffects } from './filter-effects';
 import { loadFilmLut } from './lut';
 import { detectFacesInImage } from './still-faces';
@@ -162,6 +163,42 @@ export function resizeJpeg(bytes: Uint8Array, maxLongEdge: number): Uint8Array {
       surface.dispose();
     }
   } finally {
+    image.dispose();
+  }
+}
+
+/**
+ * Marks an AI-generated image with a small visible "AI" badge (AI-06; the visible
+ * mark is the part kept even if the metadata approach changes, Q-09).
+ */
+export function markAiGenerated(bytes: Uint8Array): {
+  readonly jpeg: Uint8Array;
+  readonly width: number;
+  readonly height: number;
+} {
+  const image = decodeImage(bytes);
+  const width = image.width();
+  const height = image.height();
+  const surface = Skia.Surface.MakeOffscreen(width, height) ?? Skia.Surface.Make(width, height);
+  if (surface === null) throw new Error('Failed to allocate a surface');
+  try {
+    const canvas = surface.getCanvas();
+    canvas.drawImage(image, 0, 0);
+    const size = Math.max(14, Math.min(width, height) * 0.035);
+    drawStyledText(canvas, 'AI', 'bubble', '#555555', {
+      center: { x: width - size * 1.6, y: height - size * 1.2 },
+      fontSize: size,
+      rotation: 0,
+    });
+    surface.flush();
+    const snapshot = surface.makeImageSnapshot();
+    try {
+      return { jpeg: encodeJpeg(snapshot), width, height };
+    } finally {
+      snapshot.dispose();
+    }
+  } finally {
+    surface.dispose();
     image.dispose();
   }
 }

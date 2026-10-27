@@ -30,3 +30,8 @@ export function confirmDestructive(
 export function showError(message: string = strings.common.errorMessage): void {
   Alert.alert(strings.common.errorTitle, message);
 }
+
+/** A plain message, e.g. a confirmation that something worked. */
+export function showMessage(message: string): void {
+  Alert.alert(message);
+}
