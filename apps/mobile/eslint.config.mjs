@@ -6,6 +6,11 @@ export default [
   ...typescriptConfig({ tsconfigRootDir: import.meta.dirname }),
   reactHooks.configs.flat.recommended,
   {
+    // Build scripts run on Node.js.
+    files: ['scripts/**/*.mjs'],
+    languageOptions: { globals: { console: 'readonly', process: 'readonly' } },
+  },
+  {
     // Camera and drawing libraries stay inside src/engine (03 §8), so upgrading them
     // touches one place.
     files: ['src/**/*.{ts,tsx}'],
