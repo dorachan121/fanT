@@ -76,9 +76,10 @@ half3 leakColor(float2 uv) {
 half sparkleAt(float2 coord, float shortEdge) {
   float cellSize = SPARKLE_CELL * shortEdge;
   float2 cell = floor(coord / cellSize);
-  if (hash(cell, seed + 0.37) > 0.35) return 0.0;
+  if (hash(cell, seed + 0.37) > 0.2) return 0.0;
   float2 center = (cell + 0.25 + 0.5 * float2(hash(cell, seed + 0.11), hash(cell, seed + 0.23))) * cellSize;
-  half brightness = smoothstep(0.65, 0.95, dot(sampleRgb(center), LUMA));
+  // Bright areas only (lights, sky, white clothes), sparse.
+  half brightness = smoothstep(0.76, 0.95, dot(sampleRgb(center), LUMA));
   float2 d = abs(coord - center) / (cellSize * 0.25);
   float star = max(max(0.0, 1.0 - d.x) * exp(-d.y * 12.0), max(0.0, 1.0 - d.y) * exp(-d.x * 12.0));
   float core = exp(-dot(d, d) * 20.0);
