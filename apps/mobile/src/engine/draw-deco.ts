@@ -10,6 +10,7 @@ import {
   type SkImage,
   type SkPath,
   type SkPicture,
+  type SkTypefaceFontProvider,
 } from '@shopify/react-native-skia';
 
 import type { DecoLayer, DecoStroke } from '../features/photo/recipe';
@@ -22,6 +23,8 @@ export interface DecoAssets {
   readonly stamps: ReadonlyMap<string, Stamp>;
   /** Decoded image stamps by asset hash. */
   readonly images: Readonly<Record<string, SkImage>>;
+  /** Bundled fonts for text (DCO-06); text uses the system font without them. */
+  readonly fonts?: SkTypefaceFontProvider | null;
 }
 
 /** A smooth path through the stroke's points (quadratic curves through midpoints). */
@@ -113,11 +116,14 @@ function drawLayer(
   const center = { x: layer.x * width, y: layer.y * height };
   const size = layer.size * shortEdge;
   if (layer.type === 'text') {
-    drawStyledText(canvas, layer.text, layer.style, layer.color, {
-      center,
-      fontSize: size,
-      rotation: layer.rotation,
-    });
+    drawStyledText(
+      canvas,
+      layer.text,
+      layer.style,
+      layer.color,
+      { center, fontSize: size, rotation: layer.rotation },
+      { font: layer.font, fonts: assets.fonts ?? null },
+    );
     return;
   }
   const stamp = assets.stamps.get(layer.stampId);

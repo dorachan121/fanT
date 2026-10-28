@@ -56,14 +56,30 @@ export const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
 /** Uploads are scaled to this long edge first, so nothing larger leaves the device. */
 export const UPLOAD_LONG_EDGE = 1024;
 
-export const createGenerationRequestSchema = z.strictObject({
-  styleId: z.string().regex(/^[a-z0-9][a-z0-9_]{0,47}$/),
-  /** The photo as base64 JPEG. */
-  image: z
+/** Largest accepted mask: a small PNG of the area to erase. */
+export const MAX_MASK_BYTES = 512 * 1024;
+
+/**
+ * AI tools beside the styles (AI-10, AI-11), with their prices in credits. `erase`
+ * takes a mask of what to remove; `upscale` doubles the resolution.
+ */
+export const AI_TOOLS = { erase: { credits: 1 }, upscale: { credits: 1 } } as const;
+export type AiTool = keyof typeof AI_TOOLS;
+
+const base64 = (maxBytes: number) =>
+  z
     .string()
     .min(1)
-    .max(Math.ceil((MAX_UPLOAD_BYTES * 4) / 3) + 4)
-    .regex(/^[A-Za-z0-9+/]+={0,2}$/, 'base64'),
+    .max(Math.ceil((maxBytes * 4) / 3) + 4)
+    .regex(/^[A-Za-z0-9+/]+={0,2}$/, 'base64');
+
+export const createGenerationRequestSchema = z.strictObject({
+  /** An AI style from the content, or an AI tool (`AI_TOOLS`). */
+  styleId: z.string().regex(/^[a-z0-9][a-z0-9_]{0,47}$/),
+  /** The photo as base64 JPEG. */
+  image: base64(MAX_UPLOAD_BYTES),
+  /** For `erase`: base64 PNG, white where to remove, the photo's size. */
+  mask: base64(MAX_MASK_BYTES).optional(),
 });
 
 export const GENERATION_STATUSES = [

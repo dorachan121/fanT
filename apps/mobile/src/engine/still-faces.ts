@@ -19,6 +19,8 @@ export function detectFacesInImage(uri: string): DetectedFace[] {
   detector ??= createImageFaceDetector({
     performanceMode: 'accurate',
     runLandmarks: true,
+    // Makeup follows the feature outlines (BTY-07).
+    runContours: true,
     minFaceSize: 0.1,
   });
   const faces = detector.detectFaces(uri);
@@ -26,6 +28,9 @@ export function detectFacesInImage(uri: string): DetectedFace[] {
     const copied = faces.map((face) => ({
       bounds: { ...face.bounds },
       landmarks: face.landmarks === undefined ? undefined : { ...face.landmarks },
+      contours: face.contours === undefined ? undefined : { ...face.contours },
+      yawAngle: face.yawAngle,
+      pitchAngle: face.pitchAngle,
     }));
     cached = { uri, faces: copied };
     return copied;

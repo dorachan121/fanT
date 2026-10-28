@@ -4,8 +4,13 @@ import {
   BEAUTY_LEVELS,
   BEAUTY_PARAM_RANGES,
   DATE_STAMP_FORMATS,
+  BODY_PARAM_RANGES,
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_BODY_PARAMS,
+  DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
+  DETAIL_PARAM_RANGES,
+  MAX_LOCAL_ADJUSTMENTS,
   FACE_SHAPE_PARAM_RANGES,
   type AdjustParams,
   type FaceShapeParams,
@@ -14,21 +19,28 @@ import {
 } from '@fant/filters';
 import { z } from 'zod';
 
+import { makeupSchema, NO_MAKEUP, type Makeup } from '../makeup/makeup';
+import { hairSchema, healSpotSchema, MAX_HEAL_SPOTS, NO_HAIR_COLOR } from '../retouch/retouch';
 import { FRAME_TYPES } from './frames';
+import { DECO_FONTS } from '../deco/deco-fonts';
 
 /** Limits that keep a recipe small; the editor stops adding past them (DCO-*). */
 export const MAX_STROKE_POINTS = 2000;
 export const MAX_DECO_LAYERS = 500;
 
-/** Numbers within each parameter's range, e.g. the beauty or adjust parameters. */
+/**
+ * Numbers within each parameter's range, e.g. the beauty or adjust parameters. A
+ * parameter added in a later version reads as its default, so stored recipes and
+ * settings stay valid.
+ */
 export function paramsSchema<Name extends string>(ranges: Readonly<Record<Name, ParamRange>>) {
   return z.strictObject(
     Object.fromEntries(
-      Object.entries<ParamRange>(ranges).map(([name, { min, max }]) => [
+      Object.entries<ParamRange>(ranges).map(([name, { min, max, defaultValue }]) => [
         name,
-        z.number().min(min).max(max),
+        z.number().min(min).max(max).default(defaultValue),
       ]),
-    ) as Record<Name, z.ZodNumber>,
+    ) as Record<Name, z.ZodDefault<z.ZodNumber>>,
   );
 }
 
@@ -67,6 +79,7 @@ const decoTextSchema = z.strictObject({
   type: z.literal('text'),
   text: z.string().min(1).max(40),
   style: z.enum(TEXT_STAMP_STYLES),
+  font: z.enum(DECO_FONTS).default('system'),
   color: hexColorSchema,
   x: position,
   y: position,
@@ -94,6 +107,18 @@ const cropSchema = z
 export type Crop = z.infer<typeof cropSchema>;
 
 export const FULL_CROP: Crop = { x: 0, y: 0, width: 1, height: 1 };
+
+const centeredUnit = z.number().min(-1).max(1);
+
+const localAdjustmentSchema = z.strictObject({
+  x: unit,
+  y: unit,
+  radius: z.number().min(0.02).max(1),
+  feather: unit,
+  brightness: centeredUnit,
+  saturation: centeredUnit,
+  temperature: centeredUnit,
+});
 
 export const calendarDateSchema = z.strictObject({
   year: z.number().int().min(1900).max(2099),
@@ -129,6 +154,20 @@ const photoRecipeSchema = z.strictObject({
     crop: cropSchema,
   }),
   deco: z.array(decoLayerSchema).max(MAX_DECO_LAYERS),
+  /** Detailed adjustments (EDT-07–09); missing in older recipes. */
+  detail: paramsSchema(DETAIL_PARAM_RANGES).default(DEFAULT_DETAIL_PARAMS),
+  /** Local areas (EDT-10); missing in older recipes. */
+  local: z.array(localAdjustmentSchema).max(MAX_LOCAL_ADJUSTMENTS).default([]),
+  /** Blemishes smoothed away (BTY-11); missing in older recipes. */
+  heal: z.array(healSpotSchema).max(MAX_HEAL_SPOTS).default([]),
+  /** Body reshaping (EDT-13); missing in older recipes. */
+  body: paramsSchema(BODY_PARAM_RANGES).default(DEFAULT_BODY_PARAMS),
+  /** Background blur behind the people (EDT-11); missing in older recipes. */
+  backgroundBlur: z.number().min(0).max(1).default(0),
+  /** Hair colour (EDT-12); missing in older recipes. */
+  hair: hairSchema.default(NO_HAIR_COLOR),
+  /** Makeup and touch-ups (BTY-07/09/10); missing in older recipes. */
+  makeup: makeupSchema.default(NO_MAKEUP),
   /** Face fine-tuning (BTY-04); recipes saved without it leave faces as they are. */
   faceShape: paramsSchema(FACE_SHAPE_PARAM_RANGES).default(DEFAULT_FACE_SHAPE_PARAMS),
   /** Added after the first release: recipes saved without it have no frame. */
@@ -151,6 +190,7 @@ export function newRecipe(options: {
   readonly crop: Crop;
   readonly adjust?: AdjustParams;
   readonly faceShape?: FaceShapeParams;
+  readonly makeup?: Makeup;
 }): PhotoRecipe {
   return {
     version: 1,
@@ -164,6 +204,13 @@ export function newRecipe(options: {
     deco: [],
     frame: null,
     faceShape: options.faceShape ?? DEFAULT_FACE_SHAPE_PARAMS,
+    makeup: options.makeup ?? NO_MAKEUP,
+    heal: [],
+    body: DEFAULT_BODY_PARAMS,
+    backgroundBlur: 0,
+    hair: NO_HAIR_COLOR,
+    detail: DEFAULT_DETAIL_PARAMS,
+    local: [],
   };
 }
 

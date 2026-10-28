@@ -36,6 +36,39 @@ export {
 } from './date-stamp/date-stamp';
 export { DATE_STAMP_SHADER_NAME, DATE_STAMP_SHADER_SOURCE } from './date-stamp/date-stamp-shader';
 export {
+  BODY_PARAM_RANGES,
+  BODY_SHADER_NAME,
+  BODY_SHADER_SOURCE,
+  DEFAULT_BODY_PARAMS,
+  normalizeBodyParams,
+  reshapesBody,
+  toBodyUniforms,
+  type BodyParamName,
+  type BodyParams,
+  type BodyUniforms,
+} from './body/body';
+export {
+  DEFAULT_DETAIL_PARAMS,
+  DETAIL_PARAM_RANGES,
+  HSL_BANDS,
+  MAX_LOCAL_ADJUSTMENTS,
+  normalizeDetailParams,
+  type DetailParamName,
+  type DetailParams,
+  type HslBand,
+  type LocalAdjustment,
+} from './detail/detail-params';
+export { DETAIL_SHADER_NAME, DETAIL_SHADER_SOURCE } from './detail/detail-shader';
+export { toDetailUniforms, type DetailUniforms } from './detail/detail-uniforms';
+export {
+  HAIR_SHADER_NAME,
+  HAIR_SHADER_SOURCE,
+  MAX_HAIR_HEADS,
+  toHairUniforms,
+  type HairHead,
+  type HairUniforms,
+} from './hair/hair';
+export {
   DEFAULT_FACE_SHAPE_PARAMS,
   FACE_SHAPE_PARAM_RANGES,
   normalizeFaceShapeParams,
@@ -50,6 +83,7 @@ export {
   type ShapedFace,
 } from './face-shape/face-shape-uniforms';
 export {
+  colorOnlyFilmParams,
   DEFAULT_FILM_PARAMS,
   FILM_PARAM_RANGES,
   normalizeFilmParams,

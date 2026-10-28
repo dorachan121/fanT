@@ -1,4 +1,5 @@
-import { router } from 'expo-router';
+import { AI_TOOLS, type AiTool } from '@fant/api-types';
+import { router, type Href } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { FlatList, Modal, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -46,29 +47,68 @@ function ConsentModal({
   );
 }
 
-/** Styles, their price and the balance (S-41, AI-02/07). */
+/** Where each tool goes: erasing first asks what to erase (AI-10/11). */
+function toolDestination(tool: AiTool, uri: string): Href {
+  return tool === 'erase'
+    ? { pathname: '/ai/erase', params: { uri } }
+    : { pathname: '/ai/generate', params: { uri, styleId: tool } };
+}
+
+const TOOL_ICONS: Record<AiTool, string> = { erase: '🧽', upscale: '🔍' };
+
+/** Styles and tools, their price and the balance (S-41, AI-02/07/10/11). */
 export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
   const aiStyles = available(useContent((state) => state.manifest).aiStyles);
   const credits = useAi((state) => state.credits);
   const consentVersion = useSettings((state) => state.aiConsentVersion);
   const { bottom } = useSafeAreaInsets();
-  const [pending, setPending] = useState<string | null>(null);
+  const [pending, setPending] = useState<Href | null>(null);
 
   useEffect(() => {
     void useAi.getState().refreshCredits();
   }, []);
 
-  const generate = (styleId: string, cost: number) => {
+  /** Asks for consent and checks the balance before going on to `destination`. */
+  const start = (destination: Href, cost: number) => {
     if (consentVersion !== AI_CONSENT_VERSION) {
-      setPending(styleId);
+      setPending(destination);
       return;
     }
     if (credits !== null && credits.total < cost) {
       router.push('/credits');
       return;
     }
-    router.push({ pathname: '/ai/generate', params: { uri: sourceUri, styleId } });
+    router.push(destination);
   };
+  const generate = (styleId: string, cost: number) => {
+    start({ pathname: '/ai/generate', params: { uri: sourceUri, styleId } }, cost);
+  };
+
+  const tools = (
+    <View style={styles.tools}>
+      {(Object.keys(AI_TOOLS) as AiTool[]).map((tool) => (
+        <Bouncy
+          key={tool}
+          accessibilityRole="button"
+          squash={0.96}
+          accessibilityLabel={strings.common.list([
+            strings.ai.tools[tool].name,
+            strings.ai.cost(AI_TOOLS[tool].credits),
+          ])}
+          accessibilityHint={strings.ai.tools[tool].description}
+          style={[styles.card, styles.tool]}
+          onPress={() => {
+            start(toolDestination(tool, sourceUri), AI_TOOLS[tool].credits);
+          }}
+        >
+          <Text style={styles.toolIcon}>{TOOL_ICONS[tool]}</Text>
+          <Text style={styles.name}>{strings.ai.tools[tool].name}</Text>
+          <Text style={styles.description}>{strings.ai.tools[tool].description}</Text>
+          <Text style={styles.cost}>{strings.ai.cost(AI_TOOLS[tool].credits)}</Text>
+        </Bouncy>
+      ))}
+    </View>
+  );
 
   return (
     <View style={[styles.container, { paddingBottom: bottom }]}>
@@ -92,11 +132,15 @@ export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
         data={aiStyles}
         keyExtractor={(style) => style.id}
         contentContainerStyle={styles.list}
+        ListHeaderComponent={tools}
         renderItem={({ item }) => (
           <Bouncy
             accessibilityRole="button"
             squash={0.96}
-            accessibilityLabel={`${localized(item.name)}、${strings.ai.cost(item.credits)}`}
+            accessibilityLabel={strings.common.list([
+              localized(item.name),
+              strings.ai.cost(item.credits),
+            ])}
             accessibilityHint={localized(item.description)}
             style={styles.card}
             onPress={() => {
@@ -116,10 +160,9 @@ export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
         }}
         onAgree={() => {
           useSettings.getState().update({ aiConsentVersion: AI_CONSENT_VERSION });
-          const styleId = pending;
+          const destination = pending;
           setPending(null);
-          if (styleId !== null)
-            router.push({ pathname: '/ai/generate', params: { uri: sourceUri, styleId } });
+          if (destination !== null) router.push(destination);
         }}
       />
     </View>
@@ -137,6 +180,9 @@ const styles = StyleSheet.create({
   },
   balanceText: { color: colors.text, fontSize: 14, fontWeight: '800' },
   list: { gap: spacing.md, padding: spacing.md },
+  tools: { flexDirection: 'row', gap: spacing.md },
+  tool: { flex: 1 },
+  toolIcon: { fontSize: 28 },
   card: {
     gap: spacing.xs,
     padding: spacing.md,

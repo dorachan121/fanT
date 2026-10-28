@@ -1,4 +1,4 @@
-import type { ImageGenerator, Moderator } from '../ports';
+import type { ImageGenerator, ImageUpscaler, Moderator } from '../ports';
 
 /**
  * Stand-ins until the image generation provider is chosen (Q-04): the "generated"
@@ -7,6 +7,10 @@ import type { ImageGenerator, Moderator } from '../ports';
  */
 export const echoGenerator: ImageGenerator = {
   generate: (image) => Promise.resolve(image),
+};
+
+export const echoUpscaler: ImageUpscaler = {
+  upscale: (image) => Promise.resolve(image),
 };
 
 export const allowAllModerator: Moderator = {

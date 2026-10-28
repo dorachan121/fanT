@@ -4,6 +4,7 @@ import type { FaceTracking } from '../../engine/face-tracking';
 import { filterEffects } from '../../engine/filter-effects';
 import { useFrameRenderer } from '../../engine/frame-renderer';
 import { useAdaptiveQuality } from '../performance/adaptive-quality';
+import { videoSettingsOf } from '../photo/filter-settings';
 import { useFrameStats } from '../../engine/use-frame-stats';
 import type { CameraLook } from './use-camera-look';
 
@@ -17,21 +18,31 @@ export function usePreviewRenderer({
   seed,
   tracking,
   showCharacter,
+  video = false,
 }: {
   readonly look: CameraLook;
   readonly seed: number;
   readonly tracking: FaceTracking;
   readonly showCharacter: boolean;
+  /** Shows only what a video gets (CAM-13). */
+  readonly video?: boolean;
 }) {
   const frameStats = useFrameStats();
   const quality = useAdaptiveQuality(frameStats.stats);
   const inputs = useMemo(
-    () => ({ effects: filterEffects(), settings: look.settings, seed, lut: look.lut, quality }),
-    [look.settings, seed, look.lut, quality],
+    () => ({
+      effects: filterEffects(),
+      settings: video ? videoSettingsOf(look.settings) : look.settings,
+      seed,
+      lut: look.lut,
+      quality,
+    }),
+    [look.settings, seed, look.lut, quality, video],
   );
   const onFrame = useFrameRenderer({
     inputs,
     character: showCharacter ? look.characterDrawing : null,
+    makeup: video ? null : look.makeup,
     faces: tracking.faces,
     analyze: tracking.analyze,
     // Measured once a second on the camera thread: cheap enough to keep on.

@@ -70,6 +70,20 @@ function originalFile(id: string): File {
   return new File(photoDirectory(id), 'original.jpg');
 }
 
+/** A video's file (CAM-13); its output is then the first frame, for the grid. */
+function videoFile(id: string): File {
+  return new File(photoDirectory(id), 'video.mp4');
+}
+
+/**
+ * Where a new video's file goes, so it can be written there before its row is added.
+ * `discardPhotoFiles` cleans up if that fails.
+ */
+export function prepareVideoFile(id: string): string {
+  photoDirectory(id).create({ intermediates: true, idempotent: true });
+  return videoFile(id).uri;
+}
+
 function toPhoto(row: PhotoRow): AlbumPhoto {
   const hasOriginal = row.has_original === 1;
   return {
@@ -84,6 +98,7 @@ function toPhoto(row: PhotoRow): AlbumPhoto {
     originalExpiresAt: row.original_expires_at,
     outputUri: outputFile(row.id).uri,
     originalUri: hasOriginal ? originalFile(row.id).uri : null,
+    videoUri: row.kind === 'video' ? videoFile(row.id).uri : null,
   };
 }
 

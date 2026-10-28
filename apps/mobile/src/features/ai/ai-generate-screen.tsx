@@ -25,11 +25,14 @@ import { Text } from '../../ui/text';
 export function AiGenerateScreen({
   sourceUri,
   styleId,
+  maskUri,
 }: {
   readonly sourceUri: string;
   readonly styleId: string;
+  /** The erase tool's mask (AI-10). */
+  readonly maskUri: string | null;
 }) {
-  const { state, cancel } = useGeneration(sourceUri, styleId);
+  const { state, cancel } = useGeneration(sourceUri, styleId, maskUri);
   const { bottom } = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
 

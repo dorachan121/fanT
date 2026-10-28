@@ -579,5 +579,461 @@
         }
       }
     ]
+  },
+  {
+    "id": "sakura",
+    "version": 1,
+    "name": {
+      "ja": "さくらふぶき",
+      "en": "Cherry blossoms"
+    },
+    "tier": "free",
+    "parts": [
+      {
+        "anchor": "headTop",
+        "art": {
+          "type": "shape",
+          "shape": "petal",
+          "fill": "primary"
+        },
+        "offset": [0, -0.1],
+        "size": 0.12,
+        "rotation": 0,
+        "mirrored": false,
+        "motion": {
+          "type": "fall",
+          "count": 9,
+          "speed": 0.35,
+          "spread": 1.6
+        }
+      },
+      {
+        "anchor": "leftEar",
+        "art": {
+          "type": "shape",
+          "shape": "flower",
+          "fill": "primary"
+        },
+        "offset": [0.08, 0.12],
+        "size": 0.26,
+        "rotation": 0,
+        "mirrored": false,
+        "depth": 0.05
+      },
+      {
+        "anchor": "leftCheek",
+        "art": {
+          "type": "shape",
+          "shape": "blush",
+          "fill": "accent"
+        },
+        "offset": [0, 0],
+        "size": 0.2,
+        "rotation": 0,
+        "mirrored": false
+      },
+      {
+        "anchor": "rightCheek",
+        "art": {
+          "type": "shape",
+          "shape": "blush",
+          "fill": "accent"
+        },
+        "offset": [0, 0],
+        "size": 0.2,
+        "rotation": 0,
+        "mirrored": true
+      }
+    ],
+    "variants": [
+      {
+        "id": "pink",
+        "name": {
+          "ja": "ピンク",
+          "en": "Pink"
+        },
+        "colors": {
+          "primary": "#ffb7d0",
+          "secondary": "#ffffff",
+          "accent": "#ff8fb1"
+        }
+      },
+      {
+        "id": "white",
+        "name": {
+          "ja": "ホワイト",
+          "en": "White"
+        },
+        "colors": {
+          "primary": "#fff4f8",
+          "secondary": "#ffd1e1",
+          "accent": "#ffa3c0"
+        }
+      }
+    ]
+  },
+  {
+    "id": "heart_float",
+    "version": 1,
+    "name": {
+      "ja": "ふわふわハート",
+      "en": "Floating hearts"
+    },
+    "tier": "free",
+    "parts": [
+      {
+        "anchor": "chin",
+        "art": {
+          "type": "shape",
+          "shape": "heart",
+          "fill": "primary"
+        },
+        "offset": [0, 0.1],
+        "size": 0.12,
+        "rotation": 0,
+        "mirrored": false,
+        "motion": {
+          "type": "rise",
+          "count": 7,
+          "speed": 0.3,
+          "spread": 1.4
+        }
+      },
+      {
+        "anchor": "leftCheek",
+        "art": {
+          "type": "shape",
+          "shape": "heart",
+          "fill": "secondary"
+        },
+        "offset": [0, 0],
+        "size": 0.12,
+        "rotation": 0,
+        "mirrored": false,
+        "depth": 0.05
+      },
+      {
+        "anchor": "rightCheek",
+        "art": {
+          "type": "shape",
+          "shape": "heart",
+          "fill": "secondary"
+        },
+        "offset": [0, 0],
+        "size": 0.12,
+        "rotation": 0,
+        "mirrored": true,
+        "depth": 0.05
+      }
+    ],
+    "variants": [
+      {
+        "id": "pink",
+        "name": {
+          "ja": "ピンク",
+          "en": "Pink"
+        },
+        "colors": {
+          "primary": "#ff7aa8",
+          "secondary": "#ff4f8b",
+          "accent": "#ffd1e1"
+        }
+      },
+      {
+        "id": "lavender",
+        "name": {
+          "ja": "ラベンダー",
+          "en": "Lavender"
+        },
+        "colors": {
+          "primary": "#c7a6ff",
+          "secondary": "#a17bff",
+          "accent": "#efe4ff"
+        }
+      },
+      {
+        "id": "red",
+        "name": {
+          "ja": "レッド",
+          "en": "Red"
+        },
+        "colors": {
+          "primary": "#ff4d6d",
+          "secondary": "#e0234e",
+          "accent": "#ffd6de"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sparkle_halo",
+    "version": 1,
+    "name": {
+      "ja": "キラキラ天使",
+      "en": "Sparkle halo"
+    },
+    "tier": "premium",
+    "parts": [
+      {
+        "anchor": "headTop",
+        "art": {
+          "type": "shape",
+          "shape": "sparkle",
+          "fill": "primary"
+        },
+        "offset": [0, 0.05],
+        "size": 0.12,
+        "rotation": 0,
+        "mirrored": false,
+        "motion": {
+          "type": "orbit",
+          "count": 6,
+          "speed": 0.25,
+          "spread": 0.55
+        }
+      },
+      {
+        "anchor": "forehead",
+        "art": {
+          "type": "shape",
+          "shape": "star",
+          "fill": "secondary"
+        },
+        "offset": [0, -0.1],
+        "size": 0.1,
+        "rotation": 0,
+        "mirrored": false,
+        "motion": {
+          "type": "twinkle",
+          "count": 5,
+          "speed": 0.6,
+          "spread": 0.9
+        }
+      }
+    ],
+    "variants": [
+      {
+        "id": "gold",
+        "name": {
+          "ja": "ゴールド",
+          "en": "Gold"
+        },
+        "colors": {
+          "primary": "#ffe27a",
+          "secondary": "#fff6c2",
+          "accent": "#ffd23f"
+        }
+      },
+      {
+        "id": "silver",
+        "name": {
+          "ja": "シルバー",
+          "en": "Silver"
+        },
+        "colors": {
+          "primary": "#f2f4ff",
+          "secondary": "#d6dcff",
+          "accent": "#ffffff"
+        }
+      }
+    ]
+  },
+  {
+    "id": "sunglasses",
+    "version": 1,
+    "name": {
+      "ja": "サングラス",
+      "en": "Sunglasses"
+    },
+    "tier": "free",
+    "parts": [
+      {
+        "anchor": "nose",
+        "art": {
+          "type": "shape",
+          "shape": "sunglasses",
+          "fill": "primary"
+        },
+        "offset": [0, -0.2],
+        "size": 0.86,
+        "rotation": 0,
+        "mirrored": false,
+        "depth": 0.25
+      }
+    ],
+    "variants": [
+      {
+        "id": "black",
+        "name": {
+          "ja": "ブラック",
+          "en": "Black"
+        },
+        "colors": {
+          "primary": "#222222",
+          "secondary": "#444444",
+          "accent": "#ffffff"
+        }
+      },
+      {
+        "id": "pink",
+        "name": {
+          "ja": "ピンク",
+          "en": "Pink"
+        },
+        "colors": {
+          "primary": "#ff6fa5",
+          "secondary": "#ff9cc4",
+          "accent": "#ffffff"
+        }
+      },
+      {
+        "id": "gold",
+        "name": {
+          "ja": "ゴールド",
+          "en": "Gold"
+        },
+        "colors": {
+          "primary": "#c9a227",
+          "secondary": "#e8cf6d",
+          "accent": "#ffffff"
+        }
+      }
+    ]
+  },
+  {
+    "id": "heart_glasses",
+    "version": 1,
+    "name": {
+      "ja": "ハートめがね",
+      "en": "Heart glasses"
+    },
+    "tier": "premium",
+    "parts": [
+      {
+        "anchor": "nose",
+        "art": {
+          "type": "shape",
+          "shape": "heart_glasses",
+          "fill": "primary"
+        },
+        "offset": [0, -0.2],
+        "size": 0.9,
+        "rotation": 0,
+        "mirrored": false,
+        "depth": 0.25
+      },
+      {
+        "anchor": "headTop",
+        "art": {
+          "type": "shape",
+          "shape": "heart",
+          "fill": "secondary"
+        },
+        "offset": [0, 0],
+        "size": 0.1,
+        "rotation": 0,
+        "mirrored": false,
+        "motion": {
+          "type": "orbit",
+          "count": 5,
+          "speed": 0.3,
+          "spread": 0.5
+        }
+      }
+    ],
+    "variants": [
+      {
+        "id": "pink",
+        "name": {
+          "ja": "ピンク",
+          "en": "Pink"
+        },
+        "colors": {
+          "primary": "#ff5c9a",
+          "secondary": "#ffa6c9",
+          "accent": "#ffffff"
+        }
+      },
+      {
+        "id": "red",
+        "name": {
+          "ja": "レッド",
+          "en": "Red"
+        },
+        "colors": {
+          "primary": "#ff3355",
+          "secondary": "#ff8fa3",
+          "accent": "#ffffff"
+        }
+      }
+    ]
+  },
+  {
+    "id": "crown",
+    "version": 1,
+    "name": {
+      "ja": "プリンセス",
+      "en": "Princess"
+    },
+    "tier": "premium",
+    "parts": [
+      {
+        "anchor": "headTop",
+        "art": {
+          "type": "shape",
+          "shape": "crown",
+          "fill": "primary"
+        },
+        "offset": [0, 0.1],
+        "size": 0.5,
+        "rotation": 0,
+        "mirrored": false,
+        "depth": -0.05
+      },
+      {
+        "anchor": "headTop",
+        "art": {
+          "type": "shape",
+          "shape": "sparkle",
+          "fill": "secondary"
+        },
+        "offset": [0, 0],
+        "size": 0.08,
+        "rotation": 0,
+        "mirrored": false,
+        "motion": {
+          "type": "twinkle",
+          "count": 6,
+          "speed": 0.5,
+          "spread": 0.8
+        }
+      }
+    ],
+    "variants": [
+      {
+        "id": "gold",
+        "name": {
+          "ja": "ゴールド",
+          "en": "Gold"
+        },
+        "colors": {
+          "primary": "#ffcc33",
+          "secondary": "#fff3b0",
+          "accent": "#ff8fb1"
+        }
+      },
+      {
+        "id": "pink",
+        "name": {
+          "ja": "ピンク",
+          "en": "Pink"
+        },
+        "colors": {
+          "primary": "#ff9cc4",
+          "secondary": "#ffffff",
+          "accent": "#ff5c9a"
+        }
+      }
+    ]
   }
 ]

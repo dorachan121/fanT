@@ -1,12 +1,15 @@
 /**
- * Japanese UI strings (03 §1). Grouped by screen; content names come from the
- * content itself (`localized`).
+ * Japanese UI strings (03 §1), the app's main language. Grouped by screen; content
+ * names come from the content itself (`localized`). `en.ts` has the same keys.
  *
  * Tone: friendly and playful, with emoji on visible copy. Accessibility labels and
  * legal or purchase terms stay plain and literal.
  */
-export const strings = {
+export const ja = {
   common: {
+    /** Joins parts of an accessibility label. */
+    list: (parts: readonly string[]) => parts.join('、'),
+    premiumItem: (name: string) => `${name}（プレミアム）`,
     close: '閉じる',
     cancel: 'やめとく',
     done: 'できた！',
@@ -22,12 +25,18 @@ export const strings = {
   },
   modes: {
     film: '📷 フィルム',
+    video: '🎥 動画',
     character: '🐰 キャラ',
     puri: '💖 プリ',
     ai: '✨ AI',
   },
   camera: {
     shutter: '撮影する',
+    record: '録画をはじめる',
+    stopRecording: '録画をとめる',
+    recording: (seconds: number, max: number) => `● ${String(seconds)} / ${String(max)}秒`,
+    savingVideo: '動画を仕上げ中…🎞️',
+    videoFailed: '動画をうまく保存できなかった🥺',
     switchLens: '前後のカメラを切り替える',
     album: 'アルバムを開く',
     settings: '設定を開く',
@@ -39,6 +48,7 @@ export const strings = {
     exposure: '明るさ',
     beauty: '美肌',
     strength: '強さ',
+    filmStrength: (film: string) => `${film}・強さ`,
     filmChanged: (name: string) => `📷 ${name}`,
     beautyChanged: (level: string) => `✨ 美肌 ${level}`,
     premiumTrial: '👑 プレミアムのフィルムをおためし中',
@@ -50,6 +60,14 @@ export const strings = {
       allow: 'カメラをONにする',
       openSettings: '設定を開く',
     },
+  },
+  date: {
+    fields: { year: '年', month: '月', day: '日' },
+    value: (value: number, field: string) => `${String(value)}${field}`,
+    increase: (field: string) => `${field}を増やす`,
+    decrease: (field: string) => `${field}を減らす`,
+    /** BCP 47 tag for dates shown in the app. */
+    locale: 'ja-JP',
   },
   film: {
     title: 'フィルム',
@@ -70,12 +88,16 @@ export const strings = {
     faceShape: '🪞 顔の微調整（ひかえめ）',
     eyes: '目をぱっちり',
     slim: '小顔',
+    nose: '鼻すっきり',
+    mouth: '口の大きさ',
+    chin: 'あごを短く',
   },
   character: {
     colors: 'カラー',
   },
   photo: {
     title: '写真',
+    video: '動画',
     edit: '編集',
     deco: 'デコ',
     ai: 'AI変身',
@@ -93,8 +115,50 @@ export const strings = {
       film: 'フィルム',
       beauty: '美肌',
       adjust: '補正',
+      makeup: 'メイク',
+      retouch: 'レタッチ',
+      tone: 'トーン',
+      hsl: 'カラー',
+      local: '部分補正',
       crop: 'トリミング',
       frame: 'フレーム',
+    },
+    detail: {
+      sharpen: 'シャープ',
+      highlights: 'ハイライト',
+      shadows: 'シャドウ',
+      vibrance: '自然な彩度',
+    },
+    curve: {
+      title: 'トーンカーブ',
+      curveShadows: '暗いところ',
+      curveDarks: 'やや暗いところ',
+      curveLights: 'やや明るいところ',
+      curveHighlights: '明るいところ',
+    },
+    hsl: {
+      bands: {
+        red: '赤',
+        orange: 'オレンジ',
+        yellow: '黄',
+        green: '緑',
+        aqua: '水色',
+        blue: '青',
+        purple: '紫',
+        magenta: 'ピンク',
+      },
+      parts: { Hue: '色味', Saturation: '鮮やかさ', Luminance: '明るさ' },
+    },
+    local: {
+      hint: '写真をタップすると、そこだけ補正できるよ👆',
+      area: (index: number) => `範囲${String(index)}`,
+      radius: '大きさ',
+      feather: 'ふちのぼかし',
+      brightness: '明るさ',
+      saturation: '彩度',
+      temperature: '色温度',
+      remove: 'この範囲を消す',
+      full: '部分補正は4か所までだよ',
     },
     brightness: '明るさ',
     contrast: 'コントラスト',
@@ -105,6 +169,31 @@ export const strings = {
     original: '元の比率',
     undo: '元に戻す',
     redo: 'やり直す',
+  },
+  makeup: {
+    title: '💄 メイク',
+    parts: {
+      lip: 'リップ',
+      blush: 'チーク',
+      eyeshadow: 'アイシャドウ',
+      brow: '眉',
+      lens: 'カラコン',
+    },
+    teeth: '歯を白く',
+    underEye: 'クマ消し',
+  },
+  retouch: {
+    tools: { heal: '🩹 ニキビ・シミ消し', body: '🦵 体型' },
+    hints: {
+      heal: '消したい所をタップしてね👆',
+      body: '脚の付け根あたり（体の真ん中）をタップしてから調整してね',
+    },
+    healSize: 'ブラシの大きさ',
+    undoSpot: 'ひとつ戻す',
+    full: 'これ以上は消せないよ🙏',
+    body: { legs: '脚を長く', slim: 'ほっそり' },
+    backgroundBlur: '背景ぼかし',
+    hair: '髪色',
   },
   frames: {
     none: 'なし',
@@ -127,10 +216,24 @@ export const strings = {
     textPlaceholder: 'なにか書いてね♡',
     phrases: '平成ワード',
     textStyles: { outline: 'ふちどり', neon: 'ネオン', bubble: 'ふきだし' },
+    fonts: {
+      system: 'ふつう',
+      rounded: 'まるもじ',
+      pop: 'ぽっぷ',
+      marker: 'マーカー',
+      pixel: 'ドット',
+      bold: 'ぶっとい',
+    },
     dateOn: '日付を入れる',
     dateOff: '日付を消す',
     removeLayer: 'この飾りを消す',
     layerColor: 'この飾りの色（推し色にも💖）',
+  },
+  collage: {
+    title: '🧩 コラージュ',
+    make: 'コラージュにする（2〜6枚）',
+    layouts: { grid: 'きっちり', scatter: 'ばらばら' },
+    gap: 'すきま',
   },
   album: {
     title: 'アルバム',
@@ -177,6 +280,16 @@ export const strings = {
     failed: 'うまく変身できなかった🥺 クレジットは戻してあるよ。',
     blocked: 'この写真では変身できないみたい。別の写真でためしてね（クレジットは戻してあるよ）。',
     aiLabel: 'AIで生成',
+    tools: {
+      erase: { name: 'けしゴム', description: 'じゃまな人やものを消すよ' },
+      upscale: { name: '高画質に', description: '写真を2倍のきれいさに' },
+    },
+    erase: {
+      title: '🧽 消したいところをなぞってね',
+      hint: '消したい人やものを指でぬってね。まわりになじむように消すよ。',
+      brush: 'ブラシの太さ',
+      run: '消す🪄',
+    },
     consent: {
       title: 'AI変身を使う前に🪄',
       body: [
@@ -276,12 +389,32 @@ export const strings = {
     credits: 'AIクレジット',
     restore: '購入を復元',
     contact: 'お問い合わせ',
+    contactSubject: 'fanT お問い合わせ',
     legal: '規約とポリシー',
     version: 'バージョン',
     developerPremium: 'プレミアムを有効にする（テスト用）',
     performance: '性能の計測を表示',
   },
+  performance: {
+    label: '性能の計測値',
+    hint: 'タップすると顔検出のオン/オフを切り替えます',
+    render: (average: string, max: string) => `描画 ${average}（最大 ${max}）`,
+    faces: (average: string, max: string) => `顔検出 ${average}（最大 ${max}）`,
+    facesOff: '顔検出 オフ',
+  },
   legal: {
     title: '規約とポリシー',
   },
 } as const;
+
+/** Turns literal string types into `string`, so other languages fit the same shape. */
+type Widen<T> = T extends string
+  ? string
+  : T extends (...args: infer A) => infer R
+    ? (...args: A) => Widen<R>
+    : T extends readonly (infer U)[]
+      ? readonly Widen<U>[]
+      : { readonly [K in keyof T]: Widen<T[K]> };
+
+/** The shape every language's strings have. */
+export type Strings = Widen<typeof ja>;

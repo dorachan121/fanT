@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_FILM_PARAMS, FILM_PARAM_RANGES, normalizeFilmParams } from './film-params';
+import {
+  colorOnlyFilmParams,
+  DEFAULT_FILM_PARAMS,
+  FILM_PARAM_RANGES,
+  normalizeFilmParams,
+} from './film-params';
 
 describe('normalizeFilmParams', () => {
   it('returns the defaults when nothing is given', () => {
@@ -38,5 +43,16 @@ describe('normalizeFilmParams', () => {
   it('returns an immutable object', () => {
     expect(Object.isFrozen(normalizeFilmParams())).toBe(true);
     expect(Object.isFrozen(DEFAULT_FILM_PARAMS)).toBe(true);
+  });
+});
+
+describe('colorOnlyFilmParams', () => {
+  it('keeps the colour and turns off effects that depend on position (CAM-13)', () => {
+    const params = colorOnlyFilmParams(
+      normalizeFilmParams({ warmth: 0.4, lutIntensity: 1, grain: 0.5, vignette: 0.6, bloom: 0.3 }),
+    );
+    expect(params).toMatchObject({ warmth: 0.4, lutIntensity: 1, grain: 0, vignette: 0, bloom: 0 });
+    expect(params.lowRes).toBe(0);
+    expect(params.lightLeak).toBe(0);
   });
 });

@@ -51,6 +51,9 @@ export interface Store {
 export interface ImageStore {
   putInput(id: string, jpeg: Uint8Array): Promise<void>;
   getInput(id: string): Promise<Uint8Array>;
+  /** The erase tool's mask (AI-10), kept and deleted with the upload. */
+  putMask(id: string, png: Uint8Array): Promise<void>;
+  getMask(id: string): Promise<Uint8Array>;
   putOutput(id: string, image: Uint8Array): Promise<void>;
   /** A short-lived HTTPS link to the result. */
   outputUrl(id: string): Promise<string>;
@@ -67,7 +70,18 @@ export class ContentBlockedError extends Error {
  * `ContentBlockedError` when the provider's own safety checks refuse.
  */
 export interface ImageGenerator {
-  generate(image: Uint8Array, prompt: string, signal: AbortSignal): Promise<Uint8Array>;
+  /** `mask` (PNG, white = the area to change) is passed as a second image when given. */
+  generate(
+    image: Uint8Array,
+    prompt: string,
+    signal: AbortSignal,
+    mask?: Uint8Array,
+  ): Promise<Uint8Array>;
+}
+
+/** Doubles a photo's resolution (AI-11). */
+export interface ImageUpscaler {
+  upscale(image: Uint8Array, signal: AbortSignal): Promise<Uint8Array>;
 }
 
 /** Image moderation for uploads and results (AI-05). */
@@ -99,6 +113,7 @@ export interface Dependencies {
   readonly store: Store;
   readonly images: ImageStore;
   readonly generator: ImageGenerator;
+  readonly upscaler: ImageUpscaler;
   readonly moderator: Moderator;
   readonly logger: Logger;
   readonly settings: Settings;

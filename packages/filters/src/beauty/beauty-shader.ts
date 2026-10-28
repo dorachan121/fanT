@@ -1,3 +1,5 @@
+import { SKIN_SKSL } from '../sksl';
+
 /**
  * `beauty_v1`: natural skin retouching applied before the film look.
  *
@@ -25,15 +27,7 @@ const int RING_SAMPLES = 8;
 // Share of the original texture kept even at full smoothing, so skin is not plastic.
 const float TEXTURE_KEPT = 0.15;
 
-// Soft skin likelihood from BT.601 chroma, ignoring deep shadows.
-float skinMask(float3 c) {
-  float y = dot(c, float3(0.299, 0.587, 0.114));
-  float cb = 0.5 - 0.168736 * c.r - 0.331264 * c.g + 0.5 * c.b;
-  float cr = 0.5 + 0.5 * c.r - 0.418688 * c.g - 0.081312 * c.b;
-  float distanceToSkin = length((float2(cb, cr) - float2(0.40, 0.60)) / float2(0.10, 0.08));
-  return (1.0 - smoothstep(0.7, 1.0, distanceToSkin)) * smoothstep(0.08, 0.2, y);
-}
-
+${SKIN_SKSL}
 half4 main(float2 coord) {
   half4 source = unpremul(image.eval(coord));
   float3 color = float3(source.rgb);

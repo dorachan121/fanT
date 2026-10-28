@@ -48,7 +48,7 @@ export function CharacterStrip({
         return (
           <Bouncy
             accessibilityRole="button"
-            accessibilityLabel={locked ? `${name}（${strings.common.premium}）` : name}
+            accessibilityLabel={locked ? strings.common.premiumItem(name) : name}
             accessibilityState={{ selected }}
             style={styles.item}
             onPress={() => {

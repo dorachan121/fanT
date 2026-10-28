@@ -1,6 +1,11 @@
 import { z } from 'zod';
 
-import { ContentBlockedError, type ImageGenerator, type Moderator } from '../ports';
+import {
+  ContentBlockedError,
+  type ImageGenerator,
+  type ImageUpscaler,
+  type Moderator,
+} from '../ports';
 
 /** `fetch`, injectable for tests. */
 export type Fetch = (url: string, init: RequestInit) => Promise<Response>;
@@ -99,7 +104,12 @@ export class GeminiImageGenerator implements ImageGenerator {
     },
   ) {}
 
-  async generate(image: Uint8Array, prompt: string, signal: AbortSignal): Promise<Uint8Array> {
+  async generate(
+    image: Uint8Array,
+    prompt: string,
+    signal: AbortSignal,
+    mask?: Uint8Array,
+  ): Promise<Uint8Array> {
     const { project, model, token } = this.options;
     const url = `https://aiplatform.googleapis.com/v1/projects/${encodeURIComponent(project)}/locations/global/publishers/google/models/${encodeURIComponent(model)}:generateContent`;
     const json = await postJson(
@@ -114,6 +124,16 @@ export class GeminiImageGenerator implements ImageGenerator {
               {
                 inlineData: { mimeType: 'image/jpeg', data: Buffer.from(image).toString('base64') },
               },
+              ...(mask === undefined
+                ? []
+                : [
+                    {
+                      inlineData: {
+                        mimeType: 'image/png',
+                        data: Buffer.from(mask).toString('base64'),
+                      },
+                    },
+                  ]),
               { text: prompt },
             ],
           },
@@ -133,6 +153,47 @@ export class GeminiImageGenerator implements ImageGenerator {
     if (BLOCKED_FINISH_REASONS.has(candidate?.finishReason ?? ''))
       throw new ContentBlockedError(`Result blocked: ${candidate?.finishReason ?? ''}`);
     throw new Error(`No image in the response (${candidate?.finishReason ?? 'no candidate'})`);
+  }
+}
+
+const upscaleResponseSchema = z.object({
+  predictions: z.array(z.object({ bytesBase64Encoded: z.string().min(1) })).min(1),
+});
+
+/** Doubles a photo's resolution with Imagen's upscaler on Vertex AI (AI-11). */
+export class ImagenUpscaler implements ImageUpscaler {
+  constructor(
+    private readonly options: {
+      readonly project: string;
+      readonly model: string;
+      readonly token: TokenSource;
+      readonly fetch?: Fetch;
+    },
+  ) {}
+
+  async upscale(image: Uint8Array, signal: AbortSignal): Promise<Uint8Array> {
+    const { project, model, token } = this.options;
+    const url = `https://us-central1-aiplatform.googleapis.com/v1/projects/${encodeURIComponent(project)}/locations/us-central1/publishers/google/models/${encodeURIComponent(model)}:predict`;
+    const json = await postJson(
+      this.options.fetch ?? fetch,
+      token,
+      url,
+      {
+        instances: [
+          { prompt: '', image: { bytesBase64Encoded: Buffer.from(image).toString('base64') } },
+        ],
+        parameters: {
+          sampleCount: 1,
+          mode: 'upscale',
+          upscaleConfig: { upscaleFactor: 'x2' },
+          outputOptions: { mimeType: 'image/jpeg', compressionQuality: 92 },
+        },
+      },
+      signal,
+    );
+    const [prediction] = upscaleResponseSchema.parse(json).predictions;
+    if (prediction === undefined) throw new Error('No image in the upscale response');
+    return new Uint8Array(Buffer.from(prediction.bytesBase64Encoded, 'base64'));
   }
 }
 

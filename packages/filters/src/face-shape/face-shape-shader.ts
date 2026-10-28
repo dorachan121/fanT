@@ -1,5 +1,5 @@
 /**
- * `face_shape_v1`: subtle face fine-tuning (BTY-04) on up to `MAX_SHAPED_FACES`
+ * `face_shape_v1`: subtle face fine-tuning (BTY-04, BTY-08) on up to `MAX_SHAPED_FACES`
  * faces, applied first so the rest of the chain sees the reshaped face.
  *
  * A backward warp: each output pixel samples the source a little closer to an eye
@@ -15,6 +15,9 @@ export const FACE_SHAPE_SHADER_SOURCE = /* sksl */ `
 uniform shader image;
 uniform float eyes;
 uniform float slim;
+uniform float nose;
+uniform float mouth;
+uniform float chin;
 // Per face: eyes (left x, y, right x, y) and shape (centre x, y, width, 1 if present).
 uniform float4 face0Eyes;
 uniform float4 face0Shape;
@@ -25,9 +28,12 @@ uniform float4 face2Shape;
 uniform float4 face3Eyes;
 uniform float4 face3Shape;
 
-// The strength at 1: kept subtle (BTY-04).
+// The strength at 1: kept subtle (BTY-04, BTY-08).
 const float MAX_EYE = 0.13;
 const float MAX_SLIM = 0.06;
+const float MAX_NOSE = 0.12;
+const float MAX_MOUTH = 0.12;
+const float MAX_CHIN = 0.12;
 // Eye region radius as a fraction of the distance between the eyes.
 const float EYE_RADIUS = 0.42;
 
@@ -62,6 +68,25 @@ float2 shapeFace(float2 p, float4 faceEyes, float4 shape) {
     float strength = eyes * MAX_EYE;
     q = enlargeAround(q, left, span * EYE_RADIUS, strength);
     q = enlargeAround(q, right, span * EYE_RADIUS, strength);
+  }
+  // Nose, mouth and chin sit at typical distances below the eyes.
+  float2 middle = (left + right) * 0.5;
+  if (nose > 0.0) {
+    float2 d = p - (middle + down * span * 0.72);
+    float u = dot(d, across) / (span * 0.38);
+    float v = dot(d, down) / (span * 0.45);
+    float falloff = 1.0 - (u * u + v * v);
+    if (falloff > 0.0) q += across * dot(d, across) * nose * MAX_NOSE * falloff * falloff;
+  }
+  if (mouth != 0.0) {
+    q = enlargeAround(q, middle + down * span * 1.15, span * 0.6, mouth * MAX_MOUTH);
+  }
+  if (chin > 0.0) {
+    float2 d = p - (middle + down * span * 1.75);
+    float u = dot(d, across) / (span * 0.9);
+    float v = dot(d, down) / (span * 0.8);
+    float falloff = 1.0 - (u * u + v * v);
+    if (falloff > 0.0) q += down * span * chin * MAX_CHIN * falloff;
   }
   return q;
 }

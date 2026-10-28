@@ -40,7 +40,7 @@ function Plan({
     <Bouncy
       accessibilityRole="radio"
       accessibilityState={{ checked: selected }}
-      accessibilityLabel={`${title}、${price}`}
+      accessibilityLabel={strings.common.list([title, price])}
       accessibilityHint={note}
       style={[styles.plan, selected && styles.selectedPlan]}
       onPress={onPress}

@@ -5,6 +5,8 @@ import {
 } from '@expo-google-fonts/m-plus-rounded-1c';
 import { useFonts } from 'expo-font';
 
+import { DECO_FONT_SOURCES } from '../engine/deco-fonts';
+
 /**
  * M PLUS Rounded 1c (SIL Open Font License): round, friendly Japanese that suits
  * the app. Three weights cover body, emphasis and headings.
@@ -21,6 +23,8 @@ export function useAppFonts(): boolean {
     [FONT_FAMILIES.regular]: MPLUSRounded1c_500Medium,
     [FONT_FAMILIES.bold]: MPLUSRounded1c_700Bold,
     [FONT_FAMILIES.heavy]: MPLUSRounded1c_800ExtraBold,
+    // The text fonts (DCO-06), so the font picker can show each in itself.
+    ...DECO_FONT_SOURCES,
   });
   return loaded || error !== null;
 }

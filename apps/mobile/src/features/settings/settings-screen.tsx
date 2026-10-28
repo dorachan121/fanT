@@ -37,7 +37,7 @@ export function SettingsScreen() {
     // Device details help with support; nothing personal is included.
     const body = `\n\n---\nfanT ${APP_CONFIG.appVersion} / ${Platform.OS} ${String(Platform.Version)}`;
     void Linking.openURL(
-      `mailto:${supportEmail}?subject=${encodeURIComponent('fanT お問い合わせ')}&body=${encodeURIComponent(body)}`,
+      `mailto:${supportEmail}?subject=${encodeURIComponent(strings.settings.contactSubject)}&body=${encodeURIComponent(body)}`,
     );
   };
 

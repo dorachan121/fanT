@@ -1,56 +1,69 @@
-import {
-  ADJUST_PARAM_RANGES,
-  calendarDateOf,
-  DATE_STAMP_ORANGE,
-  type AdjustParamName,
-} from '@fant/filters';
 import { router } from 'expo-router';
-import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
+import { useState, type ReactNode } from 'react';
+import {
+  ActivityIndicator,
+  ScrollView,
+  StyleSheet,
+  View,
+  type LayoutRectangle,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PhotoCanvas } from '../../engine/photo-canvas';
-import { localized, strings } from '../../i18n';
+import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { Chip } from '../../ui/chip';
-import { showError } from '../../ui/dialogs';
+import { showError, showMessage } from '../../ui/dialogs';
 import { IconButton } from '../../ui/icon-button';
 import { ScreenHeader } from '../../ui/screen-header';
-import { Slider } from '../../ui/slider';
 import { colors, radius, softShadow, spacing } from '../../ui/theme';
-import { Toggle } from '../../ui/toggle';
 import { reportError } from '../analytics/analytics';
 import { BeautyControls, FaceShapeControls } from '../camera/beauty-sheet';
-import { FilmStrip } from '../camera/film-strip';
-import { useCameraSettings } from '../camera/camera-store';
 import { useContent } from '../content/content-store';
-import { available, findFilm } from '../content/lookup';
-import { ASPECT_VALUES, centerCrop, rotatedSize, turnClockwise } from '../photo/geometry';
+import { findFilm } from '../content/lookup';
+import { MakeupControls } from '../makeup/makeup-controls';
+import { addHealSpot } from '../retouch/retouch';
 import { saveEdit } from '../photo/photo-service';
-import { ASPECT_RATIOS, FULL_CROP, type AspectRatio, type PhotoRecipe } from '../photo/recipe';
+import type { PhotoRecipe } from '../photo/recipe';
 import { isLocked, usePremium } from '../purchases/purchases-store';
 import { FramePicker } from './frame-picker';
+import { AdjustPanel } from './panels/adjust-panel';
+import { CropPanel } from './panels/crop-panel';
+import { FilmPanel } from './panels/film-panel';
+import { HslPanel } from './panels/hsl-panel';
+import { addLocalArea, LocalPanel } from './panels/local-panel';
+import type { PanelProps, PhotoPoint } from './panels/panel-props';
+import { RetouchPanel, type RetouchTool } from './panels/retouch-panel';
+import { TonePanel } from './panels/tone-panel';
+import { PhotoTapLayer, type PhotoMarker } from './photo-tap-layer';
 import { usePhotoSession } from './use-photo-session';
-import { Text } from '../../ui/text';
 
-type Tab = 'film' | 'beauty' | 'adjust' | 'crop' | 'frame';
-const TABS: readonly Tab[] = ['film', 'beauty', 'adjust', 'crop', 'frame'];
-const ADJUSTMENTS: readonly AdjustParamName[] = [
-  'brightness',
-  'contrast',
-  'saturation',
-  'temperature',
-];
+const TABS = [
+  'film',
+  'beauty',
+  'makeup',
+  'retouch',
+  'adjust',
+  'tone',
+  'hsl',
+  'local',
+  'crop',
+  'frame',
+] as const;
+type Tab = (typeof TABS)[number];
 
-/** Re-edits a photo from its original (S-21): film, beauty, corrections, crop, rotation and frame. */
+/** Re-edits a photo from its original (S-21): every tool works on the recipe, undoably. */
 export function EditScreen({ id }: { readonly id: string }) {
   const session = usePhotoSession(id);
   const { bottom } = useSafeAreaInsets();
   const premium = usePremium();
   const manifest = useContent((state) => state.manifest);
-  const favorites = useCameraSettings((state) => state.favoriteFilms);
   const [tab, setTab] = useState<Tab>('film');
   const [saving, setSaving] = useState(false);
+  const [photoRect, setPhotoRect] = useState<LayoutRectangle | null>(null);
+  const [selectedLocal, setSelectedLocal] = useState(0);
+  const [retouchTool, setRetouchTool] = useState<RetouchTool>('heal');
+  const [healSize, setHealSize] = useState(0.025);
   const { recipe, source, outputSize } = session;
 
   if (recipe === null || source === null || outputSize === null) {
@@ -62,22 +75,94 @@ export function EditScreen({ id }: { readonly id: string }) {
     );
   }
 
-  const film = findFilm(manifest, recipe.film.id);
   const update = (next: Partial<PhotoRecipe>, key?: string) => {
     session.change({ ...recipe, ...next }, key);
   };
-  const setAspect = (aspect: AspectRatio | null) => {
-    const turned = rotatedSize(source.originalSize, recipe.transform.rotation);
-    update({
-      transform: {
-        ...recipe.transform,
-        crop: aspect === null ? FULL_CROP : centerCrop(turned, ASPECT_VALUES[aspect]),
-      },
-    });
+  const props: PanelProps = { recipe, update };
+
+  /** Tools that place something where the photo is tapped. */
+  const tapActions: Partial<Record<Tab, (point: PhotoPoint) => void>> = {
+    local: (point) => {
+      const local = addLocalArea(recipe.local, point);
+      if (local === null) {
+        showMessage(strings.edit.local.full);
+        return;
+      }
+      update({ local });
+      setSelectedLocal(local.length - 1);
+    },
+    retouch: (point) => {
+      if (retouchTool === 'body') {
+        update({ body: { ...recipe.body, legLine: point.y, bodyX: point.x } });
+        return;
+      }
+      const heal = addHealSpot(recipe.heal, point, healSize);
+      if (heal === null) showMessage(strings.retouch.full);
+      else update({ heal });
+    },
+  };
+  /** What is shown on the photo for the tools that place things. */
+  const markers = (): PhotoMarker[] => {
+    if (tab === 'local') {
+      return recipe.local.map((area, index) => ({ ...area, selected: index === selectedLocal }));
+    }
+    if (tab !== 'retouch') return [];
+    if (retouchTool === 'heal') return recipe.heal;
+    return [{ x: recipe.body.bodyX, y: recipe.body.legLine, radius: 0.03, selected: true }];
+  };
+
+  const panels: Record<Tab, () => ReactNode> = {
+    film: () => <FilmPanel {...props} takenAt={session.photo?.createdAt ?? null} />,
+    beauty: () => (
+      <>
+        <BeautyControls
+          beauty={recipe.beauty}
+          onChange={(beauty) => {
+            update({ beauty }, 'beauty');
+          }}
+        />
+        <FaceShapeControls
+          faceShape={recipe.faceShape}
+          onChange={(faceShape) => {
+            update({ faceShape }, 'faceShape');
+          }}
+        />
+      </>
+    ),
+    makeup: () => (
+      <MakeupControls
+        makeup={recipe.makeup}
+        onChange={(makeup) => {
+          update({ makeup }, 'makeup');
+        }}
+      />
+    ),
+    retouch: () => (
+      <RetouchPanel
+        {...props}
+        tool={retouchTool}
+        onTool={setRetouchTool}
+        healSize={healSize}
+        onHealSize={setHealSize}
+      />
+    ),
+    adjust: () => <AdjustPanel {...props} />,
+    tone: () => <TonePanel {...props} />,
+    hsl: () => <HslPanel {...props} />,
+    local: () => <LocalPanel {...props} selected={selectedLocal} onSelect={setSelectedLocal} />,
+    crop: () => <CropPanel {...props} originalSize={source.originalSize} />,
+    frame: () => (
+      <FramePicker
+        frame={recipe.frame}
+        onChange={(frame) => {
+          update({ frame });
+        }}
+      />
+    ),
   };
 
   const save = async () => {
-    if (isLocked(film, premium)) {
+    if (isLocked(findFilm(manifest, recipe.film.id), premium)) {
       router.push({ pathname: '/paywall', params: { trigger: 'edit' } });
       return;
     }
@@ -114,9 +199,16 @@ export function EditScreen({ id }: { readonly id: string }) {
           </>
         }
       />
-      <PhotoCanvas image={session.preview} photoSize={outputSize} />
+      <PhotoCanvas image={session.preview} photoSize={outputSize} onPhotoRect={setPhotoRect}>
+        <PhotoTapLayer rect={photoRect} markers={markers()} onTap={tapActions[tab] ?? null} />
+      </PhotoCanvas>
       <View style={[styles.panel, { paddingBottom: bottom + spacing.md }]}>
-        <View accessibilityRole="tablist" style={styles.tabs}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          accessibilityRole="tablist"
+          contentContainerStyle={styles.tabs}
+        >
           {TABS.map((candidate) => (
             <Chip
               key={candidate}
@@ -127,143 +219,9 @@ export function EditScreen({ id }: { readonly id: string }) {
               }}
             />
           ))}
-        </View>
+        </ScrollView>
         <ScrollView style={styles.controls} contentContainerStyle={styles.controlsContent}>
-          {tab === 'film' && (
-            <>
-              <FilmStrip
-                films={available(manifest.films)}
-                selectedId={film.id}
-                favorites={favorites}
-                premium={premium}
-                onSelect={(next) => {
-                  update({
-                    film: {
-                      id: next.id,
-                      intensity: recipe.film.intensity === 0 ? 1 : recipe.film.intensity,
-                    },
-                  });
-                }}
-                onOpenSettings={() => undefined}
-                onToggleFavorite={(next) => {
-                  useCameraSettings.getState().toggleFavorite(next.id);
-                }}
-              />
-              <Slider
-                label={`${localized(film.name)}・${strings.camera.strength}`}
-                value={recipe.film.intensity}
-                min={0}
-                max={1}
-                onChange={(intensity) => {
-                  update({ film: { ...recipe.film, intensity } }, 'intensity');
-                }}
-              />
-              <View style={styles.row}>
-                <Text style={styles.label}>{strings.film.dateStamp}</Text>
-                <Toggle
-                  label={strings.film.dateStamp}
-                  value={recipe.dateStamp !== null}
-                  onChange={(enabled) => {
-                    update({
-                      dateStamp: enabled
-                        ? {
-                            date: calendarDateOf(new Date(session.photo?.createdAt ?? Date.now())),
-                            format: 'yy mm dd',
-                            color: DATE_STAMP_ORANGE,
-                          }
-                        : null,
-                    });
-                  }}
-                />
-              </View>
-            </>
-          )}
-          {tab === 'beauty' && (
-            <>
-              <BeautyControls
-                beauty={recipe.beauty}
-                onChange={(beauty) => {
-                  update({ beauty }, 'beauty');
-                }}
-              />
-              <FaceShapeControls
-                faceShape={recipe.faceShape}
-                onChange={(faceShape) => {
-                  update({ faceShape }, 'faceShape');
-                }}
-              />
-            </>
-          )}
-          {tab === 'adjust' &&
-            ADJUSTMENTS.map((key) => (
-              <Slider
-                key={key}
-                label={strings.edit[key]}
-                value={recipe.adjust[key]}
-                min={ADJUST_PARAM_RANGES[key].min}
-                max={ADJUST_PARAM_RANGES[key].max}
-                centered
-                formatValue={(value) => `${value > 0 ? '+' : ''}${String(Math.round(value * 100))}`}
-                onChange={(value) => {
-                  update({ adjust: { ...recipe.adjust, [key]: value } }, key);
-                }}
-              />
-            ))}
-          {tab === 'crop' && (
-            <>
-              <View style={styles.tabs}>
-                <Chip
-                  label={strings.edit.original}
-                  selected={recipe.transform.crop === FULL_CROP}
-                  onPress={() => {
-                    setAspect(null);
-                  }}
-                />
-                {ASPECT_RATIOS.map((aspect) => (
-                  <Chip
-                    key={aspect}
-                    label={aspect}
-                    selected={false}
-                    onPress={() => {
-                      setAspect(aspect);
-                    }}
-                  />
-                ))}
-              </View>
-              <View style={styles.tabs}>
-                <IconButton
-                  icon="refresh"
-                  label={strings.edit.rotate}
-                  onPress={() => {
-                    update({
-                      transform: {
-                        ...recipe.transform,
-                        rotation: turnClockwise(recipe.transform.rotation),
-                        crop: FULL_CROP,
-                      },
-                    });
-                  }}
-                />
-                <IconButton
-                  icon="swap-horizontal"
-                  label={strings.edit.flip}
-                  onPress={() => {
-                    update({
-                      transform: { ...recipe.transform, mirror: !recipe.transform.mirror },
-                    });
-                  }}
-                />
-              </View>
-            </>
-          )}
-          {tab === 'frame' && (
-            <FramePicker
-              frame={recipe.frame}
-              onChange={(frame) => {
-                update({ frame });
-              }}
-            />
-          )}
+          {panels[tab]()}
         </ScrollView>
         <Button label={strings.common.save} busy={saving} onPress={() => void save()} />
       </View>
@@ -283,9 +241,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     ...softShadow,
   },
-  tabs: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  controls: { maxHeight: 220 },
+  tabs: { gap: spacing.sm },
+  controls: { maxHeight: 240 },
   controlsContent: { gap: spacing.md },
-  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  label: { color: colors.text, fontSize: 15, fontWeight: '700' },
 });

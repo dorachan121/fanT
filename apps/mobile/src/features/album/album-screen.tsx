@@ -13,6 +13,7 @@ import { HeroEmoji } from '../../ui/hero-emoji';
 import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { importPhoto } from '../photo/import-photo';
+import { MAX_COLLAGE_PHOTOS, MIN_COLLAGE_PHOTOS } from '../collage/collage-layout';
 import { deletePhotos } from './album-db';
 import { useAlbum } from './use-album';
 import { Text } from '../../ui/text';
@@ -64,6 +65,16 @@ export function AlbumScreen() {
         actions={
           selecting ? (
             <>
+              <IconButton
+                icon="grid-outline"
+                label={strings.collage.make}
+                disabled={selected.size < MIN_COLLAGE_PHOTOS || selected.size > MAX_COLLAGE_PHOTOS}
+                onPress={() => {
+                  router.push({ pathname: '/collage', params: { ids: [...selected].join(',') } });
+                  setSelecting(false);
+                  setSelected(new Set());
+                }}
+              />
               <IconButton
                 icon="trash-outline"
                 label={strings.common.delete}
@@ -117,7 +128,7 @@ export function AlbumScreen() {
             <Bouncy
               accessibilityRole={selecting ? 'checkbox' : 'imagebutton'}
               accessibilityState={selecting ? { checked: isSelected } : undefined}
-              accessibilityLabel={new Date(item.createdAt).toLocaleString('ja-JP')}
+              accessibilityLabel={new Date(item.createdAt).toLocaleString(strings.date.locale)}
               onPress={() => {
                 if (selecting) toggle(item.id);
                 else router.push({ pathname: '/photo/[id]', params: { id: item.id } });
@@ -137,6 +148,11 @@ export function AlbumScreen() {
                 contentFit="cover"
                 recyclingKey={item.id}
               />
+              {item.videoUri !== null && (
+                <View style={styles.videoBadge} pointerEvents="none">
+                  <Ionicons name="play" size={14} color={colors.onPhoto} />
+                </View>
+              )}
               {selecting && (
                 <View style={[styles.check, isSelected && styles.checked]}>
                   {isSelected && <Ionicons name="heart" size={14} color={colors.accentText} />}
@@ -156,6 +172,17 @@ const styles = StyleSheet.create({
   gridRow: { gap: spacing.sm },
   tile: { borderRadius: radius.md, borderWidth: 3, borderColor: colors.surface },
   selectedTile: { borderColor: colors.accent },
+  videoBadge: {
+    position: 'absolute',
+    left: spacing.sm,
+    bottom: spacing.sm,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: colors.scrim,
+  },
   empty: { alignItems: 'center', gap: spacing.lg, marginTop: spacing.xl * 2 },
   emptyText: {
     color: colors.textMuted,

@@ -46,10 +46,10 @@ export type GenerationState =
 
 /**
  * Runs one generation (S-43): uploads a downscaled copy (nothing larger leaves the
- * device), polls until it ends, then downloads the result. Cancelling refunds the
+ * device) and, for erasing, the mask, polls until it ends, then downloads the result. Cancelling refunds the
  * credit on the server.
  */
-export function useGeneration(sourceUri: string, styleId: string) {
+export function useGeneration(sourceUri: string, styleId: string, maskUri: string | null) {
   const [state, setState] = useState<GenerationState>({ phase: 'running', id: null });
   const current = useRef<{ id: string | null; stopped: boolean }>({ id: null, stopped: false });
   const startedFor = useRef<string | null>(null);
@@ -59,7 +59,7 @@ export function useGeneration(sourceUri: string, styleId: string) {
     run.stopped = false;
     // Start once per photo and style: a remount (e.g. React strict mode) must not
     // start, and pay for, a second generation.
-    const key = `${styleId}|${sourceUri}`;
+    const key = `${styleId}|${sourceUri}|${maskUri ?? ''}`;
     if (startedFor.current === key) {
       return () => {
         run.stopped = true;
@@ -76,7 +76,8 @@ export function useGeneration(sourceUri: string, styleId: string) {
     void (async () => {
       try {
         const upload = resizeJpeg(new File(sourceUri).bytesSync(), UPLOAD_LONG_EDGE);
-        let generation = await startGeneration(styleId, upload);
+        const mask = maskUri === null ? undefined : new File(maskUri).bytesSync();
+        let generation = await startGeneration(styleId, upload, mask);
         run.id = generation.id;
         settle(generation);
         finish({ phase: 'running', id: generation.id });
@@ -109,7 +110,7 @@ export function useGeneration(sourceUri: string, styleId: string) {
     return () => {
       run.stopped = true;
     };
-  }, [sourceUri, styleId]);
+  }, [sourceUri, styleId, maskUri]);
 
   const cancel = async () => {
     const run = current.current;

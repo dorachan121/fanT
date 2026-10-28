@@ -56,7 +56,7 @@ function FilmItem({
   return (
     <Bouncy
       accessibilityRole="button"
-      accessibilityLabel={locked ? `${name}（${strings.common.premium}）` : name}
+      accessibilityLabel={locked ? strings.common.premiumItem(name) : name}
       accessibilityState={{ selected }}
       accessibilityHint={favorite ? strings.film.removeFavorite : strings.film.addFavorite}
       style={styles.item}

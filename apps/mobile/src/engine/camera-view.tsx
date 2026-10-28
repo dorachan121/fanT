@@ -4,7 +4,9 @@ import type { SharedValue } from 'react-native-reanimated';
 import {
   useCameraDevice,
   usePhotoOutput,
+  useVideoOutput,
   type CameraPhotoOutput,
+  type Recorder,
   type Constraint,
   type DeviceFilter,
 } from 'react-native-vision-camera';
@@ -16,7 +18,7 @@ import {
 
 import { reportError } from '../features/analytics/analytics';
 
-export { useCameraPermission } from 'react-native-vision-camera';
+export { useCameraPermission, useMicrophonePermission } from 'react-native-vision-camera';
 
 export type Lens = 'front' | 'back';
 export type CaptureFlash = 'off' | 'on' | 'auto';
@@ -42,6 +44,16 @@ export interface CameraViewHandle {
   /** Focuses and meters at a point in view coordinates (CAM-08). */
   focus(point: { readonly x: number; readonly y: number }): Promise<void>;
   capture(options: { readonly flash: CaptureFlash }): Promise<CapturedPhoto>;
+  /**
+   * Records a video (CAM-13) until `stopRecording` or `maxSeconds`; `onFinished`
+   * gets the file's path. Needs the `video` prop.
+   */
+  startRecording(options: {
+    readonly maxSeconds: number;
+    readonly onFinished: (path: string) => void;
+    readonly onError: (error: Error) => void;
+  }): Promise<void>;
+  stopRecording(): Promise<void>;
 }
 
 /**
@@ -72,6 +84,9 @@ interface CameraViewProps {
   /** Exposure bias in EV, within the lens's range. */
   readonly exposure: number;
   readonly onFrame: SkiaCameraProps['onFrame'];
+  /** Adds video recording (CAM-13); `audio` records sound with it. */
+  readonly video?: boolean;
+  readonly audio?: boolean;
   readonly onCapabilities?: (capabilities: LensCapabilities) => void;
   readonly style?: StyleProp<ViewStyle>;
 }
@@ -97,18 +112,30 @@ export function CameraView({
   zoom,
   exposure,
   onFrame,
+  video = false,
+  audio = false,
   onCapabilities,
   style,
 }: CameraViewProps) {
   const camera = useRef<SkiaCameraRef>(null);
+  const recorder = useRef<Recorder | null>(null);
   const wideAngle = useCameraDevice(lens, WIDE_ANGLE_ONLY);
   // Some devices label no camera on that side as wide-angle; any camera beats none.
   const anyDevice = useCameraDevice(lens);
   const device = wideAngle ?? anyDevice;
   // JPEG keeps decoding portable (Skia has no HEIC codec on every platform).
   const photoOutput = usePhotoOutput({ containerFormat: 'jpeg', qualityPrioritization: 'quality' });
+  // Videos have the preview's 4:3 shape, so they show what was framed.
+  const videoOutput = useVideoOutput({
+    targetResolution: PREVIEW_RESOLUTION,
+    enableAudio: audio,
+    fileType: 'mp4',
+  });
   // A stable array keeps the camera session from being reconfigured on every render.
-  const outputs = useMemo(() => [photoOutput], [photoOutput]);
+  const outputs = useMemo(
+    () => (video ? [photoOutput, videoOutput] : [photoOutput]),
+    [video, photoOutput, videoOutput],
+  );
 
   const capabilities = useMemo<LensCapabilities | null>(
     () =>
@@ -135,6 +162,24 @@ export function CameraView({
     },
     capture({ flash }) {
       return takePhoto(photoOutput, capabilities?.hasFlash === true ? flash : 'off');
+    },
+    async startRecording({ maxSeconds, onFinished, onError }) {
+      if (!video || recorder.current !== null) throw new Error('Cannot record now');
+      const next = await videoOutput.createRecorder({ maxDuration: maxSeconds });
+      recorder.current = next;
+      await next.startRecording(
+        (path) => {
+          recorder.current = null;
+          onFinished(path);
+        },
+        (error) => {
+          recorder.current = null;
+          onError(error);
+        },
+      );
+    },
+    async stopRecording() {
+      await recorder.current?.stopRecording();
     },
   }));
 

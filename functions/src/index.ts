@@ -10,14 +10,15 @@ import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { FirestoreStore } from './adapters/firestore-store';
 import {
   GeminiImageGenerator,
+  ImagenUpscaler,
   metadataTokenSource,
   SafeSearchModerator,
 } from './adapters/google-cloud';
-import { allowAllModerator, echoGenerator } from './adapters/mock-provider';
+import { allowAllModerator, echoGenerator, echoUpscaler } from './adapters/mock-provider';
 import { StorageImages } from './adapters/storage-images';
 import { handleRequest } from './http/api';
 import { clientAddress } from './http/client-address';
-import type { Dependencies, ImageGenerator, Moderator } from './ports';
+import type { Dependencies, ImageGenerator, ImageUpscaler, Moderator } from './ports';
 import { deleteExpiredGenerations, processGeneration } from './services/generations';
 
 initializeApp();
@@ -30,17 +31,23 @@ const REGION = 'asia-northeast1';
 const AI_PROVIDER = defineString('AI_PROVIDER', { default: 'mock' });
 /** The Vertex AI image model for `google`. */
 const AI_MODEL = defineString('AI_MODEL', { default: 'gemini-2.5-flash-image' });
+/** The Vertex AI upscaling model for `google` (AI-11). */
+const AI_UPSCALE_MODEL = defineString('AI_UPSCALE_MODEL', { default: 'imagegeneration@002' });
 const MONTHLY_CREDITS = defineInt('MONTHLY_CREDITS', { default: 10 });
 const REVENUECAT_WEBHOOK_SECRET = defineSecret('REVENUECAT_WEBHOOK_SECRET');
 
-function provider(): { generator: ImageGenerator; moderator: Moderator } {
+function provider(): {
+  generator: ImageGenerator;
+  upscaler: ImageUpscaler;
+  moderator: Moderator;
+} {
   const name = AI_PROVIDER.value();
   if (name === 'mock') {
     // The echo provider must never serve real users.
     if (process.env.GCLOUD_PROJECT?.endsWith('-prod') === true) {
       throw new Error('AI_PROVIDER=mock is not allowed in production');
     }
-    return { generator: echoGenerator, moderator: allowAllModerator };
+    return { generator: echoGenerator, upscaler: echoUpscaler, moderator: allowAllModerator };
   }
   if (name === 'google') {
     const project = process.env.GCLOUD_PROJECT;
@@ -48,6 +55,7 @@ function provider(): { generator: ImageGenerator; moderator: Moderator } {
     const token = metadataTokenSource();
     return {
       generator: new GeminiImageGenerator({ project, model: AI_MODEL.value(), token }),
+      upscaler: new ImagenUpscaler({ project, model: AI_UPSCALE_MODEL.value(), token }),
       moderator: new SafeSearchModerator({ token }),
     };
   }

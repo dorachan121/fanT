@@ -5,6 +5,8 @@ import {
   chainFilters,
   compileFilterEffects,
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_BODY_PARAMS,
+  DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   IDENTITY_LUT,
   normalizeBeautyParams,
@@ -27,8 +29,11 @@ const INPUT = createBitmap(32, 32, (x, y) => [x * 8, y * 8, 120, 255]);
 
 const NEUTRAL: FilterSettings = {
   faceShape: DEFAULT_FACE_SHAPE_PARAMS,
+  body: DEFAULT_BODY_PARAMS,
   adjust: DEFAULT_ADJUST_PARAMS,
   beauty: normalizeBeautyParams({ smoothing: 0, brightness: 0, rosiness: 0 }),
+  detail: DEFAULT_DETAIL_PARAMS,
+  local: [],
   film: normalizeFilmParams({ warmth: 0, fade: 0, vignette: 0, grain: 0 }),
   dateStamp: toDateStampGlyphs(null),
 };
@@ -64,7 +69,9 @@ describe('chainFilters', () => {
     expect(Object.keys(effects).sort()).toEqual([
       'adjust',
       'beauty',
+      'body',
       'dateStamp',
+      'detail',
       'faceShape',
       'film',
     ]);
@@ -91,7 +98,7 @@ describe('chainFilters', () => {
   });
 
   it('reshapes faces only when there are faces to reshape', () => {
-    const shaped = { ...NEUTRAL, faceShape: { eyes: 1, slim: 0 } };
+    const shaped = { ...NEUTRAL, faceShape: { ...DEFAULT_FACE_SHAPE_PARAMS, eyes: 1 } };
     expect(render(shaped).created).toBe(1);
     const face = { leftEye: [10, 12], rightEye: [22, 12], center: [16, 16], width: 24 } as const;
     expect(render(shaped, [face]).created).toBe(2);

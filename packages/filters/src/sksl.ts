@@ -35,3 +35,15 @@ half3 grade(half3 color, float warmth, float tint, float saturation, float contr
   return color;
 }
 `;
+
+/** Soft skin likelihood (0–1) of a colour, by chroma alone so it works across skin tones. */
+export const SKIN_SKSL = /* sksl */ `
+// Soft skin likelihood from BT.601 chroma, ignoring deep shadows.
+float skinMask(float3 c) {
+  float y = dot(c, float3(0.299, 0.587, 0.114));
+  float cb = 0.5 - 0.168736 * c.r - 0.331264 * c.g + 0.5 * c.b;
+  float cr = 0.5 + 0.5 * c.r - 0.418688 * c.g - 0.081312 * c.b;
+  float distanceToSkin = length((float2(cb, cr) - float2(0.40, 0.60)) / float2(0.10, 0.08));
+  return (1.0 - smoothstep(0.7, 1.0, distanceToSkin)) * smoothstep(0.08, 0.2, y);
+}
+`;

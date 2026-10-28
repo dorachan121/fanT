@@ -10,6 +10,8 @@ export interface ShapePlacement {
   /** Degrees, clockwise. */
   readonly rotation: number;
   readonly mirrored: boolean;
+  /** Narrowing across and down, in the art's own axes (a head turning away, CHR-09). */
+  readonly squash?: readonly [number, number];
 }
 
 /**
@@ -35,7 +37,8 @@ export function drawShape(
     canvas.translate(placement.center.x, placement.center.y);
     canvas.rotate(placement.rotation, 0, 0);
     const scale = placement.size / 100;
-    canvas.scale(placement.mirrored ? -scale : scale, scale);
+    const [sx, sy] = placement.squash ?? [1, 1];
+    canvas.scale((placement.mirrored ? -scale : scale) * sx, scale * sy);
     canvas.translate(-50, -50);
 
     paint.setAntiAlias(true);
