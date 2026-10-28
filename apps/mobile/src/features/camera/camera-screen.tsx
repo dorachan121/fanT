@@ -2,12 +2,7 @@ import { BEAUTY_LEVELS } from '@fant/filters';
 import { router } from 'expo-router';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import {
-  GestureDetector,
-  usePinchGesture,
-  useSimultaneousGestures,
-  useTapGesture,
-} from 'react-native-gesture-handler';
+import { GestureDetector } from 'react-native-gesture-handler';
 import { useSharedValue } from 'react-native-reanimated';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -43,6 +38,7 @@ import { TopBar } from './top-bar';
 import { useCameraActive } from './use-camera-active';
 import { useCameraLook } from './use-camera-look';
 import { usePreviewRenderer } from './use-preview-renderer';
+import { useCameraGestures } from './use-camera-gestures';
 import { useShutter } from './use-shutter';
 import { useWinkActions } from './use-wink-actions';
 import { Text } from '../../ui/text';
@@ -50,8 +46,6 @@ import { Text } from '../../ui/text';
 type SheetName = 'film' | 'beauty' | 'character' | null;
 
 const newSeed = () => Math.random();
-/** How long the focus ring and exposure slider stay after a tap. */
-const FOCUS_UI_MS = 3000;
 
 export function CameraScreen() {
   return (
@@ -86,7 +80,6 @@ function FilmCamera() {
   const [previewArea, setPreviewArea] = useState({ width: 0, height: 0 });
   const [capabilities, setCapabilities] = useState<LensCapabilities | null>(null);
   const [exposure, setExposure] = useState(0);
-  const [focus, setFocus] = useState<{ x: number; y: number; at: number } | null>(null);
   const [analysisEnabled, setAnalysisEnabled] = useState(true);
   const zoom = useSharedValue(1);
   const camera = useRef<CameraViewHandle>(null);
@@ -172,40 +165,16 @@ function FilmCamera() {
     previewArea.width > 0 ? previewArea : { width: 1, height: 1 },
   );
 
-  const tap = useTapGesture({
-    runOnJS: true,
-    onActivate: (event) => {
-      if (tapToShoot) {
-        shoot();
-        return;
-      }
-      setFocus({ x: event.x, y: event.y, at: Date.now() });
-      void camera.current?.focus({ x: event.x, y: event.y });
-      setTimeout(() => {
-        setFocus((current) =>
-          current !== null && Date.now() - current.at >= FOCUS_UI_MS ? null : current,
-        );
-      }, FOCUS_UI_MS);
-    },
+  const { gestures, focus, keepFocus } = useCameraGestures({
+    camera,
+    zoom,
+    capabilities,
+    tapToShoot,
+    onShoot: shoot,
   });
-  const zoomAtStart = useSharedValue(1);
-  const minZoom = capabilities?.minZoom ?? 1;
-  const maxZoom = Math.min(capabilities?.maxZoom ?? 1, 10);
-  // Pinch to zoom (CAM-09), on the UI thread.
-  const pinch = usePinchGesture({
-    onBegin: () => {
-      'worklet';
-      zoomAtStart.value = zoom.value;
-    },
-    onUpdate: (event) => {
-      'worklet';
-      zoom.value = Math.min(maxZoom, Math.max(minZoom, zoomAtStart.value * event.scale));
-    },
-  });
-  const gestures = useSimultaneousGestures(tap, pinch);
 
   const toggleLens = () => {
-    zoom.value = 1;
+    zoom.set(1);
     setExposure(0);
     useCameraSettings.getState().update({ lens: lens === 'front' ? 'back' : 'front' });
   };
@@ -257,7 +226,7 @@ function FilmCamera() {
                 formatValue={(value) => `${value > 0 ? '+' : ''}${value.toFixed(1)}`}
                 onChange={(value) => {
                   setExposure(value);
-                  setFocus((current) => (current === null ? null : { ...current, at: Date.now() }));
+                  keepFocus();
                 }}
               />
             </View>
