@@ -2,7 +2,7 @@ import { ADJUST_PARAM_RANGES, type AdjustParamName } from '@fant/filters';
 
 import { strings } from '../../../i18n';
 import type { PanelProps } from './panel-props';
-import { ParamSliders } from './param-sliders';
+import { ParamSliders } from '../../../ui/param-sliders';
 
 const ADJUSTMENTS: readonly AdjustParamName[] = [
   'brightness',

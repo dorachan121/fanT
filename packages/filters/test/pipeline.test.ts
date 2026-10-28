@@ -95,7 +95,7 @@ describe('chainFilters', () => {
   });
 
   it('reshapes faces only when there are faces to reshape', () => {
-    const shaped = { ...NEUTRAL, faceShape: { eyes: 1, slim: 0 } };
+    const shaped = { ...NEUTRAL, faceShape: { ...DEFAULT_FACE_SHAPE_PARAMS, eyes: 1 } };
     expect(render(shaped).created).toBe(1);
     const face = { leftEye: [10, 12], rightEye: [22, 12], center: [16, 16], width: 24 } as const;
     expect(render(shaped, [face]).created).toBe(2);

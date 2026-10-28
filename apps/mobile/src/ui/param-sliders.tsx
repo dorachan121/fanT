@@ -1,6 +1,6 @@
 import type { ParamRange } from '@fant/filters';
 
-import { Slider } from '../../../ui/slider';
+import { Slider } from './slider';
 
 /** "+25" / "-40": for two-sided values. */
 export function signedPercent(value: number): string {

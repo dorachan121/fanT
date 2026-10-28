@@ -8,7 +8,7 @@ import { Slider } from '../../../ui/slider';
 import { Text } from '../../../ui/text';
 import { colors, spacing } from '../../../ui/theme';
 import type { PanelProps, PhotoPoint } from './panel-props';
-import { signedPercent } from './param-sliders';
+import { signedPercent } from '../../../ui/param-sliders';
 
 const NEW_AREA: Omit<LocalAdjustment, 'x' | 'y'> = {
   radius: 0.25,

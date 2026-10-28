@@ -159,9 +159,12 @@ export function toShapedFaces(faces: readonly FaceGeometry[]): ShapedFace[] {
 }
 
 /** Whether face fine-tuning changes anything (and so needs faces). */
-export function shapesFaces(params: { readonly eyes: number; readonly slim: number }): boolean {
+export function shapesFaces(params: Readonly<Record<string, number>>): boolean {
   'worklet';
-  return params.eyes > 0 || params.slim > 0;
+  for (const key in params) {
+    if (params[key] !== 0) return true;
+  }
+  return false;
 }
 
 /** The largest faces first, at most `MAX_FACES` (people in the background are skipped). */

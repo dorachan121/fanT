@@ -23,15 +23,19 @@ import { FRAME_TYPES } from './frames';
 export const MAX_STROKE_POINTS = 2000;
 export const MAX_DECO_LAYERS = 500;
 
-/** Numbers within each parameter's range, e.g. the beauty or adjust parameters. */
+/**
+ * Numbers within each parameter's range, e.g. the beauty or adjust parameters. A
+ * parameter added in a later version reads as its default, so stored recipes and
+ * settings stay valid.
+ */
 export function paramsSchema<Name extends string>(ranges: Readonly<Record<Name, ParamRange>>) {
   return z.strictObject(
     Object.fromEntries(
-      Object.entries<ParamRange>(ranges).map(([name, { min, max }]) => [
+      Object.entries<ParamRange>(ranges).map(([name, { min, max, defaultValue }]) => [
         name,
-        z.number().min(min).max(max),
+        z.number().min(min).max(max).default(defaultValue),
       ]),
-    ) as Record<Name, z.ZodNumber>,
+    ) as Record<Name, z.ZodDefault<z.ZodNumber>>,
   );
 }
 

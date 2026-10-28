@@ -70,6 +70,9 @@ export const strings = {
     faceShape: '🪞 顔の微調整（ひかえめ）',
     eyes: '目をぱっちり',
     slim: '小顔',
+    nose: '鼻すっきり',
+    mouth: '口の大きさ',
+    chin: 'あごを短く',
   },
   character: {
     colors: 'カラー',

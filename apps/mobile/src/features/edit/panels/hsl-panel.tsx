@@ -6,7 +6,7 @@ import { strings } from '../../../i18n';
 import { Chip } from '../../../ui/chip';
 import { spacing } from '../../../ui/theme';
 import type { PanelProps } from './panel-props';
-import { ParamSliders } from './param-sliders';
+import { ParamSliders } from '../../../ui/param-sliders';
 
 const PARTS = ['Hue', 'Saturation', 'Luminance'] as const;
 

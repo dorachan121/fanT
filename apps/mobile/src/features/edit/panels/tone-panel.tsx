@@ -5,7 +5,7 @@ import { strings } from '../../../i18n';
 import { Text } from '../../../ui/text';
 import { colors } from '../../../ui/theme';
 import type { PanelProps } from './panel-props';
-import { ParamSliders } from './param-sliders';
+import { ParamSliders } from '../../../ui/param-sliders';
 
 const TONE = ['sharpen', 'highlights', 'shadows', 'vibrance'] as const;
 const CURVE = ['curveShadows', 'curveDarks', 'curveLights', 'curveHighlights'] as const;
