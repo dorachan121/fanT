@@ -10,6 +10,10 @@ import {
 } from '@fant/filters';
 import { z } from 'zod';
 
+/** Limits that keep a recipe small; the editor stops adding past them (DCO-*). */
+export const MAX_STROKE_POINTS = 2000;
+export const MAX_DECO_LAYERS = 500;
+
 function paramsSchema<Name extends string>(ranges: Readonly<Record<Name, ParamRange>>) {
   return z.strictObject(
     Object.fromEntries(
@@ -36,7 +40,7 @@ const decoStrokeSchema = z.strictObject({
   points: z
     .array(position)
     .min(2)
-    .max(4000)
+    .max(MAX_STROKE_POINTS * 2)
     .refine((points) => points.length % 2 === 0),
 });
 
@@ -113,7 +117,7 @@ const photoRecipeSchema = z.strictObject({
     mirror: z.boolean(),
     crop: cropSchema,
   }),
-  deco: z.array(decoLayerSchema).max(500),
+  deco: z.array(decoLayerSchema).max(MAX_DECO_LAYERS),
 });
 export type PhotoRecipe = z.infer<typeof photoRecipeSchema>;
 export type QuarterTurn = PhotoRecipe['transform']['rotation'];

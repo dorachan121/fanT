@@ -1,5 +1,12 @@
 import type { Size } from '../photo/geometry';
-import type { DecoLayer, DecoStamp, DecoStroke, DecoText } from '../photo/recipe';
+import {
+  MAX_DECO_LAYERS,
+  MAX_STROKE_POINTS,
+  type DecoLayer,
+  type DecoStamp,
+  type DecoStroke,
+  type DecoText,
+} from '../photo/recipe';
 
 export type PlacedLayer = DecoStamp | DecoText;
 
@@ -21,7 +28,6 @@ export const PEN_WIDTHS = [0.008, 0.016, 0.03] as const;
 
 /** Points closer than this (in photo fractions) are not added to a stroke. */
 const MIN_POINT_DISTANCE = 0.003;
-const MAX_STROKE_POINTS = 1999;
 
 /** Starts a stroke at a point (photo fractions). */
 export function startStroke(
@@ -96,6 +102,11 @@ export function transformLayer<T extends PlacedLayer>(layer: T, change: LayerCha
 }
 
 /** Replaces one layer, or removes it with `null`. */
+/** The layers with one more, or `null` when the photo already has as many as a recipe holds. */
+export function addLayer(layers: readonly DecoLayer[], layer: DecoLayer): DecoLayer[] | null {
+  return layers.length >= MAX_DECO_LAYERS ? null : [...layers, layer];
+}
+
 export function replaceLayer(
   layers: readonly DecoLayer[],
   index: number,

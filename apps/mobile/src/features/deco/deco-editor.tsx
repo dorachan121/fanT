@@ -23,6 +23,7 @@ import type { Size } from '../photo/geometry';
 import type { DecoLayer, DecoStroke } from '../photo/recipe';
 import { ColorPalette, StampPalette, TextComposer, WidthPicker } from './deco-tools';
 import {
+  addLayer,
   DECO_COLORS,
   extendStroke,
   hitTest,
@@ -138,7 +139,8 @@ export function DecoEditor({
       gesture.current.y = event.y;
     },
     onFinalize: () => {
-      if (stroke !== null) onChange([...layers, stroke]);
+      const next = stroke === null ? null : addLayer(layers, stroke);
+      if (next !== null) onChange(next);
       setStroke(null);
     },
   });
@@ -177,7 +179,9 @@ export function DecoEditor({
   const gestures = useSimultaneousGestures(tap, pan, pinch, rotate);
 
   const place = (layer: PlacedLayer) => {
-    onChange([...layers, layer]);
+    const next = addLayer(layers, layer);
+    if (next === null) return;
+    onChange(next);
     setSelected(layers.length);
   };
 

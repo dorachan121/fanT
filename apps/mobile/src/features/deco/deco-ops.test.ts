@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DecoLayer, DecoStamp } from '../photo/recipe';
-import { extendStroke, hitTest, replaceLayer, startStroke, transformLayer } from './deco-ops';
+import { MAX_DECO_LAYERS, type DecoLayer, type DecoStamp } from '../photo/recipe';
+import {
+  addLayer,
+  extendStroke,
+  hitTest,
+  replaceLayer,
+  startStroke,
+  transformLayer,
+} from './deco-ops';
 
 const SIZE = { width: 1000, height: 1000 };
 const STAMP: DecoStamp = {
@@ -60,5 +67,16 @@ describe('replaceLayer', () => {
     const layers: DecoLayer[] = [STAMP, { ...STAMP, x: 0.1 }];
     expect(replaceLayer(layers, 1, null)).toEqual([STAMP]);
     expect(replaceLayer(layers, 0, { ...STAMP, y: 0.9 })[0]).toMatchObject({ y: 0.9 });
+  });
+
+  it('stops adding layers at the recipe limit', () => {
+    const stroke = startStroke('pen', '#ffffff', 0.01, 0.5, 0.5);
+    expect(addLayer([], stroke)).toEqual([stroke]);
+    expect(
+      addLayer(
+        Array.from({ length: MAX_DECO_LAYERS }, () => stroke),
+        stroke,
+      ),
+    ).toBeNull();
   });
 });
