@@ -178,18 +178,42 @@ export function toFaceGeometry(face: DetectedFace, map: Affine): FaceGeometry {
   };
 }
 
-/** Default anchor positions in face widths from the centre, before tilt. */
-const ANCHOR_OFFSETS: Record<FaceAnchor, readonly [number, number]> = {
-  headTop: [0, -0.62],
-  leftEar: [-0.36, -0.5],
-  rightEar: [0.36, -0.5],
-  forehead: [0, -0.3],
-  nose: [0, 0.08],
-  leftCheek: [-0.27, 0.15],
-  rightCheek: [0.27, 0.15],
-  mouth: [0, 0.3],
-  chin: [0, 0.55],
+/**
+ * Default anchor positions in face widths from the centre of the head, before it
+ * turns or tilts: across, down and towards the camera.
+ */
+const ANCHOR_OFFSETS: Record<FaceAnchor, readonly [number, number, number]> = {
+  headTop: [0, -0.62, 0],
+  leftEar: [-0.36, -0.5, 0],
+  rightEar: [0.36, -0.5, 0],
+  forehead: [0, -0.3, 0.2],
+  nose: [0, 0.08, 0.35],
+  leftCheek: [-0.27, 0.15, 0.2],
+  rightCheek: [0.27, 0.15, 0.2],
+  mouth: [0, 0.3, 0.25],
+  chin: [0, 0.55, 0.15],
 };
+
+/** How much a part is narrowed at most by the head turning away. */
+const MIN_FORESHORTEN = 0.3;
+
+/**
+ * Turns a point on the head (across, down, towards the camera; face widths) with the
+ * head's yaw and pitch (CHR-09) and drops the depth: what is in front of the face
+ * moves the way the head turns.
+ */
+export function turnWithHead(
+  face: FaceGeometry,
+  local: readonly [number, number, number],
+): [number, number] {
+  'worklet';
+  const yaw = (face.yaw * Math.PI) / 180;
+  const pitch = (face.pitch * Math.PI) / 180;
+  const [dx, dy, dz] = local;
+  const x = dx * Math.cos(yaw) + dz * Math.sin(yaw);
+  const z = -dx * Math.sin(yaw) + dz * Math.cos(yaw);
+  return [x, dy * Math.cos(pitch) - z * Math.sin(pitch)];
+}
 
 /** Offsets `local` (in face widths, along the face's own axes) from `origin`. */
 function offsetAlongFace(
@@ -215,7 +239,7 @@ export function anchorPoint(face: FaceGeometry, anchor: FaceAnchor): Point {
   if (anchor === 'leftCheek' && face.cheeks !== null) return face.cheeks[0];
   if (anchor === 'rightCheek' && face.cheeks !== null) return face.cheeks[1];
   if (anchor === 'mouth' && face.mouth !== null) return face.mouth;
-  return offsetAlongFace(face, face.center, ANCHOR_OFFSETS[anchor]);
+  return offsetAlongFace(face, face.center, turnWithHead(face, ANCHOR_OFFSETS[anchor]));
 }
 
 export interface PartPlacement {
@@ -225,16 +249,27 @@ export interface PartPlacement {
   /** Degrees, clockwise. */
   readonly rotation: number;
   readonly mirrored: boolean;
+  /** Narrowing across and down as the head turns and nods (CHR-09). */
+  readonly squash: readonly [number, number];
 }
 
-/** Where to draw one character part on this face (CHR-01). */
+/** Where to draw one character part on this face (CHR-01), turned with the head (CHR-09). */
 export function placePart(face: FaceGeometry, part: CharacterPart): PartPlacement {
   'worklet';
+  const [dx, dy] = part.offset;
   return {
-    center: offsetAlongFace(face, anchorPoint(face, part.anchor), part.offset),
+    center: offsetAlongFace(
+      face,
+      anchorPoint(face, part.anchor),
+      turnWithHead(face, [dx, dy, part.depth ?? 0]),
+    ),
     size: part.size * face.width,
     rotation: face.roll + part.rotation,
     mirrored: part.mirrored,
+    squash: [
+      Math.max(MIN_FORESHORTEN, Math.cos((face.yaw * Math.PI) / 180)),
+      Math.max(MIN_FORESHORTEN, Math.cos((face.pitch * Math.PI) / 180)),
+    ],
   };
 }
 

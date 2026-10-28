@@ -8,12 +8,14 @@ import { drawMakeup } from './draw-makeup';
 /**
  * What is drawn over the retouched faces and under the film look: makeup
  * (BTY-07/09/10), then the character (CHR-04). `null` when there is nothing to
- * draw. Shared by the live preview and the saved photo so both look the same.
+ * draw. Shared by the live preview and the saved photo so both look the same;
+ * `time` (seconds) is where moving parts are (CHR-08).
  */
 export function faceOverlay(
   faces: readonly FaceGeometry[],
   makeup: Makeup | null,
   character: CharacterDrawing | null,
+  time: number,
 ): ((canvas: SkCanvas) => void) | null {
   'worklet';
   const withMakeup = makeup !== null && hasMakeup(makeup);
@@ -21,6 +23,6 @@ export function faceOverlay(
   return (canvas) => {
     'worklet';
     if (withMakeup) drawMakeup(canvas, makeup, faces);
-    if (character !== null) drawCharacter(canvas, character, faces);
+    if (character !== null) drawCharacter(canvas, character, faces, time);
   };
 }

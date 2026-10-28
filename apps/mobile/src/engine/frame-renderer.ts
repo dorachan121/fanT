@@ -77,7 +77,7 @@ export function useFrameRenderer({
             drawFiltered(canvas, source, output, {
               ...inputs,
               faces: shaping ? toShapedFaces(tracked) : undefined,
-              overlay: faceOverlay(tracked, makeup, character),
+              overlay: faceOverlay(tracked, makeup, character, startedAt / 1000),
             });
           } finally {
             source.dispose();

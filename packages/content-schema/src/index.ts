@@ -4,12 +4,15 @@ export {
   characterSchema,
   colorRoleSchema,
   FACE_ANCHORS,
+  PART_MOTIONS,
   type Character,
   type CharacterPart,
   type CharacterShape,
   type CharacterVariant,
   type ColorRole,
   type FaceAnchor,
+  type PartMotion,
+  type PartMotionType,
 } from './character';
 export {
   assetRefSchema,

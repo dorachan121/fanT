@@ -63,9 +63,14 @@ describe('builtInManifest', () => {
     );
   });
 
-  it('offers 3–5 characters, 2+ free layouts and 30 stamps (R-08)', () => {
-    expect(manifest.characters.length).toBeGreaterThanOrEqual(3);
-    expect(manifest.characters.length).toBeLessThanOrEqual(5);
+  it('offers 8+ characters, some moving and some 3D (CNT-06, CHR-08/09)', () => {
+    expect(manifest.characters.length).toBeGreaterThanOrEqual(8);
+    const parts = manifest.characters.flatMap(({ parts }) => parts);
+    expect(parts.some(({ motion }) => motion !== undefined)).toBe(true);
+    expect(parts.some(({ depth }) => depth !== undefined)).toBe(true);
+  });
+
+  it('offers 2+ free layouts and 30 stamps (R-08)', () => {
     expect(manifest.layouts.filter(({ tier }) => tier === 'free').length).toBeGreaterThanOrEqual(2);
     expect(manifest.stamps.length).toBeGreaterThanOrEqual(30);
   });

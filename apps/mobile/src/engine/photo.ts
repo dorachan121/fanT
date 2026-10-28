@@ -36,6 +36,9 @@ import { loadFilmLut } from './lut';
 import { detectFacesInImage } from './still-faces';
 import { makeSurface } from './surface';
 
+/** The span of moments a saved photo's moving parts are frozen at. */
+const MOTION_SECONDS = 10;
+
 /** JPEG quality for saved photos (03 §3: about 90). */
 const JPEG_QUALITY = 92;
 
@@ -163,7 +166,8 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
       faces: shaping ? toShapedFaces(faces) : undefined,
       seed: recipe.seed,
       lut,
-      overlay: faceOverlay(faces, recipe.makeup, character),
+      // Moving parts (CHR-08) stop at a moment fixed per photo, so re-renders match.
+      overlay: faceOverlay(faces, recipe.makeup, character, recipe.seed * MOTION_SECONDS),
     });
     canvas.restore();
     drawFrameOverlay(canvas, recipe.frame, size, window, recipe.seed);

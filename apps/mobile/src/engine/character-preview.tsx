@@ -5,6 +5,9 @@ import { useMemo } from 'react';
 import type { FaceGeometry } from '../features/character/face-geometry.worklet';
 import { drawCharacter } from './draw-character';
 
+/** When moving parts are shown in the still preview: mid-way, so they are spread out. */
+const PREVIEW_TIME = 0.4;
+
 /** A character on a plain face, for the character list (S-13). */
 export function CharacterPreview({
   character,
@@ -30,7 +33,7 @@ export function CharacterPreview({
     };
     const recorder = Skia.PictureRecorder();
     const canvas = recorder.beginRecording(Skia.XYWHRect(0, 0, size, size));
-    drawCharacter(canvas, { character, variant, images: {} }, [face]);
+    drawCharacter(canvas, { character, variant, images: {} }, [face], PREVIEW_TIME);
     const recorded = recorder.finishRecordingAsPicture();
     recorder.dispose();
     return recorded;

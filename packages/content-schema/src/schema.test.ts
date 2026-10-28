@@ -137,6 +137,22 @@ describe('characterSchema', () => {
     expect(characterSchema.safeParse(character).success).toBe(true);
   });
 
+  it('takes moving and 3D parts, within limits (CHR-08/09)', () => {
+    const [part] = character.parts;
+    const moving = {
+      ...part,
+      depth: 0.3,
+      motion: { type: 'fall', count: 8, speed: 0.5, spread: 1.2 },
+    };
+    expect(characterSchema.safeParse({ ...character, parts: [moving] }).success).toBe(true);
+    expect(
+      characterSchema.safeParse({
+        ...character,
+        parts: [{ ...moving, motion: { ...moving.motion, count: 50 } }],
+      }).success,
+    ).toBe(false);
+  });
+
   it('rejects duplicate variants and malformed colours', () => {
     const variant = character.variants[0];
     expect(characterSchema.safeParse({ ...character, variants: [variant, variant] }).success).toBe(

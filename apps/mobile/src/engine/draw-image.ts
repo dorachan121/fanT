@@ -21,7 +21,8 @@ export function drawImageCentered(
     canvas.save();
     canvas.translate(placement.center.x, placement.center.y);
     canvas.rotate(placement.rotation, 0, 0);
-    canvas.scale(placement.mirrored ? -scale : scale, scale);
+    const [sx, sy] = placement.squash ?? [1, 1];
+    canvas.scale((placement.mirrored ? -scale : scale) * sx, scale * sy);
     canvas.drawImage(image, -width / 2, -height / 2, paint);
     canvas.restore();
   } finally {

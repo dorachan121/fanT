@@ -40,6 +40,11 @@ export const CHARACTER_SHAPES = [
   'star',
   'ribbon',
   'sparkle',
+  'sunglasses',
+  'heart_glasses',
+  'crown',
+  'petal',
+  'flower',
 ] as const;
 export type CharacterShape = (typeof CHARACTER_SHAPES)[number];
 
@@ -56,6 +61,20 @@ const partArtSchema = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('image'), image: assetRefSchema }),
 ]);
 
+/** How a part moves (CHR-08): it becomes `count` copies moving around its place. */
+export const PART_MOTIONS = ['fall', 'rise', 'orbit', 'twinkle'] as const;
+export type PartMotionType = (typeof PART_MOTIONS)[number];
+
+const partMotionSchema = z.strictObject({
+  type: z.enum(PART_MOTIONS),
+  count: z.number().int().min(1).max(12),
+  /** Cycles per second, roughly. */
+  speed: z.number().min(0.05).max(3),
+  /** How far the copies spread, in face widths. */
+  spread: z.number().min(0).max(2),
+});
+export type PartMotion = z.infer<typeof partMotionSchema>;
+
 /** One sticker on the face. Sizes and offsets are in face widths, so they scale with the face. */
 const characterPartSchema = z.strictObject({
   anchor: z.enum(FACE_ANCHORS),
@@ -64,6 +83,12 @@ const characterPartSchema = z.strictObject({
   size: z.number().min(0.02).max(2),
   rotation: z.number().min(-180).max(180),
   mirrored: z.boolean(),
+  /**
+   * How far in front of the face the part is, in face widths (CHR-09): parts follow
+   * the head as it turns. Omitted means on the face.
+   */
+  depth: z.number().min(-1).max(1).optional(),
+  motion: partMotionSchema.optional(),
 });
 export type CharacterPart = z.infer<typeof characterPartSchema>;
 

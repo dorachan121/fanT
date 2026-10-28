@@ -7,6 +7,7 @@ import {
   placePart,
   primaryFaces,
   toFaceGeometry,
+  turnWithHead,
   type DetectedFace,
 } from './face-geometry.worklet';
 
@@ -68,6 +69,23 @@ describe('anchors and parts', () => {
     const placement = placePart({ ...face, roll: 20 }, PART);
     expect(placement.size).toBe(80);
     expect(placement.rotation).toBe(30);
+  });
+
+  it('moves parts in front of the face the way the head turns (CHR-09)', () => {
+    const turned = { ...face, yaw: 30 };
+    const [x] = turnWithHead(turned, [0, 0, 0.5]);
+    expect(x).toBeCloseTo(0.5 * Math.sin(Math.PI / 6));
+    const [, y] = turnWithHead({ ...face, pitch: 30 }, [0, 0, 0.5]);
+    expect(y).toBeLessThan(0);
+    const glasses = placePart(turned, { ...PART, anchor: 'nose', depth: 0.3 });
+    expect(glasses.center.x).toBeGreaterThan(200);
+    expect(glasses.squash[0]).toBeCloseTo(Math.cos(Math.PI / 6));
+  });
+
+  it('does not move parts of a face looking straight on', () => {
+    const placement = placePart(face, { ...PART, depth: 0.5 });
+    expect(placement.center).toEqual(placePart(face, PART).center);
+    expect(placement.squash).toEqual([1, 1]);
   });
 
   it('keeps at most four of the largest faces', () => {
