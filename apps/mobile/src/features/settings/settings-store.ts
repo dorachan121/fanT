@@ -11,15 +11,18 @@ export type WinkAction = (typeof WINK_ACTIONS)[number];
 /** Days to keep originals (ALB-03); `null` keeps them. */
 export const RETENTION_CHOICES = [30, 90, null] as const;
 
+/** Export sizes (SHR-04): full resolution, or 2048 px on the long edge for social media. */
+export const EXPORT_SIZES = ['full', 'sns'] as const;
+export type ExportSize = (typeof EXPORT_SIZES)[number];
+
 const settingsSchema = z.object({
   onboardingCompleted: z.boolean(),
-  /** Export size (SHR-04): full resolution or 2048px on the long edge for social media. */
-  saveSize: z.enum(['full', 'sns']),
+  saveSize: z.enum(EXPORT_SIZES),
   /** Film-advance haptics on the shutter (CAM-11). */
   shutterFeedback: z.boolean(),
   /** Tapping the preview takes a photo instead of focusing (CAM-03). */
   tapToShoot: z.boolean(),
-  originalRetentionDays: z.union([z.literal(30), z.literal(90), z.null()]),
+  originalRetentionDays: z.literal(RETENTION_CHOICES),
   winkGestures: z.object({
     enabled: z.boolean(),
     rightEye: z.enum(WINK_ACTIONS),

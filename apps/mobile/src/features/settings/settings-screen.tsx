@@ -11,7 +11,7 @@ import { applyOriginalRetention } from '../album/album-db';
 import { reportError } from '../analytics/analytics';
 import { restorePurchases, usePremium } from '../purchases/purchases-store';
 import { ChoiceRow, InfoRow, LinkRow, Section, SwitchRow } from './settings-rows';
-import { RETENTION_CHOICES, useSettings, WINK_ACTIONS } from './settings-store';
+import { EXPORT_SIZES, RETENTION_CHOICES, useSettings, WINK_ACTIONS } from './settings-store';
 
 /** Settings (S-70, SET-01/03/04, GST-03). */
 export function SettingsScreen() {
@@ -66,7 +66,7 @@ export function SettingsScreen() {
       <Section title={strings.settings.sections.saving}>
         <ChoiceRow
           label={strings.settings.saveSize}
-          options={['full', 'sns'] as const}
+          options={EXPORT_SIZES}
           value={settings.saveSize}
           format={(size) => strings.photo.saveSize[size]}
           onChange={(saveSize) => {

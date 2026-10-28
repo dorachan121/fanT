@@ -5,8 +5,8 @@ import { strings } from '../../i18n';
 import { showError } from '../../ui/dialogs';
 import { reportError, track } from '../analytics/analytics';
 import type { AlbumPhoto } from '../album/album-types';
-import { useSettings } from '../settings/settings-store';
-import { PhotoLibraryPermissionError, saveToLibrary, sharePhoto, type ExportSize } from './export';
+import { useSettings, type ExportSize } from '../settings/settings-store';
+import { PhotoLibraryPermissionError, saveToLibrary, sharePhoto } from './export';
 
 /** Asks for a store review after this many saves (ANL-04): a moment the user is happy. */
 const REVIEW_AFTER_SAVES = 5;

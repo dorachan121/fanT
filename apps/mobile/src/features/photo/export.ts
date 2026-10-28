@@ -5,6 +5,7 @@ import { shareAsync } from 'expo-sharing';
 import { reportError } from '../analytics/analytics';
 import { resizeJpeg } from '../../engine/photo';
 import { tempDirectory } from '../../lib/temp-files';
+import type { ExportSize } from '../settings/settings-store';
 
 /** The device album photos are saved into (SHR-01). */
 const DEVICE_ALBUM = 'fanT';
@@ -14,8 +15,6 @@ const SNS_LONG_EDGE = 2048;
 export class PhotoLibraryPermissionError extends Error {
   override readonly name = 'PhotoLibraryPermissionError';
 }
-
-export type ExportSize = 'full' | 'sns';
 
 /** Writes the photo to a temporary file of the chosen size; the caller deletes it. */
 function exportFile(source: File, size: ExportSize): File {
