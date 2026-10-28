@@ -2,6 +2,7 @@ import {
   chainFilters,
   compileFilterEffects,
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_BODY_PARAMS,
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   IDENTITY_LUT,
@@ -129,6 +130,7 @@ export class StudioRenderer {
           this.effects,
           {
             faceShape: DEFAULT_FACE_SHAPE_PARAMS,
+            body: DEFAULT_BODY_PARAMS,
             adjust: DEFAULT_ADJUST_PARAMS,
             beauty: look.beauty,
             detail: DEFAULT_DETAIL_PARAMS,

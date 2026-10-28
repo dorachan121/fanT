@@ -5,6 +5,7 @@ import {
   chainFilters,
   compileFilterEffects,
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_BODY_PARAMS,
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   IDENTITY_LUT,
@@ -28,6 +29,7 @@ const INPUT = createBitmap(32, 32, (x, y) => [x * 8, y * 8, 120, 255]);
 
 const NEUTRAL: FilterSettings = {
   faceShape: DEFAULT_FACE_SHAPE_PARAMS,
+  body: DEFAULT_BODY_PARAMS,
   adjust: DEFAULT_ADJUST_PARAMS,
   beauty: normalizeBeautyParams({ smoothing: 0, brightness: 0, rosiness: 0 }),
   detail: DEFAULT_DETAIL_PARAMS,
@@ -67,6 +69,7 @@ describe('chainFilters', () => {
     expect(Object.keys(effects).sort()).toEqual([
       'adjust',
       'beauty',
+      'body',
       'dateStamp',
       'detail',
       'faceShape',

@@ -1,10 +1,12 @@
 import { resolveFilmParams, type Film } from '@fant/content-schema';
 import {
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_BODY_PARAMS,
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   toDateStampGlyphs,
   type AdjustParams,
+  type BodyParams,
   type BeautyParams,
   type DateStamp,
   type DetailParams,
@@ -22,6 +24,8 @@ export function filterSettingsFor(input: {
   readonly adjust?: AdjustParams;
   /** Face fine-tuning (BTY-04); off when omitted. */
   readonly faceShape?: FaceShapeParams;
+  /** Body reshaping (EDT-13); none when omitted. */
+  readonly body?: BodyParams;
   /** The editor's detailed adjustments and local areas (EDT-07–10); none when omitted. */
   readonly detail?: DetailParams;
   readonly local?: readonly LocalAdjustment[];
@@ -29,6 +33,7 @@ export function filterSettingsFor(input: {
 }): FilterSettings {
   return {
     faceShape: input.faceShape ?? DEFAULT_FACE_SHAPE_PARAMS,
+    body: input.body ?? DEFAULT_BODY_PARAMS,
     adjust: input.adjust ?? DEFAULT_ADJUST_PARAMS,
     beauty: input.beauty,
     detail: input.detail ?? DEFAULT_DETAIL_PARAMS,

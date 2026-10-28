@@ -4,7 +4,9 @@ import {
   BEAUTY_LEVELS,
   BEAUTY_PARAM_RANGES,
   DATE_STAMP_FORMATS,
+  BODY_PARAM_RANGES,
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_BODY_PARAMS,
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   DETAIL_PARAM_RANGES,
@@ -18,6 +20,7 @@ import {
 import { z } from 'zod';
 
 import { makeupSchema, NO_MAKEUP, type Makeup } from '../makeup/makeup';
+import { hairSchema, healSpotSchema, MAX_HEAL_SPOTS, NO_HAIR_COLOR } from '../retouch/retouch';
 import { FRAME_TYPES } from './frames';
 
 /** Limits that keep a recipe small; the editor stops adding past them (DCO-*). */
@@ -153,6 +156,14 @@ const photoRecipeSchema = z.strictObject({
   detail: paramsSchema(DETAIL_PARAM_RANGES).default(DEFAULT_DETAIL_PARAMS),
   /** Local areas (EDT-10); missing in older recipes. */
   local: z.array(localAdjustmentSchema).max(MAX_LOCAL_ADJUSTMENTS).default([]),
+  /** Blemishes smoothed away (BTY-11); missing in older recipes. */
+  heal: z.array(healSpotSchema).max(MAX_HEAL_SPOTS).default([]),
+  /** Body reshaping (EDT-13); missing in older recipes. */
+  body: paramsSchema(BODY_PARAM_RANGES).default(DEFAULT_BODY_PARAMS),
+  /** Background blur behind the people (EDT-11); missing in older recipes. */
+  backgroundBlur: z.number().min(0).max(1).default(0),
+  /** Hair colour (EDT-12); missing in older recipes. */
+  hair: hairSchema.default(NO_HAIR_COLOR),
   /** Makeup and touch-ups (BTY-07/09/10); missing in older recipes. */
   makeup: makeupSchema.default(NO_MAKEUP),
   /** Face fine-tuning (BTY-04); recipes saved without it leave faces as they are. */
@@ -192,6 +203,10 @@ export function newRecipe(options: {
     frame: null,
     faceShape: options.faceShape ?? DEFAULT_FACE_SHAPE_PARAMS,
     makeup: options.makeup ?? NO_MAKEUP,
+    heal: [],
+    body: DEFAULT_BODY_PARAMS,
+    backgroundBlur: 0,
+    hair: NO_HAIR_COLOR,
     detail: DEFAULT_DETAIL_PARAMS,
     local: [],
   };

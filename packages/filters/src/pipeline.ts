@@ -4,6 +4,13 @@ import { BEAUTY_SHADER_NAME, BEAUTY_SHADER_SOURCE } from './beauty/beauty-shader
 import { toBeautyUniforms } from './beauty/beauty-uniforms';
 import { toDateStampUniforms, type DateStampGlyphs } from './date-stamp/date-stamp';
 import { DATE_STAMP_SHADER_NAME, DATE_STAMP_SHADER_SOURCE } from './date-stamp/date-stamp-shader';
+import {
+  BODY_SHADER_NAME,
+  BODY_SHADER_SOURCE,
+  reshapesBody,
+  toBodyUniforms,
+  type BodyParams,
+} from './body/body';
 import type { DetailParams, LocalAdjustment } from './detail/detail-params';
 import { DETAIL_SHADER_NAME, DETAIL_SHADER_SOURCE } from './detail/detail-shader';
 import { toDetailUniforms } from './detail/detail-uniforms';
@@ -26,6 +33,7 @@ export interface ShaderEffect<TShader> extends UniformLayout {
 
 export interface FilterEffects<TShader> {
   readonly faceShape: ShaderEffect<TShader>;
+  readonly body: ShaderEffect<TShader>;
   readonly adjust: ShaderEffect<TShader>;
   readonly beauty: ShaderEffect<TShader>;
   readonly detail: ShaderEffect<TShader>;
@@ -36,6 +44,8 @@ export interface FilterEffects<TShader> {
 /** Everything that decides how a photo looks; recorded with each shot. */
 export interface FilterSettings {
   readonly faceShape: FaceShapeParams;
+  /** Body reshaping (EDT-13). */
+  readonly body: BodyParams;
   readonly adjust: AdjustParams;
   readonly beauty: BeautyParams;
   /** The editor's detailed adjustments (EDT-07–09). */
@@ -80,8 +90,8 @@ function isNeutral(params: Readonly<Record<string, number>>): boolean {
 }
 
 /**
- * Face fine-tuning, corrections, skin retouching and detailed adjustments
- * (face shape → adjust → beauty → detail).
+ * Face fine-tuning, body reshaping, corrections, skin retouching and detailed
+ * adjustments (face shape → body → adjust → beauty → detail).
  * Runs before anything drawn over the face (characters), so stickers are not
  * smoothed or reshaped.
  * Marked as a worklet so it can run on the camera frame thread.
@@ -99,6 +109,14 @@ export function chainRetouch<TShader>(
   if (faces.length > 0 && !isNeutral(settings.faceShape)) {
     shader = effects.faceShape.makeShaderWithChildren(
       packUniforms(effects.faceShape, toFaceShapeUniforms(settings.faceShape, faces)),
+      [shader],
+    );
+    created.push(shader);
+  }
+  // After the face shape, which is placed on the unwarped faces.
+  if (reshapesBody(settings.body)) {
+    shader = effects.body.makeShaderWithChildren(
+      packUniforms(effects.body, toBodyUniforms(settings.body, frame)),
       [shader],
     );
     created.push(shader);
@@ -177,6 +195,7 @@ export function compileFilterEffects<TEffect>(
 ): Readonly<Record<keyof FilterEffects<unknown>, TEffect>> {
   return {
     faceShape: compileRuntimeEffect(factory, FACE_SHAPE_SHADER_NAME, FACE_SHAPE_SHADER_SOURCE),
+    body: compileRuntimeEffect(factory, BODY_SHADER_NAME, BODY_SHADER_SOURCE),
     adjust: compileRuntimeEffect(factory, ADJUST_SHADER_NAME, ADJUST_SHADER_SOURCE),
     beauty: compileRuntimeEffect(factory, BEAUTY_SHADER_NAME, BEAUTY_SHADER_SOURCE),
     detail: compileRuntimeEffect(factory, DETAIL_SHADER_NAME, DETAIL_SHADER_SOURCE),

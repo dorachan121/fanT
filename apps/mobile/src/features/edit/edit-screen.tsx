@@ -22,6 +22,7 @@ import { BeautyControls, FaceShapeControls } from '../camera/beauty-sheet';
 import { useContent } from '../content/content-store';
 import { findFilm } from '../content/lookup';
 import { MakeupControls } from '../makeup/makeup-controls';
+import { addHealSpot } from '../retouch/retouch';
 import { saveEdit } from '../photo/photo-service';
 import type { PhotoRecipe } from '../photo/recipe';
 import { isLocked, usePremium } from '../purchases/purchases-store';
@@ -32,6 +33,7 @@ import { FilmPanel } from './panels/film-panel';
 import { HslPanel } from './panels/hsl-panel';
 import { addLocalArea, LocalPanel } from './panels/local-panel';
 import type { PanelProps, PhotoPoint } from './panels/panel-props';
+import { RetouchPanel, type RetouchTool } from './panels/retouch-panel';
 import { TonePanel } from './panels/tone-panel';
 import { PhotoTapLayer, type PhotoMarker } from './photo-tap-layer';
 import { usePhotoSession } from './use-photo-session';
@@ -40,6 +42,7 @@ const TABS = [
   'film',
   'beauty',
   'makeup',
+  'retouch',
   'adjust',
   'tone',
   'hsl',
@@ -59,6 +62,8 @@ export function EditScreen({ id }: { readonly id: string }) {
   const [saving, setSaving] = useState(false);
   const [photoRect, setPhotoRect] = useState<LayoutRectangle | null>(null);
   const [selectedLocal, setSelectedLocal] = useState(0);
+  const [retouchTool, setRetouchTool] = useState<RetouchTool>('heal');
+  const [healSize, setHealSize] = useState(0.025);
   const { recipe, source, outputSize } = session;
 
   if (recipe === null || source === null || outputSize === null) {
@@ -86,11 +91,25 @@ export function EditScreen({ id }: { readonly id: string }) {
       update({ local });
       setSelectedLocal(local.length - 1);
     },
+    retouch: (point) => {
+      if (retouchTool === 'body') {
+        update({ body: { ...recipe.body, legLine: point.y, bodyX: point.x } });
+        return;
+      }
+      const heal = addHealSpot(recipe.heal, point, healSize);
+      if (heal === null) showMessage(strings.retouch.full);
+      else update({ heal });
+    },
   };
-  const markers: PhotoMarker[] =
-    tab === 'local'
-      ? recipe.local.map((area, index) => ({ ...area, selected: index === selectedLocal }))
-      : [];
+  /** What is shown on the photo for the tools that place things. */
+  const markers = (): PhotoMarker[] => {
+    if (tab === 'local') {
+      return recipe.local.map((area, index) => ({ ...area, selected: index === selectedLocal }));
+    }
+    if (tab !== 'retouch') return [];
+    if (retouchTool === 'heal') return recipe.heal;
+    return [{ x: recipe.body.bodyX, y: recipe.body.legLine, radius: 0.03, selected: true }];
+  };
 
   const panels: Record<Tab, () => ReactNode> = {
     film: () => <FilmPanel {...props} takenAt={session.photo?.createdAt ?? null} />,
@@ -116,6 +135,15 @@ export function EditScreen({ id }: { readonly id: string }) {
         onChange={(makeup) => {
           update({ makeup }, 'makeup');
         }}
+      />
+    ),
+    retouch: () => (
+      <RetouchPanel
+        {...props}
+        tool={retouchTool}
+        onTool={setRetouchTool}
+        healSize={healSize}
+        onHealSize={setHealSize}
       />
     ),
     adjust: () => <AdjustPanel {...props} />,
@@ -172,7 +200,7 @@ export function EditScreen({ id }: { readonly id: string }) {
         }
       />
       <PhotoCanvas image={session.preview} photoSize={outputSize} onPhotoRect={setPhotoRect}>
-        <PhotoTapLayer rect={photoRect} markers={markers} onTap={tapActions[tab] ?? null} />
+        <PhotoTapLayer rect={photoRect} markers={markers()} onTap={tapActions[tab] ?? null} />
       </PhotoCanvas>
       <View style={[styles.panel, { paddingBottom: bottom + spacing.md }]}>
         <ScrollView

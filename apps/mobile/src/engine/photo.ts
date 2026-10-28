@@ -16,6 +16,7 @@ import {
   toShapedFaces,
 } from '../features/character/face-geometry.worklet';
 import { hasMakeup } from '../features/makeup/makeup';
+import { needsPersonMask } from '../features/retouch/retouch';
 import { filterSettingsFor } from '../features/photo/filter-settings';
 import { coverPlacement, framedPhotoRect } from '../features/photo/frames';
 import { croppedSize, fitLongEdge, type Size } from '../features/photo/geometry';
@@ -27,6 +28,8 @@ import { drawDeco, type DecoAssets } from './draw-deco';
 import { drawFiltered } from './draw-filtered';
 import { drawFrameBackground, drawFrameOverlay } from './draw-frame';
 import { faceOverlay } from './face-overlay';
+import { personMask } from './person-mask';
+import { hasRetouch, retouchSource, type RetouchInput } from './retouch-source';
 import { drawStyledText } from './draw-text';
 import { filterEffects } from './filter-effects';
 import { loadFilmLut } from './lut';
@@ -88,13 +91,28 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
   );
 
   const shaping = shapesFaces(recipe.faceShape);
+  const needsFaces =
+    input.character !== null || shaping || hasMakeup(recipe.makeup) || recipe.hair.amount > 0;
   const faces =
-    (input.character !== null || shaping || hasMakeup(recipe.makeup)) && input.originalUri !== null
+    needsFaces && input.originalUri !== null
       ? primaryFaces(
           detectFacesInImage(input.originalUri).map((face) => toFaceGeometry(face, transform)),
         )
       : [];
   const { character } = input;
+  const mask =
+    needsPersonMask(recipe) && input.originalUri !== null
+      ? await personMask(input.originalUri)
+      : null;
+  // The mask is at its own size over the original: scale it there, then like the photo.
+  const maskMatrix =
+    mask === null
+      ? null
+      : Skia.Matrix(
+          toMatrix3(
+            compose(transform, scale(image.width() / mask.width(), image.height() / mask.height())),
+          ),
+        );
 
   const surface = makeSurface(size.width, size.height);
   const matrix = Skia.Matrix(toMatrix3(transform));
@@ -105,7 +123,16 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
     MipmapMode.None,
     matrix,
   );
+  const retouch: RetouchInput = {
+    heal: recipe.heal,
+    backgroundBlur: recipe.backgroundBlur,
+    hair: recipe.hair,
+    mask: mask === null || maskMatrix === null ? null : { image: mask, matrix: maskMatrix },
+    heads: faces.map((face) => ({ center: [face.center.x, face.center.y], width: face.width })),
+  };
+  let prepared: ReturnType<typeof retouchSource> | null = null;
   try {
+    prepared = hasRetouch(retouch) ? retouchSource(source, size, retouch) : null;
     const canvas = surface.getCanvas();
     // A frame shrinks the photo into its window; the photo is cropped, never stretched.
     const window = framedPhotoRect(recipe.frame, size);
@@ -119,7 +146,7 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
     );
     canvas.translate(placement.x, placement.y);
     canvas.scale(placement.scale, placement.scale);
-    drawFiltered(canvas, source, size, {
+    drawFiltered(canvas, prepared?.shader ?? source, size, {
       effects: filterEffects(),
       settings: filterSettingsFor({
         film,
@@ -131,6 +158,7 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
         faceShape: recipe.faceShape,
         detail: recipe.detail,
         local: recipe.local,
+        body: recipe.body,
       }),
       faces: shaping ? toShapedFaces(faces) : undefined,
       seed: recipe.seed,
@@ -144,6 +172,8 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
     surface.flush();
     return surface.makeImageSnapshot();
   } finally {
+    prepared?.dispose();
+    maskMatrix?.dispose();
     source.dispose();
     matrix.dispose();
     surface.dispose();

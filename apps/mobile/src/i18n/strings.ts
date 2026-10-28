@@ -97,6 +97,7 @@ export const strings = {
       beauty: '美肌',
       adjust: '補正',
       makeup: 'メイク',
+      retouch: 'レタッチ',
       tone: 'トーン',
       hsl: 'カラー',
       local: '部分補正',
@@ -161,6 +162,19 @@ export const strings = {
     },
     teeth: '歯を白く',
     underEye: 'クマ消し',
+  },
+  retouch: {
+    tools: { heal: '🩹 ニキビ・シミ消し', body: '🦵 体型' },
+    hints: {
+      heal: '消したい所をタップしてね👆',
+      body: '脚の付け根あたり（体の真ん中）をタップしてから調整してね',
+    },
+    healSize: 'ブラシの大きさ',
+    undoSpot: 'ひとつ戻す',
+    full: 'これ以上は消せないよ🙏',
+    body: { legs: '脚を長く', slim: 'ほっそり' },
+    backgroundBlur: '背景ぼかし',
+    hair: '髪色',
   },
   frames: {
     none: 'なし',
