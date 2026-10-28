@@ -42,7 +42,7 @@ eas env:create --environment production --name API_BASE_URL --value https://…
    ```sh
    firebase deploy --only functions,firestore,storage
    ```
-   Firestore の `generations.expireAt` に TTL ポリシーが設定され、1時間ごとの削除処理（`deleteExpired`）と合わせて、写真と生成結果を24時間以内に消します（非機能要件 §6）
+   Firestore の `generations`・`rates`・`webhookEvents` の `expireAt` に TTL ポリシーが設定され（`rates` と `webhookEvents` は古い記録が溜まらないように）、1時間ごとの削除処理（`deleteExpired`）と合わせて、写真と生成結果を24時間以内に消します（非機能要件 §6）
 6. 分析（ANL-01）: Cloud Logging のシンクで `jsonPayload.message="analytics.event"` を BigQuery に送る。エラー（ANL-02）は同じログの `analytics.event` のうち `name="error"`
 
 ローカルでは `firebase emulators:start` で Functions・Firestore・Storage を動かせます（`AI_PROVIDER=mock`）。

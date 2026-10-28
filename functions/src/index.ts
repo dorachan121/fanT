@@ -110,7 +110,10 @@ export const runGeneration = onDocumentCreated(
 );
 
 /** Deletes uploads, results and jobs older than 24 hours (03 §6). */
-export const deleteExpired = onSchedule({ schedule: 'every 1 hours', region: REGION }, async () => {
-  const deleted = await deleteExpiredGenerations(deps());
-  logger.info('generations.deleted', { deleted });
-});
+export const deleteExpired = onSchedule(
+  { schedule: 'every 1 hours', region: REGION, timeoutSeconds: 540 },
+  async () => {
+    const deleted = await deleteExpiredGenerations(deps());
+    logger.info('generations.deleted', { deleted });
+  },
+);

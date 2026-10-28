@@ -239,12 +239,21 @@ export async function reportGeneration(
   });
 }
 
+const DELETE_BATCH = 500;
+/** Keeps one run well inside the scheduler's time limit; the next run continues. */
+const MAX_DELETE_BATCHES = 10;
+
 /** Deletes jobs, uploads and results older than the retention (03 §6). */
 export async function deleteExpiredGenerations(deps: Dependencies): Promise<number> {
-  const ids = await deps.store.listGenerationsBefore(deps.now() - RETENTION_MS, 500);
-  for (const id of ids) {
-    await deps.images.deleteImages(id);
-    await deps.store.deleteGeneration(id);
+  let deleted = 0;
+  for (let batch = 0; batch < MAX_DELETE_BATCHES; batch++) {
+    const ids = await deps.store.listGenerationsBefore(deps.now() - RETENTION_MS, DELETE_BATCH);
+    for (const id of ids) {
+      await deps.images.deleteImages(id);
+      await deps.store.deleteGeneration(id);
+    }
+    deleted += ids.length;
+    if (ids.length < DELETE_BATCH) break;
   }
-  return ids.length;
+  return deleted;
 }
