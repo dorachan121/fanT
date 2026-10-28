@@ -134,7 +134,6 @@ export const strings = {
   ai: {
     title: '✨ AI変身',
     choosePhoto: '写真をえらんでね',
-    fromAlbum: 'アルバムから',
     fromDevice: '端末の写真から',
     chooseStyle: 'なりたいスタイルは？',
     credits: (count: number) => `💎 ${String(count)}`,
