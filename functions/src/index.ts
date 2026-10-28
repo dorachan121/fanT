@@ -11,6 +11,7 @@ import { FirestoreStore } from './adapters/firestore-store';
 import { allowAllModerator, echoGenerator } from './adapters/mock-provider';
 import { StorageImages } from './adapters/storage-images';
 import { handleRequest } from './http/api';
+import { clientAddress } from './http/client-address';
 import type { Dependencies, ImageGenerator, Moderator } from './ports';
 import { deleteExpiredGenerations, processGeneration } from './services/generations';
 
@@ -85,7 +86,7 @@ export const api = onRequest(
         path: request.path,
         headers: { authorization: request.header('authorization') },
         body: request.body as unknown,
-        address: request.ip ?? 'unknown',
+        address: clientAddress(request.header('x-forwarded-for'), request.ip),
       },
     );
     response.status(result.status);
