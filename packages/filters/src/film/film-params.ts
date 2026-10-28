@@ -46,3 +46,24 @@ const filmParams = defineParams(FILM_PARAM_RANGES);
 export const DEFAULT_FILM_PARAMS: FilmParams = filmParams.defaults;
 
 export const normalizeFilmParams = filmParams.normalize;
+
+/** Film effects that depend on where a pixel is, or on its neighbours. */
+const SPATIAL_FILM_PARAMS = [
+  'bloom',
+  'lightLeak',
+  'sparkle',
+  'chromaticAberration',
+  'vignette',
+  'grain',
+  'lowRes',
+  'jpegNoise',
+] as const satisfies readonly FilmParamName[];
+
+/**
+ * Only the film's colour (LUT and grading), each pixel on its own, so it can be
+ * baked into a 3D LUT for video (CAM-13).
+ */
+export function colorOnlyFilmParams(params: FilmParams): FilmParams {
+  const spatial = Object.fromEntries(SPATIAL_FILM_PARAMS.map((name) => [name, 0]));
+  return { ...params, ...spatial };
+}

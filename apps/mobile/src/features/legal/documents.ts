@@ -49,7 +49,7 @@ const JAPANESE = {
     body: `【運営者名】（以下「運営者」）は、アプリ「fanT」における個人情報の取り扱いを次のとおり定めます。
 
 1. 端末の中だけで処理する情報
-撮影した写真、加工、顔の位置や目の開き具合などの検出結果は、端末の中だけで処理します。顔の検出結果は保存も送信もしません。保存する写真から位置情報（GPS）は削除します。
+撮影した写真、加工、顔の位置や目の開き具合などの検出結果は、端末の中だけで処理します。顔の検出結果は保存も送信もしません。保存する写真から位置情報（GPS）は削除します。動画の撮影ではマイクで音声を録音しますが、動画は端末の中だけで保存・加工します。
 
 2. サーバーに送る情報
 ・AI変身・けしゴム・高画質化：ユーザーが選んだ写真（長辺1024ピクセルに縮小したもの。けしゴムではなぞった範囲も）。処理が終わるとすぐに削除し（最長24時間）、AIの学習には使用しません。画像生成サービスの提供元にも、学習に使用しない条件で処理を委託します。
@@ -164,7 +164,7 @@ These Terms are governed by the laws of Japan. [Court] has exclusive jurisdictio
 [Operator] (the "Operator") handles personal information in the app "fanT" as follows.
 
 1. Information processed only on your device
-Photos, edits and face detection results (such as where faces are and whether eyes are open) are processed only on your device. Face detection results are never stored or sent. Location (GPS) is removed from saved photos.
+Photos, edits and face detection results (such as where faces are and whether eyes are open) are processed only on your device. Face detection results are never stored or sent. Location (GPS) is removed from saved photos. Videos record sound with the microphone, and are stored and edited only on your device.
 
 2. Information sent to our server
 - AI features: the photo you pick, reduced to 1024 pixels on its long edge (and, for erasing, the area you painted). It is deleted soon after processing (within 24 hours) and not used to train AI. The image-generation provider processes it on the condition that it is not used for training either.

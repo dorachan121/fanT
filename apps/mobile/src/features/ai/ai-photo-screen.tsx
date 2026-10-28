@@ -18,7 +18,7 @@ const COLUMNS = 3;
 
 /** Choose the photo to transform, from the album or the device (S-40, AI-01). */
 export function AiPhotoScreen() {
-  const photos = useAlbum().filter(({ kind }) => kind !== 'ai');
+  const photos = useAlbum().filter(({ kind }) => kind !== 'ai' && kind !== 'video');
   const { width } = useWindowDimensions();
   const size = (width - spacing.sm * (COLUMNS + 1)) / COLUMNS;
 

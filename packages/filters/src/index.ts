@@ -83,6 +83,7 @@ export {
   type ShapedFace,
 } from './face-shape/face-shape-uniforms';
 export {
+  colorOnlyFilmParams,
   DEFAULT_FILM_PARAMS,
   FILM_PARAM_RANGES,
   normalizeFilmParams,

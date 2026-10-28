@@ -48,6 +48,8 @@ function optionalDigits(name: string): string | null {
 
 /** Shown when the camera permission is requested (ONB-02). */
 const CAMERA_USAGE = '写真を撮影するためにカメラを使用します。';
+/** Shown when the microphone permission is requested for videos (CAM-13). */
+const MICROPHONE_USAGE = '動画に音声を録音するためにマイクを使用します。';
 
 const appVariant = resolveVariant(process.env.APP_VARIANT);
 const { name, suffix } = VARIANTS[appVariant];
@@ -70,13 +72,15 @@ const config: ExpoConfig = {
       // System texts follow the device language too, not only the app's own.
       CFBundleAllowMixedLocalizations: true,
       NSCameraUsageDescription: CAMERA_USAGE,
+      NSMicrophoneUsageDescription: MICROPHONE_USAGE,
       // Lets the app check that Instagram can take a story (SHR-03).
       LSApplicationQueriesSchemes: ['instagram-stories'],
     },
   },
   android: {
     package: appId,
-    permissions: ['android.permission.CAMERA'],
+    // The microphone records sound with short videos (CAM-13).
+    permissions: ['android.permission.CAMERA', 'android.permission.RECORD_AUDIO'],
     blockedPermissions: [
       // Read access added by expo-media-library; saving with add-only access never uses it.
       'android.permission.READ_EXTERNAL_STORAGE',
@@ -109,7 +113,7 @@ const config: ExpoConfig = {
         // would block the camera permission for the whole app, so it gets the real text.
         photosPermission: false,
         cameraPermission: CAMERA_USAGE,
-        microphonePermission: false,
+        microphonePermission: MICROPHONE_USAGE,
       },
     ],
     [

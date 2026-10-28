@@ -148,6 +148,11 @@ export function AlbumScreen() {
                 contentFit="cover"
                 recyclingKey={item.id}
               />
+              {item.videoUri !== null && (
+                <View style={styles.videoBadge} pointerEvents="none">
+                  <Ionicons name="play" size={14} color={colors.onPhoto} />
+                </View>
+              )}
               {selecting && (
                 <View style={[styles.check, isSelected && styles.checked]}>
                   {isSelected && <Ionicons name="heart" size={14} color={colors.accentText} />}
@@ -167,6 +172,17 @@ const styles = StyleSheet.create({
   gridRow: { gap: spacing.sm },
   tile: { borderRadius: radius.md, borderWidth: 3, borderColor: colors.surface },
   selectedTile: { borderColor: colors.accent },
+  videoBadge: {
+    position: 'absolute',
+    left: spacing.sm,
+    bottom: spacing.sm,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 12,
+    backgroundColor: colors.scrim,
+  },
   empty: { alignItems: 'center', gap: spacing.lg, marginTop: spacing.xl * 2 },
   emptyText: {
     color: colors.textMuted,

@@ -15,7 +15,7 @@ import { persistValidated } from '../../lib/kv-storage';
 import { makeupSchema, NO_MAKEUP } from '../makeup/makeup';
 import { ASPECT_RATIOS, calendarDateSchema, paramsSchema } from '../photo/recipe';
 
-export const CAMERA_MODES = ['film', 'character', 'puri', 'ai'] as const;
+export const CAMERA_MODES = ['film', 'video', 'character', 'puri', 'ai'] as const;
 export type CameraMode = (typeof CAMERA_MODES)[number];
 
 export const FLASH_MODES = ['off', 'on', 'auto'] as const;

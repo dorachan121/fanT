@@ -1,5 +1,7 @@
 import { resolveFilmParams, type Film } from '@fant/content-schema';
 import {
+  BEAUTY_LEVELS,
+  colorOnlyFilmParams,
   DEFAULT_ADJUST_PARAMS,
   DEFAULT_BODY_PARAMS,
   DEFAULT_DETAIL_PARAMS,
@@ -40,5 +42,19 @@ export function filterSettingsFor(input: {
     local: input.local ?? [],
     film: resolveFilmParams(input.film, { intensity: input.intensity, seed: input.seed }),
     dateStamp: toDateStampGlyphs(input.dateStamp),
+  };
+}
+
+/**
+ * What a video gets (CAM-13): only the film's colour. The video preview uses this,
+ * so it shows what will be recorded.
+ */
+export function videoSettingsOf(settings: FilterSettings): FilterSettings {
+  return {
+    ...settings,
+    film: colorOnlyFilmParams(settings.film),
+    beauty: BEAUTY_LEVELS.off,
+    faceShape: DEFAULT_FACE_SHAPE_PARAMS,
+    dateStamp: toDateStampGlyphs(null),
   };
 }

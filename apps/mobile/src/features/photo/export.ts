@@ -18,8 +18,20 @@ export class PhotoLibraryPermissionError extends Error {
   override readonly name = 'PhotoLibraryPermissionError';
 }
 
-/** Writes the photo to a temporary file of the chosen size; the caller deletes it. */
+function isVideo(file: File): boolean {
+  return file.uri.endsWith('.mp4');
+}
+
+/**
+ * Writes the photo to a temporary file of the chosen size, or copies a video (CAM-13)
+ * as it is; the caller deletes it.
+ */
 function exportFile(source: File, size: ExportSize): File {
+  if (isVideo(source)) {
+    const copy = new File(tempDirectory('export'), `fant-${String(Date.now())}.mp4`);
+    source.copySync(copy);
+    return copy;
+  }
   const file = new File(tempDirectory('export'), `fant-${String(Date.now())}.jpg`);
   const bytes = source.bytesSync();
   file.writeSync(size === 'sns' ? resizeJpeg(bytes, SNS_LONG_EDGE) : bytes);
@@ -65,11 +77,16 @@ export function shareToStories(source: File, appId: string): Promise<boolean> {
   return shareToInstagramStories(exportFile(source, 'sns').uri, { appId, topColor, bottomColor });
 }
 
-/** Opens the system share sheet with the photo (SHR-02). */
+/** Opens the system share sheet with the photo or video (SHR-02). */
 export async function sharePhoto(source: File, size: ExportSize): Promise<void> {
   const file = exportFile(source, size);
   try {
-    await shareAsync(file.uri, { mimeType: 'image/jpeg', UTI: 'public.jpeg' });
+    await shareAsync(
+      file.uri,
+      isVideo(file)
+        ? { mimeType: 'video/mp4', UTI: 'public.mpeg-4' }
+        : { mimeType: 'image/jpeg', UTI: 'public.jpeg' },
+    );
   } finally {
     file.delete();
   }

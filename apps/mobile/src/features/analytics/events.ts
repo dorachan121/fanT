@@ -18,6 +18,7 @@ export type AnalyticsEvent =
   | { readonly name: 'purchase_completed'; readonly productId: string }
   | { readonly name: 'ai_generated'; readonly styleId: string }
   | { readonly name: 'collage_made'; readonly count: number }
+  | { readonly name: 'video_recorded'; readonly filmId: string; readonly seconds: number }
   | {
       readonly name: 'error';
       readonly context: string;

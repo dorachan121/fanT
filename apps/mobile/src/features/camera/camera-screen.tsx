@@ -8,7 +8,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { listenToVolumeShutter } from '../../../modules/volume-shutter/src';
 import { APP_CONFIG } from '../../config';
-import { CameraView, type CameraViewHandle, type LensCapabilities } from '../../engine/camera-view';
+import {
+  CameraView,
+  useMicrophonePermission,
+  type CameraViewHandle,
+  type LensCapabilities,
+} from '../../engine/camera-view';
 import { useFaceTracking } from '../../engine/face-tracking';
 import { localized, strings } from '../../i18n';
 import { IconButton } from '../../ui/icon-button';
@@ -41,6 +46,8 @@ import { useCameraActive } from './use-camera-active';
 import { useCameraLook } from './use-camera-look';
 import { usePreviewRenderer } from './use-preview-renderer';
 import { useCameraGestures } from './use-camera-gestures';
+import { MAX_VIDEO_SECONDS } from '../video/video-service';
+import { useRecorder } from './use-recorder';
 import { useShutter } from './use-shutter';
 import { useWinkActions } from './use-wink-actions';
 import { Text } from '../../ui/text';
@@ -100,6 +107,18 @@ function FilmCamera() {
     },
   });
 
+  // Short videos (CAM-13): sound when the microphone is allowed, asked for on entering.
+  const videoMode = mode === 'video';
+  const recorder = useRecorder({ camera, look });
+  const microphone = useMicrophonePermission();
+  const askedMicrophone = useRef(false);
+  useEffect(() => {
+    if (!videoMode || askedMicrophone.current || !microphone.canRequestPermission) return;
+    askedMicrophone.current = true;
+    void microphone.requestPermission();
+  }, [videoMode, microphone]);
+  const busy = shutter.status !== 'idle' || recorder.saving;
+
   const locked =
     isLocked(look.film, premium) ||
     (mode === 'character' &&
@@ -112,7 +131,8 @@ function FilmCamera() {
       router.push({ pathname: '/paywall', params: { trigger: 'shutter' } });
       return;
     }
-    void shutter.shoot();
+    if (videoMode) recorder.toggle();
+    else void shutter.shoot();
   };
 
   // The volume buttons also take a photo while the camera is on screen (CAM-03).
@@ -140,7 +160,7 @@ function FilmCamera() {
 
   // Winks (GST-01/02): ignored while the shutter is busy.
   const onEyes = useWinkActions((action) => {
-    if (shutter.status !== 'idle') return;
+    if (busy) return;
     if (action === 'nextFilm') {
       selectFilm(
         nextItem(
@@ -162,13 +182,22 @@ function FilmCamera() {
     onEyes: analysisEnabled ? onEyes : null,
     // Characters, face fine-tuning and makeup all follow the faces.
     trackFaces:
-      analysisEnabled && (mode === 'character' || shapesFaces(faceShape) || hasMakeup(makeup)),
-    trackOutlines: hasMakeup(makeup),
+      analysisEnabled &&
+      !videoMode &&
+      (mode === 'character' || shapesFaces(faceShape) || hasMakeup(makeup)),
+    trackOutlines: !videoMode && hasMakeup(makeup),
   });
-  const preview = usePreviewRenderer({ look, seed, tracking, showCharacter: mode === 'character' });
+  const preview = usePreviewRenderer({
+    look,
+    seed,
+    tracking,
+    showCharacter: mode === 'character',
+    video: videoMode,
+  });
 
+  // Videos are 3:4 like the camera's frames, whatever the photo aspect ratio.
   const box = containRect(
-    { width: ASPECT_VALUES[aspect], height: 1 },
+    { width: ASPECT_VALUES[videoMode ? '3:4' : aspect], height: 1 },
     previewArea.width > 0 ? previewArea : { width: 1, height: 1 },
   );
 
@@ -213,11 +242,18 @@ function FilmCamera() {
               zoom={zoom}
               exposure={exposure}
               onFrame={preview.onFrame}
+              video={videoMode}
+              audio={microphone.hasPermission}
               onCapabilities={setCapabilities}
             />
             {grid && <GridOverlay />}
             {focus !== null && <FocusRing point={focus} />}
             {shutter.countdown !== null && <Countdown seconds={shutter.countdown} />}
+            {recorder.elapsed !== null && (
+              <Text style={styles.recording}>
+                {strings.camera.recording(recorder.elapsed, MAX_VIDEO_SECONDS)}
+              </Text>
+            )}
           </View>
         </GestureDetector>
         {focus !== null &&
@@ -275,11 +311,17 @@ function FilmCamera() {
           <IconButton
             icon="sparkles-outline"
             label={strings.camera.beauty}
+            // Skin and face effects are for photos; videos only get the film's colour.
+            disabled={videoMode}
             onPress={() => {
               setSheet('beauty');
             }}
           />
-          <ShutterButton disabled={shutter.status !== 'idle'} onPress={shoot} />
+          <ShutterButton
+            disabled={busy}
+            video={videoMode ? { recording: recorder.recording } : undefined}
+            onPress={shoot}
+          />
           <IconButton
             icon="film-outline"
             label={strings.film.title}
@@ -290,17 +332,21 @@ function FilmCamera() {
           <IconButton
             icon="camera-reverse-outline"
             label={strings.camera.switchLens}
+            disabled={recorder.recording}
             onPress={toggleLens}
           />
         </View>
-        <ModeTabs />
+        {/* Switching modes would end the recording. */}
+        {!recorder.recording && <ModeTabs />}
       </View>
 
       {locked && <Text style={styles.trial}>{strings.camera.premiumTrial}</Text>}
-      {shutter.status === 'capturing' && !shutter.screenFlash && (
+      {((shutter.status === 'capturing' && !shutter.screenFlash) || recorder.saving) && (
         <View style={styles.saving} pointerEvents="none">
           <ActivityIndicator color={colors.accent} />
-          <Text style={styles.savingText}>{strings.camera.saving}</Text>
+          <Text style={styles.savingText}>
+            {recorder.saving ? strings.camera.savingVideo : strings.camera.saving}
+          </Text>
         </View>
       )}
       {shutter.screenFlash && <ScreenFlash />}
@@ -401,6 +447,19 @@ const styles = StyleSheet.create({
     ...softShadow,
   },
   savingText: { color: colors.accent, fontSize: 15, fontWeight: '700' },
+  recording: {
+    position: 'absolute',
+    top: spacing.md,
+    alignSelf: 'center',
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.pill,
+    overflow: 'hidden',
+    color: colors.onPhoto,
+    fontSize: 15,
+    fontWeight: '800',
+    backgroundColor: colors.danger,
+  },
   shutterRow: {
     flexDirection: 'row',
     alignItems: 'center',

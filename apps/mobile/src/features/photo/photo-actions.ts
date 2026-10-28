@@ -41,10 +41,15 @@ export async function saveFileToLibrary(file: File, size: ExportSize): Promise<b
   }
 }
 
+/** The file an album item is saved and shared as: the video for videos (CAM-13). */
+function mediaFile(photo: AlbumPhoto): File {
+  return new File(photo.videoUri ?? photo.outputUri);
+}
+
 /** Saves an album photo at the chosen size and counts it towards the review prompt. */
 export async function savePhoto(photo: AlbumPhoto): Promise<boolean> {
   const { saveSize, savedCount, update } = useSettings.getState();
-  if (!(await saveFileToLibrary(new File(photo.outputUri), saveSize))) return false;
+  if (!(await saveFileToLibrary(mediaFile(photo), saveSize))) return false;
   track({ name: 'photo_saved', kind: photo.kind });
   update({ savedCount: savedCount + 1 });
   void maybeRequestReview(savedCount + 1).catch((error: unknown) => {
@@ -75,7 +80,7 @@ export async function shareToStoriesFile(photo: AlbumPhoto): Promise<void> {
 /** Opens the share sheet (SHR-02). */
 export async function sharePhotoFile(photo: AlbumPhoto): Promise<void> {
   try {
-    await sharePhoto(new File(photo.outputUri), useSettings.getState().saveSize);
+    await sharePhoto(mediaFile(photo), useSettings.getState().saveSize);
     track({ name: 'photo_shared', kind: photo.kind });
   } catch (error) {
     reportError(error, 'photo.share');

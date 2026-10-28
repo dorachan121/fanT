@@ -15,6 +15,7 @@ import { colors, radius, spacing } from '../../ui/theme';
 import { deletePhotos } from '../album/album-db';
 import { useAlbumPhoto } from '../album/use-album';
 import { useAiAvailable } from '../remote-config/remote-config';
+import { LoopingVideo } from '../video/looping-video';
 import { savePhoto, sharePhotoFile, shareToStoriesFile, storiesAvailable } from './photo-actions';
 import { Text } from '../../ui/text';
 
@@ -61,12 +62,16 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
         }
       />
       <View style={styles.imageArea}>
-        <Image
-          source={{ uri: photo.outputUri, cacheKey: `${photo.id}-${String(photo.updatedAt)}` }}
-          style={StyleSheet.absoluteFill}
-          contentFit="contain"
-          accessibilityLabel={strings.photo.title}
-        />
+        {photo.videoUri === null ? (
+          <Image
+            source={{ uri: photo.outputUri, cacheKey: `${photo.id}-${String(photo.updatedAt)}` }}
+            style={StyleSheet.absoluteFill}
+            contentFit="contain"
+            accessibilityLabel={strings.photo.title}
+          />
+        ) : (
+          <LoopingVideo uri={photo.videoUri} style={StyleSheet.absoluteFill} />
+        )}
         {photo.kind === 'ai' && <Text style={styles.aiLabel}>{strings.ai.aiLabel}</Text>}
       </View>
       <View style={[styles.actions, { paddingBottom: bottom + spacing.md }]}>
@@ -87,7 +92,7 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
               router.push({ pathname: '/deco/[id]', params: { id: photo.id } });
             }}
           />
-          {aiAvailable && (
+          {aiAvailable && photo.videoUri === null && (
             <PhotoAction
               icon="sparkles"
               label={strings.photo.ai}
@@ -96,7 +101,7 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
               }}
             />
           )}
-          {storiesAvailable && (
+          {storiesAvailable && photo.videoUri === null && (
             <PhotoAction
               icon="logo-instagram"
               label={strings.photo.stories}

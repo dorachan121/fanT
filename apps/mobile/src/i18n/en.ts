@@ -20,12 +20,18 @@ export const en: Strings = {
   },
   modes: {
     film: '📷 Film',
+    video: '🎥 Video',
     character: '🐰 Character',
     puri: '💖 Photo booth',
     ai: '✨ AI',
   },
   camera: {
     shutter: 'Take photo',
+    record: 'Start recording',
+    stopRecording: 'Stop recording',
+    recording: (seconds, max) => `● ${String(seconds)} / ${String(max)}s`,
+    savingVideo: 'Finishing your video… 🎞️',
+    videoFailed: "Couldn't save the video 🥺",
     switchLens: 'Switch camera',
     album: 'Open album',
     settings: 'Open settings',
@@ -84,6 +90,7 @@ export const en: Strings = {
   },
   photo: {
     title: 'Photo',
+    video: 'Video',
     edit: 'Edit',
     deco: 'Decorate',
     ai: 'AI magic',

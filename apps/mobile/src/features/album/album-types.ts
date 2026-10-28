@@ -1,7 +1,7 @@
 import type { PhotoRecipe } from '../photo/recipe';
 
 /** How a photo entered the album. */
-export type PhotoKind = 'camera' | 'import' | 'puri' | 'ai' | 'collage';
+export type PhotoKind = 'camera' | 'import' | 'puri' | 'ai' | 'collage' | 'video';
 
 export interface AlbumPhoto {
   readonly id: string;
@@ -19,4 +19,6 @@ export interface AlbumPhoto {
   readonly originalExpiresAt: number | null;
   readonly outputUri: string;
   readonly originalUri: string | null;
+  /** A video item's file (CAM-13); its output is the first frame. */
+  readonly videoUri: string | null;
 }

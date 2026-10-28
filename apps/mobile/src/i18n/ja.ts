@@ -25,12 +25,18 @@ export const ja = {
   },
   modes: {
     film: '📷 フィルム',
+    video: '🎥 動画',
     character: '🐰 キャラ',
     puri: '💖 プリ',
     ai: '✨ AI',
   },
   camera: {
     shutter: '撮影する',
+    record: '録画をはじめる',
+    stopRecording: '録画をとめる',
+    recording: (seconds: number, max: number) => `● ${String(seconds)} / ${String(max)}秒`,
+    savingVideo: '動画を仕上げ中…🎞️',
+    videoFailed: '動画をうまく保存できなかった🥺',
     switchLens: '前後のカメラを切り替える',
     album: 'アルバムを開く',
     settings: '設定を開く',
@@ -91,6 +97,7 @@ export const ja = {
   },
   photo: {
     title: '写真',
+    video: '動画',
     edit: '編集',
     deco: 'デコ',
     ai: 'AI変身',
