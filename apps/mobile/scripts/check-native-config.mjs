@@ -13,8 +13,10 @@ const permission = (name) =>
   ).test(manifest);
 
 if (!permission('CAMERA')) failures.push('Android: the CAMERA permission is missing or removed');
+// The microphone records sound with short videos (CAM-13).
+if (!permission('RECORD_AUDIO'))
+  failures.push('Android: the RECORD_AUDIO permission is missing or removed');
 for (const forbidden of [
-  'RECORD_AUDIO',
   'READ_EXTERNAL_STORAGE',
   'READ_MEDIA_IMAGES',
   'ACCESS_FINE_LOCATION',
@@ -30,8 +32,9 @@ if (plist === undefined) {
   const info = readFileSync(plist, 'utf8');
   if (!info.includes('<key>NSCameraUsageDescription</key>'))
     failures.push('iOS: NSCameraUsageDescription is missing');
+  if (!info.includes('<key>NSMicrophoneUsageDescription</key>'))
+    failures.push('iOS: NSMicrophoneUsageDescription is missing');
   for (const forbidden of [
-    'NSMicrophoneUsageDescription',
     'NSPhotoLibraryUsageDescription',
     'NSLocationWhenInUseUsageDescription',
     'NSFaceIDUsageDescription',
