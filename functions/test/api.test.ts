@@ -83,24 +83,33 @@ describe('api', () => {
     ).toMatchObject({ status: 401 });
   });
 
+  const events = request({
+    method: 'POST',
+    path: '/v1/events',
+    body: {
+      installId: '0b5e3f9a-1c2d-4e5f-8a9b-0c1d2e3f4a5b',
+      platform: 'ios',
+      appVersion: '0.1.0',
+      events: [{ event: { name: 'app_open' }, at: 1 }],
+    },
+  });
+
   it('logs analytics events without storing them', async () => {
     const { deps, logs } = testDependencies();
-    const response = await handleRequest(
-      deps,
-      OPTIONS,
-      request({
-        method: 'POST',
-        path: '/v1/events',
-        body: {
-          installId: '0b5e3f9a-1c2d-4e5f-8a9b-0c1d2e3f4a5b',
-          platform: 'ios',
-          appVersion: '0.1.0',
-          events: [{ event: { name: 'app_open' }, at: 1 }],
-        },
-      }),
-    );
+    const response = await handleRequest(deps, OPTIONS, events);
     expect(response.status).toBe(204);
     expect(logs.filter(({ message }) => message === 'analytics.event')).toHaveLength(1);
+  });
+
+  it('limits analytics batches per network address', async () => {
+    const { deps } = testDependencies();
+    // The test settings allow two batches per hour.
+    await handleRequest(deps, OPTIONS, events);
+    await handleRequest(deps, OPTIONS, events);
+    expect(await handleRequest(deps, OPTIONS, events)).toMatchObject({ status: 429 });
+    expect(
+      await handleRequest(deps, OPTIONS, { ...events, address: '198.51.100.1' }),
+    ).toMatchObject({ status: 204 });
   });
 
   it('hides unexpected errors', async () => {

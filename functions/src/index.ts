@@ -57,6 +57,7 @@ function deps(): Dependencies {
       monthlyCredits: MONTHLY_CREDITS.value(),
       generationsPerHour: 10,
       accountsPerAddressPerDay: 5,
+      eventBatchesPerAddressPerHour: 1000,
       generationTimeoutMs: 60_000,
     },
     now: () => Date.now(),

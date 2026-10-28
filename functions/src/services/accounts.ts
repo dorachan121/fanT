@@ -1,10 +1,9 @@
 import type { CreateAccountResponse, Credits } from '@fant/api-types';
-import { createHash } from 'node:crypto';
 
 import { creditsOf, FREE_CREDITS } from '../domain/credits';
-import { takeRate } from '../domain/rate-limit';
 import { hashSecret, newId, parseBearer, secretMatches } from '../domain/secrets';
 import type { AccountRecord, Dependencies } from '../ports';
+import { takeAddressRate } from './address-limit';
 import { ApiFailure } from './errors';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -21,7 +20,6 @@ export async function createAccount(
 ): Promise<CreateAccountResponse> {
   const now = deps.now();
   const accountId = newId();
-  const addressKey = `address:${createHash('sha256').update(address).digest('hex')}`;
   const account: AccountRecord = {
     secretHash: hashSecret(secret),
     createdAt: now,
@@ -31,15 +29,11 @@ export async function createAccount(
     rate: null,
   };
   await deps.store.transaction(async (tx) => {
-    const window = takeRate(
-      await tx.getRate(addressKey),
+    await takeAddressRate(tx, 'address', address, {
+      count: deps.settings.accountsPerAddressPerDay,
+      windowMs: DAY_MS,
       now,
-      deps.settings.accountsPerAddressPerDay,
-      DAY_MS,
-    );
-    if (window === null)
-      throw new ApiFailure('rate_limited', 'Too many new accounts from this network');
-    tx.setRate(addressKey, window);
+    });
     tx.setAccount(accountId, account);
   });
   deps.logger.info('account.created', { accountId });

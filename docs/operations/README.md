@@ -76,6 +76,6 @@ eas env:create --environment production --name API_BASE_URL --value https://…
 
 - 規約・プライバシーポリシー・特商法の表記の【…】を埋め、専門家に確認してもらう（`apps/mobile/src/features/legal/documents.ts`、Q-10/Q-12）
 - 画像生成の提供元を決め（Q-04）、`functions/src/ports.ts` の `ImageGenerator` と `Moderator` を実装して `AI_PROVIDER` で選べるようにする
-- App Check（Play Integrity / App Attest）を有効にする（非機能要件 §5、R-05）。現在は端末ごとの秘密鍵、アドレスごとの登録数制限、アカウントごとの生成回数制限で守っている
+- App Check（Play Integrity / App Attest）を有効にする（非機能要件 §5、R-05）。現在は端末ごとの秘密鍵、アドレスごとの登録数と分析イベント送信数の制限、アカウントごとの生成回数制限で守っている
 - アイコン・スプラッシュ・ストアの掲載情報、App Privacy・データセーフティの申告（非機能要件 §6）
 - [実装状況](../requirements/08-implementation-status.md) の「実機で確認すること」をすべて確認する

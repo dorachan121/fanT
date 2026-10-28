@@ -81,6 +81,8 @@ export interface Settings {
   readonly generationsPerHour: number;
   /** New accounts per network address per day (stops free-credit farming). */
   readonly accountsPerAddressPerDay: number;
+  /** Analytics batches per network address per hour (the endpoint needs no account). */
+  readonly eventBatchesPerAddressPerHour: number;
   /** Provider time limit (03 §2: time out at 60 s and refund). */
   readonly generationTimeoutMs: number;
 }

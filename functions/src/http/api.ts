@@ -16,6 +16,7 @@ import {
   getGeneration,
   reportGeneration,
 } from '../services/generations';
+import { recordEvents } from '../services/events';
 import { handleRevenueCatEvent } from '../services/webhooks';
 
 export interface ApiRequest {
@@ -87,17 +88,7 @@ async function route(
     return { status: 204 };
   }
   if (method === 'POST' && path === '/v1/events') {
-    const batch = parse(eventsRequestSchema, request.body);
-    for (const { event, at } of batch.events) {
-      // Cloud Logging is exported to BigQuery for analysis; nothing else stores events.
-      deps.logger.info('analytics.event', {
-        ...event,
-        at,
-        installId: batch.installId,
-        platform: batch.platform,
-        appVersion: batch.appVersion,
-      });
-    }
+    await recordEvents(deps, parse(eventsRequestSchema, request.body), request.address);
     return { status: 204 };
   }
   if (method === 'POST' && path === '/v1/webhooks/revenuecat') {

@@ -114,6 +114,7 @@ export const TEST_SETTINGS: Settings = {
   monthlyCredits: 10,
   generationsPerHour: 3,
   accountsPerAddressPerDay: 2,
+  eventBatchesPerAddressPerHour: 2,
   generationTimeoutMs: 50,
 };
 
