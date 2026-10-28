@@ -10,7 +10,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { persistValidated } from '../../lib/kv-storage';
-import { ASPECT_RATIOS } from '../photo/recipe';
+import { ASPECT_RATIOS, calendarDateSchema, paramsSchema } from '../photo/recipe';
 
 export const CAMERA_MODES = ['film', 'character', 'puri', 'ai'] as const;
 export type CameraMode = (typeof CAMERA_MODES)[number];
@@ -19,15 +19,6 @@ export const FLASH_MODES = ['off', 'on', 'auto'] as const;
 export type FlashMode = (typeof FLASH_MODES)[number];
 
 export const TIMER_SECONDS = [0, 3, 10] as const;
-
-const beautySchema = z.object(
-  Object.fromEntries(
-    Object.entries(BEAUTY_PARAM_RANGES).map(([name, { min, max }]) => [
-      name,
-      z.number().min(min).max(max),
-    ]),
-  ) as Record<keyof BeautyParams, z.ZodNumber>,
-);
 
 const cameraSchema = z.object({
   mode: z.enum(CAMERA_MODES),
@@ -41,14 +32,12 @@ const cameraSchema = z.object({
   filmIntensity: z.record(z.string(), z.number().min(0).max(1)),
   favoriteFilms: z.array(z.string()).max(100),
   /** Remembered between launches (BTY-06). */
-  beauty: beautySchema,
+  beauty: paramsSchema(BEAUTY_PARAM_RANGES),
   dateStamp: z.object({
     enabled: z.boolean(),
     format: z.enum(DATE_STAMP_FORMATS),
     /** A fixed date instead of today (FLM-04), e.g. to recreate an old photo. */
-    customDate: z
-      .object({ year: z.number().int(), month: z.number().int(), day: z.number().int() })
-      .nullable(),
+    customDate: calendarDateSchema.nullable(),
   }),
   characterId: z.string(),
   /** Chosen colour per character (CHR-03). */

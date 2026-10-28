@@ -14,7 +14,8 @@ import { z } from 'zod';
 export const MAX_STROKE_POINTS = 2000;
 export const MAX_DECO_LAYERS = 500;
 
-function paramsSchema<Name extends string>(ranges: Readonly<Record<Name, ParamRange>>) {
+/** Numbers within each parameter's range, e.g. the beauty or adjust parameters. */
+export function paramsSchema<Name extends string>(ranges: Readonly<Record<Name, ParamRange>>) {
   return z.strictObject(
     Object.fromEntries(
       Object.entries<ParamRange>(ranges).map(([name, { min, max }]) => [
@@ -86,12 +87,14 @@ export type Crop = z.infer<typeof cropSchema>;
 
 export const FULL_CROP: Crop = { x: 0, y: 0, width: 1, height: 1 };
 
+export const calendarDateSchema = z.strictObject({
+  year: z.number().int().min(1900).max(2099),
+  month: z.number().int().min(1).max(12),
+  day: z.number().int().min(1).max(31),
+});
+
 const dateStampSchema = z.strictObject({
-  date: z.strictObject({
-    year: z.number().int().min(1900).max(2099),
-    month: z.number().int().min(1).max(12),
-    day: z.number().int().min(1).max(31),
-  }),
+  date: calendarDateSchema,
   format: z.enum(DATE_STAMP_FORMATS),
   color: z.tuple([unit, unit, unit]).readonly(),
 });
