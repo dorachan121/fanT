@@ -23,6 +23,8 @@ import { useLook, type LookSpec } from '../camera/use-camera-look';
 import { usePreviewRenderer } from '../camera/use-preview-renderer';
 import { useContent } from '../content/content-store';
 import { containRect } from '../photo/geometry';
+import { personSegmentationSupported } from '../../../modules/person-segmentation/src';
+import { BACKDROPS } from './backdrops';
 import { PURI_BEAUTY, PURI_FILM_ID, renderPuriShot } from './puri-look';
 import { usePuriSession } from './puri-session';
 import { Text } from '../../ui/text';
@@ -57,6 +59,7 @@ export function ShootScreen({ retake }: { readonly retake: number | null }) {
 
 function PuriCamera({ retake }: { readonly retake: number | null }) {
   const layoutId = usePuriSession((state) => state.layoutId);
+  const backdrop = usePuriSession((state) => state.backdrop);
   const layout = useContent((state) => state.manifest.layouts.find(({ id }) => id === layoutId));
   const isActive = useCameraActive();
   const { top, bottom } = useSafeAreaInsets();
@@ -112,6 +115,7 @@ function PuriCamera({ retake }: { readonly retake: number | null }) {
             mirror: (lens === 'front') !== captured.isMirrored,
             // A different grain per shot, derived from this session's seed.
             seed: (seed + index * 0.618034) % 1,
+            backdrop: usePuriSession.getState().backdrop,
           }).then((jpeg) => {
             usePuriSession.getState().setShot(index, jpeg);
           }),
@@ -176,6 +180,27 @@ function PuriCamera({ retake }: { readonly retake: number | null }) {
         {pose !== undefined && <Text style={styles.pose}>{localized(pose)}</Text>}
       </View>
       <View style={[styles.controls, { paddingBottom: bottom + spacing.md }]}>
+        {personSegmentationSupported && (
+          <View style={styles.row}>
+            <Chip
+              label={strings.puri.backdropNone}
+              selected={backdrop === null}
+              onPress={() => {
+                usePuriSession.getState().setBackdrop(null);
+              }}
+            />
+            {BACKDROPS.map((candidate) => (
+              <Chip
+                key={candidate.id}
+                label={candidate.emoji}
+                selected={backdrop?.id === candidate.id}
+                onPress={() => {
+                  usePuriSession.getState().setBackdrop(candidate);
+                }}
+              />
+            ))}
+          </View>
+        )}
         <View style={styles.row}>
           {INTERVALS.map((seconds) => (
             <Chip

@@ -150,6 +150,7 @@ export const strings = {
     saveCell: 'このコマを保存',
     deco: 'らくがき',
     sheetColor: '台紙そのまま',
+    backdropNone: '背景そのまま',
   },
   ai: {
     title: '✨ AI変身',

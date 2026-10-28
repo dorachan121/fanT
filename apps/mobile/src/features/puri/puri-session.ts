@@ -2,6 +2,7 @@ import { File } from 'expo-file-system';
 import { create } from 'zustand';
 
 import type { DecoLayer } from '../photo/recipe';
+import type { Backdrop } from './backdrops';
 import { tempDirectory } from '../../lib/temp-files';
 
 /** One purikura shot, already cropped to its cell and rendered with the puri look. */
@@ -16,6 +17,9 @@ const SHOTS_FOLDER = 'puri';
 interface PuriSession {
   readonly layoutId: string | null;
   readonly shots: readonly (PuriShot | null)[];
+  /** The background put behind the people (PRI-04); `null` keeps the real one. */
+  readonly backdrop: Backdrop | null;
+  readonly setBackdrop: (backdrop: Backdrop | null) => void;
   readonly start: (layoutId: string, cellCount: number) => void;
   readonly setShot: (index: number, jpeg: Uint8Array) => void;
   readonly setDeco: (index: number, deco: readonly DecoLayer[]) => void;
@@ -30,9 +34,13 @@ function clearShots(): void {
 export const usePuriSession = create<PuriSession>()((set, get) => ({
   layoutId: null,
   shots: [],
+  backdrop: null,
+  setBackdrop: (backdrop) => {
+    set({ backdrop });
+  },
   start: (layoutId, cellCount) => {
     clearShots();
-    set({ layoutId, shots: Array.from({ length: cellCount }, () => null) });
+    set({ layoutId, shots: Array.from({ length: cellCount }, () => null), backdrop: null });
   },
   setShot: (index, jpeg) => {
     // A new file name per take, so a retake never shows a cached image.
@@ -59,6 +67,6 @@ export const usePuriSession = create<PuriSession>()((set, get) => ({
   },
   reset: () => {
     clearShots();
-    set({ layoutId: null, shots: [] });
+    set({ layoutId: null, shots: [], backdrop: null });
   },
 }));
