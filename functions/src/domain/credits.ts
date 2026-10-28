@@ -82,8 +82,9 @@ export function refund(account: CreditAccount, taken: Debit): CreditAccount {
   };
 }
 
-export function grantPurchased(account: CreditAccount, credits: number): CreditAccount {
-  if (!Number.isInteger(credits) || credits <= 0)
-    throw new RangeError(`Invalid credit grant ${String(credits)}`);
-  return { ...account, purchased: account.purchased + credits };
+/** Adds purchased credits (positive) or takes refunded ones back (negative, never below 0). */
+export function adjustPurchased(account: CreditAccount, credits: number): CreditAccount {
+  if (!Number.isInteger(credits) || credits === 0)
+    throw new RangeError(`Invalid credit change ${String(credits)}`);
+  return { ...account, purchased: Math.max(0, account.purchased + credits) };
 }

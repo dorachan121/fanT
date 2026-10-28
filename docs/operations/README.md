@@ -56,7 +56,7 @@ eas env:create --environment production --name API_BASE_URL --value https://…
 | オファリング `credits` | 消耗型の商品 `credits_10` / `credits_30` / `credits_100`（サーバーはこの3つ以外の数を付与しない） |
 | Webhook | URL: `${API_BASE_URL}/v1/webhooks/revenuecat`、Authorization ヘッダー: `Bearer <REVENUECAT_WEBHOOK_SECRET>` |
 
-アプリは AI 用のアカウントを作ると RevenueCat にログインするので、クレジットの購入はそのアカウントに付与されます。年額プランの毎月のクレジットは、Webhook で届く有効期限までサーバーが付与します。
+アプリは AI 用のアカウントを作ると RevenueCat にログインするので、クレジットの購入はそのアカウントに付与されます。年額プランの毎月のクレジットは、Webhook で届く有効期限までサーバーが付与します。ストアで返金されると、RevenueCat の `CANCELLATION` イベントでクレジットパックの分を差し引き（0 未満にはしない）、年額プランは返金時点で毎月の付与を止めます。
 
 ## 4. コンテンツ配信（CNT-01/02, STU-05）
 

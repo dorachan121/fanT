@@ -205,6 +205,16 @@ describe('RevenueCat webhooks', () => {
     expect((await getCredits(deps, accountId)).purchased).toBe(33);
   });
 
+  it('takes refunded credit packs back, never below zero', async () => {
+    const { deps, accountId } = await setup();
+    await handleRevenueCatEvent(deps, purchase(accountId));
+    const refund = { event: { ...purchase(accountId, 'evt-refund').event, type: 'CANCELLATION' } };
+    expect(await handleRevenueCatEvent(deps, refund)).toBe('applied');
+    expect((await getCredits(deps, accountId)).purchased).toBe(3);
+    await handleRevenueCatEvent(deps, { event: { ...refund.event, id: 'evt-refund-2' } });
+    expect((await getCredits(deps, accountId)).purchased).toBe(0);
+  });
+
   it('ignores unknown packs, unknown users and malformed events', async () => {
     const { deps, accountId } = await setup();
     const odd = { event: { ...purchase(accountId).event, product_id: 'credits_9999' } };
@@ -226,5 +236,22 @@ describe('RevenueCat webhooks', () => {
       },
     });
     expect(await getCredits(deps, accountId)).toEqual({ total: 13, monthly: 10, purchased: 3 });
+  });
+
+  it('ends monthly credits when the annual plan is refunded', async () => {
+    const { deps, accountId } = await setup();
+    const annual = (id: string, type: string, expiresAt: string) => ({
+      event: {
+        id,
+        type,
+        app_user_id: accountId,
+        product_id: 'premium_annual',
+        expiration_at_ms: Date.parse(expiresAt),
+      },
+    });
+    await handleRevenueCatEvent(deps, annual('evt3', 'INITIAL_PURCHASE', '2027-11-15T00:00:00Z'));
+    // A refund cancels with the refund time as the end.
+    await handleRevenueCatEvent(deps, annual('evt4', 'CANCELLATION', '2020-01-01T00:00:00Z'));
+    expect((await getCredits(deps, accountId)).monthly).toBe(0);
   });
 });

@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import {
   creditsOf,
   debit,
-  grantPurchased,
+  adjustPurchased,
   InsufficientCreditsError,
   periodOf,
   refund,
@@ -56,9 +56,10 @@ describe('credits', () => {
   });
 
   it('grants purchased credits and rejects invalid grants', () => {
-    expect(grantPurchased(FREE, 10).purchased).toBe(13);
-    expect(() => grantPurchased(FREE, 0)).toThrow(RangeError);
-    expect(() => grantPurchased(FREE, 1.5)).toThrow(RangeError);
+    expect(adjustPurchased(FREE, 10).purchased).toBe(13);
+    expect(adjustPurchased(FREE, -10).purchased).toBe(0);
+    expect(() => adjustPurchased(FREE, 0)).toThrow(RangeError);
+    expect(() => adjustPurchased(FREE, 1.5)).toThrow(RangeError);
   });
 
   it('uses UTC calendar months', () => {
