@@ -2,7 +2,7 @@ import { File } from 'expo-file-system';
 import { launchImageLibraryAsync } from 'expo-image-picker';
 
 import { createPhoto } from './photo-service';
-import { FULL_CROP, newRecipe } from './recipe';
+import { neutralRecipe } from './recipe';
 import type { AlbumPhoto } from '../album/album-types';
 
 /** Asks the system photo picker for one image; `null` when the user cancels. */
@@ -27,16 +27,6 @@ export async function importPhoto(): Promise<AlbumPhoto | null> {
   return createPhoto({
     kind: 'import',
     original: await file.bytes(),
-    recipeFor: () =>
-      newRecipe({
-        filmId: 'natural',
-        intensity: 0,
-        beauty: { smoothing: 0, brightness: 0, rosiness: 0 },
-        dateStamp: null,
-        character: null,
-        seed: Math.random(),
-        mirror: false,
-        crop: FULL_CROP,
-      }),
+    recipeFor: () => neutralRecipe(Math.random()),
   });
 }

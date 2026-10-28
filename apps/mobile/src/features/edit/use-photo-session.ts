@@ -1,8 +1,10 @@
 import { File } from 'expo-file-system';
+import { router } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { decodeImage, imageSize } from '../../engine/photo';
 import type { SkImage } from '../../engine/skia';
+import { showError } from '../../ui/dialogs';
 import { reportError } from '../analytics/analytics';
 import { useAlbumPhoto } from '../album/use-album';
 import { croppedSize, type Size } from '../photo/geometry';
@@ -49,7 +51,10 @@ export function usePhotoSession(
         setSource({ originalUri, image, originalSize: imageSize(image) });
         setHistory(startHistory(recipe));
       } catch (error) {
+        // Without the original there is nothing to edit: say so and go back.
         reportError(error, 'edit.load');
+        showError();
+        router.back();
       }
     });
   }, [photo]);

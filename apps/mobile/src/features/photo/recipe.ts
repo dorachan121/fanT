@@ -1,6 +1,7 @@
 import { contentIdSchema, hexColorSchema, TEXT_STAMP_STYLES } from '@fant/content-schema';
 import {
   ADJUST_PARAM_RANGES,
+  BEAUTY_LEVELS,
   BEAUTY_PARAM_RANGES,
   DATE_STAMP_FORMATS,
   DEFAULT_ADJUST_PARAMS,
@@ -147,6 +148,20 @@ export function newRecipe(options: {
     transform: { rotation: 0, mirror: options.mirror, crop: options.crop },
     deco: [],
   };
+}
+
+/** A recipe that leaves the photo as it is, for imported photos and expired originals. */
+export function neutralRecipe(seed: number): PhotoRecipe {
+  return newRecipe({
+    filmId: 'natural',
+    intensity: 0,
+    beauty: BEAUTY_LEVELS.off,
+    dateStamp: null,
+    character: null,
+    seed,
+    mirror: false,
+    crop: FULL_CROP,
+  });
 }
 
 /** Parses a stored recipe; `null` when it is missing or no longer valid. */

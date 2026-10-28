@@ -18,7 +18,7 @@ import { useContent } from '../content/content-store';
 import { findCharacter, findFilm, stampMap } from '../content/lookup';
 import { useSettings } from '../settings/settings-store';
 import type { Size } from './geometry';
-import { FULL_CROP, newRecipe, type PhotoRecipe } from './recipe';
+import { neutralRecipe, type PhotoRecipe } from './recipe';
 
 function imageRefsOf(character: Character | null, stamps: readonly Stamp[], recipe: PhotoRecipe) {
   const usedStamps = new Set(
@@ -119,16 +119,7 @@ export function editableSource(photo: AlbumPhoto): {
   const originalUri = adoptOutputAsOriginal(photo.id, useSettings.getState().originalRetentionDays);
   return {
     originalUri,
-    recipe: newRecipe({
-      filmId: 'natural',
-      intensity: 0,
-      beauty: { smoothing: 0, brightness: 0, rosiness: 0 },
-      dateStamp: null,
-      character: null,
-      seed: 0.5,
-      mirror: false,
-      crop: FULL_CROP,
-    }),
+    recipe: neutralRecipe(0.5),
   };
 }
 
