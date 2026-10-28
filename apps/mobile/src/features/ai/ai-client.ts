@@ -147,10 +147,19 @@ export async function fetchCredits(): Promise<Credits> {
     .credits;
 }
 
-export async function startGeneration(styleId: string, jpeg: Uint8Array): Promise<Generation> {
+/** Starts a style or a tool (AI-10/11); `mask` (PNG) is only for erasing. */
+export async function startGeneration(
+  styleId: string,
+  jpeg: Uint8Array,
+  mask?: Uint8Array,
+): Promise<Generation> {
   return request('/v1/generations', generationSchema, {
     method: 'POST',
-    body: { styleId, image: toBase64(jpeg) },
+    body: {
+      styleId,
+      image: toBase64(jpeg),
+      ...(mask === undefined ? {} : { mask: toBase64(mask) }),
+    },
     account: await ensureAccount(),
   });
 }

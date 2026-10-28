@@ -22,6 +22,17 @@ export class StorageImages implements ImageStore {
     return contents;
   }
 
+  async putMask(id: string, png: Uint8Array): Promise<void> {
+    await this.bucket
+      .file(`generations/${id}/mask.png`)
+      .save(Buffer.from(png), { contentType: 'image/png', resumable: false });
+  }
+
+  async getMask(id: string): Promise<Uint8Array> {
+    const [contents] = await this.bucket.file(`generations/${id}/mask.png`).download();
+    return contents;
+  }
+
   async putOutput(id: string, image: Uint8Array): Promise<void> {
     // Providers return JPEG or PNG; the app decodes either.
     const isPng = image[0] === 0x89 && image[1] === 0x50 && image[2] === 0x4e && image[3] === 0x47;

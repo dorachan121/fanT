@@ -247,6 +247,16 @@ export const strings = {
     failed: 'うまく変身できなかった🥺 クレジットは戻してあるよ。',
     blocked: 'この写真では変身できないみたい。別の写真でためしてね（クレジットは戻してあるよ）。',
     aiLabel: 'AIで生成',
+    tools: {
+      erase: { name: 'けしゴム', description: 'じゃまな人やものを消すよ' },
+      upscale: { name: '高画質に', description: '写真を2倍のきれいさに' },
+    },
+    erase: {
+      title: '🧽 消したいところをなぞってね',
+      hint: '消したい人やものを指でぬってね。まわりになじむように消すよ。',
+      brush: 'ブラシの太さ',
+      run: '消す🪄',
+    },
     consent: {
       title: 'AI変身を使う前に🪄',
       body: [

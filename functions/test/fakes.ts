@@ -5,6 +5,7 @@ import type {
   GenerationRecord,
   ImageGenerator,
   ImageStore,
+  ImageUpscaler,
   Moderator,
   Settings,
   Store,
@@ -81,6 +82,17 @@ export class MemoryStore implements Store {
 export class MemoryImages implements ImageStore {
   readonly inputs = new Map<string, Uint8Array>();
   readonly outputs = new Map<string, Uint8Array>();
+  readonly masks = new Map<string, Uint8Array>();
+
+  putMask(id: string, png: Uint8Array) {
+    this.masks.set(id, png);
+    return Promise.resolve();
+  }
+
+  getMask(id: string) {
+    const mask = this.masks.get(id);
+    return mask === undefined ? Promise.reject(new Error('missing mask')) : Promise.resolve(mask);
+  }
 
   putInput(id: string, jpeg: Uint8Array) {
     this.inputs.set(id, jpeg);
@@ -106,6 +118,7 @@ export class MemoryImages implements ImageStore {
   deleteImages(id: string) {
     this.inputs.delete(id);
     this.outputs.delete(id);
+    this.masks.delete(id);
     return Promise.resolve();
   }
 }
@@ -121,6 +134,7 @@ export const TEST_SETTINGS: Settings = {
 export function testDependencies(
   overrides: {
     generator?: ImageGenerator;
+    upscaler?: ImageUpscaler;
     moderator?: Moderator;
     now?: () => number;
   } = {},
@@ -132,6 +146,7 @@ export function testDependencies(
     store,
     images,
     generator: overrides.generator ?? { generate: (image) => Promise.resolve(image) },
+    upscaler: overrides.upscaler ?? { upscale: (image) => Promise.resolve(image) },
     moderator: overrides.moderator ?? { isAllowed: () => Promise.resolve(true) },
     logger: {
       info: (message, fields) => logs.push({ level: 'info', message, fields }),
@@ -146,6 +161,10 @@ export function testDependencies(
 
 /** A tiny valid-looking JPEG (magic bytes) as base64. */
 export const JPEG_BASE64 = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0, 0x10, 1, 2, 3]).toString(
+  'base64',
+);
+/** A PNG signature and a byte: enough for the mask checks. */
+export const PNG_BASE64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0]).toString(
   'base64',
 );
 export const SECRET = 'S'.repeat(43);

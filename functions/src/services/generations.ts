@@ -1,4 +1,5 @@
 import {
+  MAX_MASK_BYTES,
   MAX_UPLOAD_BYTES,
   type ApiErrorCode,
   type Generation,
@@ -8,7 +9,7 @@ import {
 import { creditsOf, debit, InsufficientCreditsError, refund } from '../domain/credits';
 import { takeRate } from '../domain/rate-limit';
 import { newId } from '../domain/secrets';
-import { SAFETY_PROMPT, STYLES } from '../domain/styles';
+import { jobFor, SAFETY_PROMPT, type JobDefinition } from '../domain/styles';
 import {
   ContentBlockedError,
   type Dependencies,
@@ -23,6 +24,48 @@ export const RETENTION_MS = 24 * HOUR_MS;
 
 function isJpeg(bytes: Uint8Array): boolean {
   return bytes.length > 4 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+}
+
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+
+function isPng(bytes: Uint8Array): boolean {
+  return bytes.length > PNG_SIGNATURE.length && PNG_SIGNATURE.every((b, i) => bytes[i] === b);
+}
+
+/** The erase tool's mask, which only it takes (AI-10). */
+function maskOf(job: JobDefinition, mask: string | undefined): Buffer | null {
+  if (job.kind !== 'erase') {
+    if (mask !== undefined) throw new ApiFailure('bad_request', 'Only erasing takes a mask');
+    return null;
+  }
+  if (mask === undefined) throw new ApiFailure('bad_request', 'Erasing needs a mask');
+  const bytes = Buffer.from(mask, 'base64');
+  if (bytes.length > MAX_MASK_BYTES || !isPng(bytes))
+    throw new ApiFailure('bad_request', 'Expected a PNG mask');
+  return bytes;
+}
+
+/** Does the job's work on a moderated input: a style, erasing or upscaling. */
+async function runJob(
+  deps: Dependencies,
+  id: string,
+  job: JobDefinition,
+  input: Uint8Array,
+  signal: AbortSignal,
+): Promise<Uint8Array> {
+  switch (job.kind) {
+    case 'style':
+      return deps.generator.generate(input, `${job.prompt}\n${SAFETY_PROMPT}`, signal);
+    case 'erase':
+      return deps.generator.generate(
+        input,
+        `${job.prompt}\n${SAFETY_PROMPT}`,
+        signal,
+        await deps.images.getMask(id),
+      );
+    case 'upscale':
+      return deps.upscaler.upscale(input, signal);
+  }
 }
 
 async function view(
@@ -45,24 +88,27 @@ async function view(
 
 /**
  * Starts a generation (AI-04): checks the style and the upload, limits the rate,
- * takes the credits and queues the job, all or nothing. The upload is stored first
+ * takes the credits and queues the job, all or nothing. Tools (AI-10/11) are
+ * started the same way, by ID. The upload is stored first
  * and deleted again if the job cannot start.
  */
 export async function createGeneration(
   deps: Dependencies,
   accountId: string,
-  request: { readonly styleId: string; readonly image: string },
+  request: { readonly styleId: string; readonly image: string; readonly mask?: string },
 ): Promise<Generation> {
-  const style = STYLES[request.styleId];
+  const style = jobFor(request.styleId);
   if (style === undefined) throw new ApiFailure('bad_request', 'Unknown style');
   const bytes = Buffer.from(request.image, 'base64');
   if (bytes.length > MAX_UPLOAD_BYTES || !isJpeg(bytes))
     throw new ApiFailure('bad_request', 'Expected a JPEG photo');
+  const mask = maskOf(style, request.mask);
 
   const id = newId();
   const now = deps.now();
-  await deps.images.putInput(id, bytes);
   try {
+    await deps.images.putInput(id, bytes);
+    if (mask !== null) await deps.images.putMask(id, mask);
     await deps.store.transaction(async (tx) => {
       const account = await tx.getAccount(accountId);
       if (account === null) throw new ApiFailure('unauthorized', 'Unknown account');
@@ -140,7 +186,7 @@ export async function processGeneration(deps: Dependencies, id: string): Promise
     return generation;
   });
   if (started === null) return;
-  const style = STYLES[started.styleId];
+  const job = jobFor(started.styleId);
 
   const fail = async (error: ApiErrorCode) => {
     await deps.store.transaction((tx) => finishWithRefund(tx, id, 'failed', error, deps.now()));
@@ -149,7 +195,7 @@ export async function processGeneration(deps: Dependencies, id: string): Promise
   };
 
   try {
-    if (style === undefined) {
+    if (job === undefined) {
       await fail('bad_request');
       return;
     }
@@ -157,11 +203,7 @@ export async function processGeneration(deps: Dependencies, id: string): Promise
     const timeoutMs = deps.settings.generationTimeoutMs;
     const output = await withTimeout(async (signal) => {
       if (!(await deps.moderator.isAllowed(input, signal))) return 'blocked' as const;
-      const generated = await deps.generator.generate(
-        input,
-        `${style.prompt}\n${SAFETY_PROMPT}`,
-        signal,
-      );
+      const generated = await runJob(deps, id, job, input, signal);
       return (await deps.moderator.isAllowed(generated, signal)) ? generated : ('blocked' as const);
     }, timeoutMs).catch((error: unknown) => {
       if (error instanceof Error && error.name === 'AbortError') return 'timeout' as const;

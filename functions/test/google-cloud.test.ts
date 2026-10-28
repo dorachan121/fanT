@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   GeminiImageGenerator,
+  ImagenUpscaler,
   metadataTokenSource,
   SafeSearchModerator,
   type Fetch,
@@ -72,6 +73,45 @@ describe('GeminiImageGenerator', () => {
     await expect(
       generator({ candidates: [{ finishReason: 'STOP' }] }).generator.generate(IMAGE, 'x', signal),
     ).rejects.not.toBeInstanceOf(ContentBlockedError);
+  });
+});
+
+describe('GeminiImageGenerator with a mask', () => {
+  it('sends the mask as a second image before the prompt', async () => {
+    const fetch = fakeFetch({
+      candidates: [
+        { content: { parts: [{ inlineData: { mimeType: 'image/png', data: 'cG5n' } }] } },
+      ],
+    });
+    const g = new GeminiImageGenerator({ project: 'p', model: 'm', token, fetch: fetch.fn });
+    await g.generate(IMAGE, 'erase', signal, new Uint8Array([1, 2]));
+    const sent = JSON.parse(fetch.calls[0]?.init.body as string) as {
+      contents: { parts: { text?: string; inlineData?: { mimeType: string } }[] }[];
+    };
+    const parts = sent.contents[0]?.parts ?? [];
+    expect(parts.map((part) => part.inlineData?.mimeType ?? part.text)).toEqual([
+      'image/jpeg',
+      'image/png',
+      'erase',
+    ]);
+  });
+});
+
+describe('ImagenUpscaler', () => {
+  it('asks for a 2x upscale and returns the image', async () => {
+    const fetch = fakeFetch({ predictions: [{ bytesBase64Encoded: 'anBn' }] });
+    const upscaler = new ImagenUpscaler({ project: 'p', model: 'm', token, fetch: fetch.fn });
+    expect(Buffer.from(await upscaler.upscale(IMAGE, signal)).toString()).toBe('jpg');
+    expect(fetch.calls[0]?.url).toContain('/models/m:predict');
+    expect(JSON.parse(fetch.calls[0]?.init.body as string)).toMatchObject({
+      parameters: { mode: 'upscale', upscaleConfig: { upscaleFactor: 'x2' } },
+    });
+  });
+
+  it('fails without an image', async () => {
+    const fetch = fakeFetch({ predictions: [] });
+    const upscaler = new ImagenUpscaler({ project: 'p', model: 'm', token, fetch: fetch.fn });
+    await expect(upscaler.upscale(IMAGE, signal)).rejects.toThrow();
   });
 });
 

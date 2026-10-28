@@ -12,7 +12,7 @@ import {
   RETENTION_MS,
 } from '../src/services/generations';
 import { handleRevenueCatEvent } from '../src/services/webhooks';
-import { JPEG_BASE64, SECRET, testDependencies } from './fakes';
+import { JPEG_BASE64, PNG_BASE64, SECRET, testDependencies } from './fakes';
 
 const ADDRESS = '203.0.113.7';
 
@@ -77,6 +77,53 @@ describe('generations', () => {
       createGeneration(deps, accountId, { styleId: 'figure', image: 'aGVsbG8=' }),
       'bad_request',
     );
+  });
+
+  it('erases a masked area with the generator, given a PNG mask (AI-10)', async () => {
+    const seen: { prompt: string; mask: Uint8Array | undefined }[] = [];
+    const { deps, accountId, images } = await setup({
+      generator: {
+        generate: (image, prompt, _signal, mask) => {
+          seen.push({ prompt, mask });
+          return Promise.resolve(image);
+        },
+      },
+    });
+    const queued = await createGeneration(deps, accountId, {
+      styleId: 'erase',
+      image: JPEG_BASE64,
+      mask: PNG_BASE64,
+    });
+    expect(images.masks.has(queued.id)).toBe(true);
+    await processGeneration(deps, queued.id);
+    expect(await getGeneration(deps, accountId, queued.id)).toMatchObject({ status: 'succeeded' });
+    expect(seen[0]?.prompt).toContain('mask');
+    expect(Buffer.from(seen[0]?.mask ?? []).toString('base64')).toBe(PNG_BASE64);
+  });
+
+  it('needs a PNG mask to erase and no mask otherwise', async () => {
+    const { deps, accountId, images } = await setup();
+    for (const request of [
+      { styleId: 'erase', image: JPEG_BASE64 },
+      { styleId: 'erase', image: JPEG_BASE64, mask: JPEG_BASE64 },
+      { styleId: 'figure', image: JPEG_BASE64, mask: PNG_BASE64 },
+    ]) {
+      await expectFailure(createGeneration(deps, accountId, request), 'bad_request');
+    }
+    expect(images.inputs.size).toBe(0);
+  });
+
+  it('upscales with the upscaler, not the generator (AI-11)', async () => {
+    const { deps, accountId } = await setup({
+      generator: { generate: () => Promise.reject(new Error('not the generator')) },
+      upscaler: { upscale: (image) => Promise.resolve(image) },
+    });
+    const queued = await createGeneration(deps, accountId, {
+      styleId: 'upscale',
+      image: JPEG_BASE64,
+    });
+    await processGeneration(deps, queued.id);
+    expect(await getGeneration(deps, accountId, queued.id)).toMatchObject({ status: 'succeeded' });
   });
 
   it('refuses without credits and leaves no upload behind', async () => {
