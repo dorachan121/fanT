@@ -25,7 +25,7 @@ const cameraSchema = z.object({
   lens: z.enum(['front', 'back']),
   aspect: z.enum(ASPECT_RATIOS),
   flash: z.enum(FLASH_MODES),
-  timer: z.union([z.literal(0), z.literal(3), z.literal(10)]),
+  timer: z.literal(TIMER_SECONDS),
   grid: z.boolean(),
   filmId: z.string(),
   /** Strength per film (FLM-05), remembered separately for each. */
