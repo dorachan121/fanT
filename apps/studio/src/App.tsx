@@ -203,7 +203,14 @@ export function App() {
   const loadFilm = async (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file === undefined) return;
-    const parsed = filmSchema.safeParse(JSON.parse(await file.text()));
+    let json: unknown;
+    try {
+      json = JSON.parse(await file.text());
+    } catch {
+      setError('Film JSON: JSON として読み込めませんでした');
+      return;
+    }
+    const parsed = filmSchema.safeParse(json);
     if (!parsed.success) {
       setError(`Film JSON: ${parsed.error.message}`);
       return;

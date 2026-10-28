@@ -61,6 +61,7 @@ describe('parseCubeLut', () => {
     ['a non-numeric entry', identity2.replace('1 1 1', '1 x 1')],
     ['an entry with two values', identity2.replace('1 1 1', '1 1')],
     ['an oversized LUT', 'LUT_3D_SIZE 100'],
+    ['too many entries', `${identity2}\n0 0 0`],
   ])('rejects %s', (_, text) => {
     expect(() => parseCubeLut(text)).toThrow();
   });

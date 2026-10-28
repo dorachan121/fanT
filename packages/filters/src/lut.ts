@@ -72,6 +72,9 @@ export function parseCubeLut(text: string): LutImage {
     if (keyword === 'LUT_1D_SIZE') throw new Error('1D LUTs are not supported');
     if (keyword === 'LUT_3D_SIZE') {
       size = Number(rest[0]);
+      if (!Number.isInteger(size) || size < LUT_SIZE_RANGE.min || size > LUT_SIZE_RANGE.max) {
+        throw new RangeError(`Invalid LUT size: ${String(rest[0])}`);
+      }
       continue;
     }
     if (keyword === 'DOMAIN_MIN' || keyword === 'DOMAIN_MAX') {
@@ -81,6 +84,8 @@ export function parseCubeLut(text: string): LutImage {
       continue;
     }
     entries.push(parseTriple([keyword, ...rest], line));
+    // Stops a huge or malformed file early instead of reading it all into memory.
+    if (entries.length > (size ?? LUT_SIZE_RANGE.max) ** 3) throw new Error('Too many LUT entries');
   }
 
   if (size === null) throw new Error('Missing LUT_3D_SIZE');
