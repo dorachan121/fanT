@@ -2,6 +2,7 @@ import {
   chainFilters,
   compileFilterEffects,
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_FACE_SHAPE_PARAMS,
   IDENTITY_LUT,
   toDateStampGlyphs,
   type BeautyParams,
@@ -126,6 +127,7 @@ export class StudioRenderer {
         const chain = chainFilters(
           this.effects,
           {
+            faceShape: DEFAULT_FACE_SHAPE_PARAMS,
             adjust: DEFAULT_ADJUST_PARAMS,
             beauty: look.beauty,
             film: look.film,

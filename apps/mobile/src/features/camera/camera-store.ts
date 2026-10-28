@@ -2,6 +2,8 @@ import {
   BEAUTY_PARAM_RANGES,
   DATE_STAMP_FORMATS,
   DEFAULT_BEAUTY_PARAMS,
+  DEFAULT_FACE_SHAPE_PARAMS,
+  FACE_SHAPE_PARAM_RANGES,
   type BeautyParams,
   type DateStampFormat,
 } from '@fant/filters';
@@ -33,6 +35,8 @@ const cameraSchema = z.object({
   favoriteFilms: z.array(z.string()).max(100),
   /** Remembered between launches (BTY-06). */
   beauty: paramsSchema(BEAUTY_PARAM_RANGES),
+  /** Face fine-tuning (BTY-04); off by default. */
+  faceShape: paramsSchema(FACE_SHAPE_PARAM_RANGES),
   dateStamp: z.object({
     enabled: z.boolean(),
     format: z.enum(DATE_STAMP_FORMATS),
@@ -57,6 +61,7 @@ const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
   filmIntensity: {},
   favoriteFilms: [],
   beauty: DEFAULT_BEAUTY_PARAMS,
+  faceShape: DEFAULT_FACE_SHAPE_PARAMS,
   dateStamp: { enabled: false, format: 'yy mm dd', customDate: null },
   characterId: 'bear',
   characterVariants: {},

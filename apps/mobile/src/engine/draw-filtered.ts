@@ -1,4 +1,10 @@
-import { chainLook, chainRetouch, type FilterEffects, type FilterSettings } from '@fant/filters';
+import {
+  chainLook,
+  chainRetouch,
+  type FilterEffects,
+  type FilterSettings,
+  type ShapedFace,
+} from '@fant/filters';
 import {
   FilterMode,
   MipmapMode,
@@ -17,6 +23,8 @@ export interface FilterInputs {
   readonly lut: LoadedLut;
   /** Lower for a struggling live preview (03 §2); omitted (full) for photos. */
   readonly quality?: number;
+  /** Faces for face fine-tuning (BTY-04), in the drawn rectangle's pixels. */
+  readonly faces?: readonly ShapedFace[];
   /**
    * Drawn over the retouched image and under the film look, e.g. character
    * stickers (CHR-04): they get the film's texture but are not smoothed.
@@ -25,7 +33,7 @@ export interface FilterInputs {
 }
 
 /**
- * Draws `source` through adjust → beauty → (overlay) → film → date stamp into the
+ * Draws `source` through face shape → adjust → beauty → (overlay) → film → date stamp into the
  * rectangle (0, 0, width, height). The live preview and the saved photo both use
  * this, so they always look the same (03 §3).
  *
@@ -39,8 +47,8 @@ export function drawFiltered(
   inputs: FilterInputs,
 ): void {
   'worklet';
-  const { effects, settings, seed, lut, overlay, quality } = inputs;
-  const frame = { width: size.width, height: size.height, seed, quality };
+  const { effects, settings, seed, lut, overlay, quality, faces } = inputs;
+  const frame = { width: size.width, height: size.height, seed, quality, faces };
   const bounds = Skia.XYWHRect(0, 0, size.width, size.height);
   const paint = Skia.Paint();
   const disposables: { dispose(): void }[] = [paint];

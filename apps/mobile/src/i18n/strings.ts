@@ -67,6 +67,9 @@ export const strings = {
     smoothing: 'つるすべ',
     brightness: 'トーンアップ',
     rosiness: 'ほんのり血色',
+    faceShape: '🪞 顔の微調整（ひかえめ）',
+    eyes: '目をぱっちり',
+    slim: '小顔',
   },
   character: {
     colors: 'カラー',

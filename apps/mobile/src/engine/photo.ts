@@ -9,7 +9,12 @@ import {
   type SkImage,
 } from '@shopify/react-native-skia';
 
-import { primaryFaces, toFaceGeometry } from '../features/character/face-geometry.worklet';
+import {
+  primaryFaces,
+  shapesFaces,
+  toFaceGeometry,
+  toShapedFaces,
+} from '../features/character/face-geometry.worklet';
 import { filterSettingsFor } from '../features/photo/filter-settings';
 import { coverPlacement, framedPhotoRect } from '../features/photo/frames';
 import { croppedSize, fitLongEdge, type Size } from '../features/photo/geometry';
@@ -80,8 +85,9 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
     recipeTransform(imageSize(image), recipe.transform),
   );
 
+  const shaping = shapesFaces(recipe.faceShape);
   const faces =
-    input.character !== null && input.originalUri !== null
+    (input.character !== null || shaping) && input.originalUri !== null
       ? primaryFaces(
           detectFacesInImage(input.originalUri).map((face) => toFaceGeometry(face, transform)),
         )
@@ -120,7 +126,9 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
         beauty: recipe.beauty,
         adjust: recipe.adjust,
         dateStamp: recipe.dateStamp,
+        faceShape: recipe.faceShape,
       }),
+      faces: shaping ? toShapedFaces(faces) : undefined,
       seed: recipe.seed,
       lut,
       overlay:

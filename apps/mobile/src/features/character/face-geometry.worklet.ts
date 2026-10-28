@@ -1,4 +1,5 @@
 import type { CharacterPart, FaceAnchor } from '@fant/content-schema';
+import type { ShapedFace } from '@fant/filters';
 
 import { apply, type Affine, type Point } from '../../engine/affine.worklet';
 
@@ -139,6 +140,28 @@ export function placePart(face: FaceGeometry, part: CharacterPart): PartPlacemen
     rotation: face.roll + part.rotation,
     mirrored: part.mirrored,
   };
+}
+
+/** Faces for face fine-tuning (BTY-04): only those whose eyes were found. */
+export function toShapedFaces(faces: readonly FaceGeometry[]): ShapedFace[] {
+  'worklet';
+  const shaped: ShapedFace[] = [];
+  for (const face of faces) {
+    if (face.eyes === null) continue;
+    shaped.push({
+      leftEye: [face.eyes[0].x, face.eyes[0].y],
+      rightEye: [face.eyes[1].x, face.eyes[1].y],
+      center: [face.center.x, face.center.y],
+      width: face.width,
+    });
+  }
+  return shaped;
+}
+
+/** Whether face fine-tuning changes anything (and so needs faces). */
+export function shapesFaces(params: { readonly eyes: number; readonly slim: number }): boolean {
+  'worklet';
+  return params.eyes > 0 || params.slim > 0;
 }
 
 /** The largest faces first, at most `MAX_FACES` (people in the background are skipped). */

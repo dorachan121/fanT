@@ -36,6 +36,20 @@ export {
 } from './date-stamp/date-stamp';
 export { DATE_STAMP_SHADER_NAME, DATE_STAMP_SHADER_SOURCE } from './date-stamp/date-stamp-shader';
 export {
+  DEFAULT_FACE_SHAPE_PARAMS,
+  FACE_SHAPE_PARAM_RANGES,
+  normalizeFaceShapeParams,
+  type FaceShapeParamName,
+  type FaceShapeParams,
+} from './face-shape/face-shape-params';
+export { FACE_SHAPE_SHADER_NAME, FACE_SHAPE_SHADER_SOURCE } from './face-shape/face-shape-shader';
+export {
+  MAX_SHAPED_FACES,
+  toFaceShapeUniforms,
+  type FaceShapeUniforms,
+  type ShapedFace,
+} from './face-shape/face-shape-uniforms';
+export {
   DEFAULT_FILM_PARAMS,
   FILM_PARAM_RANGES,
   normalizeFilmParams,

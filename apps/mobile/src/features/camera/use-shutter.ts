@@ -39,7 +39,7 @@ export function useShutter({ camera, look, seed, lens, onShot }: ShutterOptions)
   const shoot = async () => {
     if (busy.current) return;
     busy.current = true;
-    const { timer, flash, aspect, beauty, mode } = useCameraSettings.getState();
+    const { timer, flash, aspect, beauty, faceShape, mode } = useCameraSettings.getState();
     try {
       if (timer > 0) {
         setStatus('countdown');
@@ -74,6 +74,7 @@ export function useShutter({ camera, look, seed, lens, onShot }: ShutterOptions)
             filmId: look.film.id,
             intensity: look.intensity,
             beauty,
+            faceShape,
             dateStamp: look.dateStamp,
             character:
               mode === 'character' && look.character !== null

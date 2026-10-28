@@ -26,6 +26,7 @@ import { useSettings } from '../settings/settings-store';
 import { AlbumThumbnail } from './album-thumbnail';
 import { BeautySheet } from './beauty-sheet';
 import { CameraPermissionGate } from './camera-permission-gate';
+import { shapesFaces } from '../character/face-geometry.worklet';
 import { useCameraSettings } from './camera-store';
 import { CharacterSheet, CharacterStrip } from './character-strip';
 import { FilmSheet } from './film-sheet';
@@ -65,6 +66,7 @@ function FilmCamera() {
   const aspect = useCameraSettings((state) => state.aspect);
   const grid = useCameraSettings((state) => state.grid);
   const beauty = useCameraSettings((state) => state.beauty);
+  const faceShape = useCameraSettings((state) => state.faceShape);
   const favorites = useCameraSettings((state) => state.favoriteFilms);
   const characterId = useCameraSettings((state) => state.characterId);
   const tapToShoot = useSettings((state) => state.tapToShoot);
@@ -156,7 +158,8 @@ function FilmCamera() {
 
   const tracking = useFaceTracking({
     onEyes: analysisEnabled ? onEyes : null,
-    trackFaces: analysisEnabled && mode === 'character',
+    // Characters and face fine-tuning both follow the faces.
+    trackFaces: analysisEnabled && (mode === 'character' || shapesFaces(faceShape)),
   });
   const preview = usePreviewRenderer({ look, seed, tracking, showCharacter: mode === 'character' });
 

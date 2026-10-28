@@ -1,5 +1,5 @@
-import { resolveFilmParams, type Film } from '@fant/content-schema';
-import { DEFAULT_ADJUST_PARAMS, toDateStampGlyphs } from '@fant/filters';
+import type { Film } from '@fant/content-schema';
+import { BEAUTY_LEVELS } from '@fant/filters';
 import {
   BlurStyle,
   FilterMode,
@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from 'react';
 
 import { reportError } from '../features/analytics/analytics';
+import { filterSettingsFor } from '../features/photo/filter-settings';
 import { drawFiltered } from './draw-filtered';
 import { filterEffects } from './filter-effects';
 import { loadFilmLut } from './lut';
@@ -98,12 +99,13 @@ async function renderThumbnail(film: Film): Promise<SkImage> {
       { width: WIDTH, height: HEIGHT },
       {
         effects: filterEffects(),
-        settings: {
-          adjust: DEFAULT_ADJUST_PARAMS,
-          beauty: { smoothing: 0, brightness: 0, rosiness: 0 },
-          film: resolveFilmParams(film, { intensity: 1, seed }),
-          dateStamp: toDateStampGlyphs(null),
-        },
+        settings: filterSettingsFor({
+          film,
+          intensity: 1,
+          seed,
+          beauty: BEAUTY_LEVELS.off,
+          dateStamp: null,
+        }),
         seed,
         lut,
         overlay: null,

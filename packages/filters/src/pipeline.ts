@@ -4,6 +4,9 @@ import { BEAUTY_SHADER_NAME, BEAUTY_SHADER_SOURCE } from './beauty/beauty-shader
 import { toBeautyUniforms } from './beauty/beauty-uniforms';
 import { toDateStampUniforms, type DateStampGlyphs } from './date-stamp/date-stamp';
 import { DATE_STAMP_SHADER_NAME, DATE_STAMP_SHADER_SOURCE } from './date-stamp/date-stamp-shader';
+import type { FaceShapeParams } from './face-shape/face-shape-params';
+import { FACE_SHAPE_SHADER_NAME, FACE_SHAPE_SHADER_SOURCE } from './face-shape/face-shape-shader';
+import { toFaceShapeUniforms, type ShapedFace } from './face-shape/face-shape-uniforms';
 import type { FilmParams } from './film/film-params';
 import { FILM_SHADER_NAME, FILM_SHADER_SOURCE } from './film/film-shader';
 import { toFilmUniforms } from './film/film-uniforms';
@@ -19,6 +22,7 @@ export interface ShaderEffect<TShader> extends UniformLayout {
 }
 
 export interface FilterEffects<TShader> {
+  readonly faceShape: ShaderEffect<TShader>;
   readonly adjust: ShaderEffect<TShader>;
   readonly beauty: ShaderEffect<TShader>;
   readonly film: ShaderEffect<TShader>;
@@ -27,6 +31,7 @@ export interface FilterEffects<TShader> {
 
 /** Everything that decides how a photo looks; recorded with each shot. */
 export interface FilterSettings {
+  readonly faceShape: FaceShapeParams;
   readonly adjust: AdjustParams;
   readonly beauty: BeautyParams;
   readonly film: FilmParams;
@@ -40,6 +45,8 @@ export interface FilterFrame {
   readonly seed: number;
   /** Preview quality (see `REDUCED_QUALITY`); full when omitted. */
   readonly quality?: number;
+  /** Faces for face fine-tuning, in frame pixels; without them it is skipped. */
+  readonly faces?: readonly ShapedFace[];
 }
 
 export interface FilterChain<TShader> {
@@ -65,8 +72,9 @@ function isNeutral(params: Readonly<Record<string, number>>): boolean {
 }
 
 /**
- * Corrections and skin retouching (adjust → beauty). Runs before anything drawn
- * over the face (characters), so stickers are not smoothed.
+ * Face fine-tuning, corrections and skin retouching (face shape → adjust → beauty).
+ * Runs before anything drawn over the face (characters), so stickers are not
+ * smoothed or reshaped.
  * Marked as a worklet so it can run on the camera frame thread.
  */
 export function chainRetouch<TShader>(
@@ -78,6 +86,14 @@ export function chainRetouch<TShader>(
   'worklet';
   const created: TShader[] = [];
   let shader = source;
+  const faces = frame.faces ?? [];
+  if (faces.length > 0 && !isNeutral(settings.faceShape)) {
+    shader = effects.faceShape.makeShaderWithChildren(
+      packUniforms(effects.faceShape, toFaceShapeUniforms(settings.faceShape, faces)),
+      [shader],
+    );
+    created.push(shader);
+  }
   if (!isNeutral(settings.adjust)) {
     shader = effects.adjust.makeShaderWithChildren(packUniforms(effects.adjust, settings.adjust), [
       shader,
@@ -144,6 +160,7 @@ export function compileFilterEffects<TEffect>(
   factory: RuntimeEffectFactory<TEffect>,
 ): Readonly<Record<keyof FilterEffects<unknown>, TEffect>> {
   return {
+    faceShape: compileRuntimeEffect(factory, FACE_SHAPE_SHADER_NAME, FACE_SHAPE_SHADER_SOURCE),
     adjust: compileRuntimeEffect(factory, ADJUST_SHADER_NAME, ADJUST_SHADER_SOURCE),
     beauty: compileRuntimeEffect(factory, BEAUTY_SHADER_NAME, BEAUTY_SHADER_SOURCE),
     film: compileRuntimeEffect(factory, FILM_SHADER_NAME, FILM_SHADER_SOURCE),

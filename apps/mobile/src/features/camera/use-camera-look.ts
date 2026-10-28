@@ -4,6 +4,7 @@ import {
   DATE_STAMP_ORANGE,
   type BeautyParams,
   type DateStamp,
+  type FaceShapeParams,
   type FilterSettings,
 } from '@fant/filters';
 import { useEffect, useMemo, useState } from 'react';
@@ -23,6 +24,8 @@ export interface LookSpec {
   readonly filmId: string;
   readonly intensity: number;
   readonly beauty: BeautyParams;
+  /** Face fine-tuning (BTY-04); off when omitted. */
+  readonly faceShape?: FaceShapeParams;
   readonly dateStamp: DateStamp | null;
   readonly character: { readonly id: string; readonly variantId: string | undefined } | null;
 }
@@ -74,7 +77,7 @@ export function useLook(spec: LookSpec, seed: number): CameraLook {
   const manifest = useContent((state) => state.manifest);
   const film = findFilm(manifest, spec.filmId);
   const lut = useFilmLut(film);
-  const { intensity, beauty, dateStamp } = spec;
+  const { intensity, beauty, faceShape, dateStamp } = spec;
   const characterId = spec.character?.id;
   const variantId = spec.character?.variantId;
 
@@ -84,8 +87,8 @@ export function useLook(spec: LookSpec, seed: number): CameraLook {
   );
   const images = useCharacterImages(character);
   const settings = useMemo(
-    () => filterSettingsFor({ film, intensity, seed, beauty, dateStamp }),
-    [film, intensity, seed, beauty, dateStamp],
+    () => filterSettingsFor({ film, intensity, seed, beauty, faceShape, dateStamp }),
+    [film, intensity, seed, beauty, faceShape, dateStamp],
   );
   const characterDrawing = useMemo<CharacterDrawing | null>(
     () => (character === null ? null : { ...character, images }),
@@ -100,6 +103,7 @@ export function useCameraLook(seed: number): CameraLook {
   const filmId = useCameraSettings((state) => state.filmId);
   const intensity = useCameraSettings((state) => filmIntensityOf(state, state.filmId));
   const beauty = useCameraSettings((state) => state.beauty);
+  const faceShape = useCameraSettings((state) => state.faceShape);
   const dateSettings = useCameraSettings((state) => state.dateStamp);
   const mode = useCameraSettings((state) => state.mode);
   const characterId = useCameraSettings((state) => state.characterId);
@@ -121,8 +125,8 @@ export function useCameraLook(seed: number): CameraLook {
     [mode, characterId, variantId],
   );
   const spec = useMemo<LookSpec>(
-    () => ({ filmId, intensity, beauty, dateStamp, character }),
-    [filmId, intensity, beauty, dateStamp, character],
+    () => ({ filmId, intensity, beauty, faceShape, dateStamp, character }),
+    [filmId, intensity, beauty, faceShape, dateStamp, character],
   );
   return useLook(spec, seed);
 }

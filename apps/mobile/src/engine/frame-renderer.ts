@@ -3,7 +3,11 @@ import { useCallback } from 'react';
 import type { SkiaCameraProps } from 'react-native-vision-camera-skia';
 import type { Synchronizable } from 'react-native-worklets';
 
-import type { FaceGeometry } from '../features/character/face-geometry.worklet';
+import {
+  shapesFaces,
+  toShapedFaces,
+  type FaceGeometry,
+} from '../features/character/face-geometry.worklet';
 import type { FrameSample } from '../features/performance/frame-stats.worklet';
 import { fromMatrix3, invert, toMatrix3 } from './affine.worklet';
 import { drawCharacter, type CharacterDrawing } from './draw-character';
@@ -12,7 +16,7 @@ import type { FrameAnalyzer } from './face-tracking';
 
 export interface FrameRendererOptions {
   readonly inputs: Omit<FilterInputs, 'overlay'>;
-  /** Drawn on the tracked faces (character mode). */
+  /** Drawn on the tracked faces (character mode); face fine-tuning also uses them. */
   readonly character: CharacterDrawing | null;
   readonly faces: Synchronizable<FaceGeometry[]>;
   readonly analyze: FrameAnalyzer | null;
@@ -61,9 +65,11 @@ export function useFrameRenderer({
             toUpright,
           );
           try {
-            const tracked = character === null ? [] : faces.getBlocking();
+            const shaping = shapesFaces(inputs.settings.faceShape);
+            const tracked = character === null && !shaping ? [] : faces.getBlocking();
             drawFiltered(canvas, source, output, {
               ...inputs,
+              faces: shaping ? toShapedFaces(tracked) : undefined,
               overlay:
                 character === null || tracked.length === 0
                   ? null

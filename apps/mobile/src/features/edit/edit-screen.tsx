@@ -20,7 +20,7 @@ import { Slider } from '../../ui/slider';
 import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { Toggle } from '../../ui/toggle';
 import { reportError } from '../analytics/analytics';
-import { BeautyControls } from '../camera/beauty-sheet';
+import { BeautyControls, FaceShapeControls } from '../camera/beauty-sheet';
 import { FilmStrip } from '../camera/film-strip';
 import { useCameraSettings } from '../camera/camera-store';
 import { useContent } from '../content/content-store';
@@ -179,12 +179,20 @@ export function EditScreen({ id }: { readonly id: string }) {
             </>
           )}
           {tab === 'beauty' && (
-            <BeautyControls
-              beauty={recipe.beauty}
-              onChange={(beauty) => {
-                update({ beauty }, 'beauty');
-              }}
-            />
+            <>
+              <BeautyControls
+                beauty={recipe.beauty}
+                onChange={(beauty) => {
+                  update({ beauty }, 'beauty');
+                }}
+              />
+              <FaceShapeControls
+                faceShape={recipe.faceShape}
+                onChange={(faceShape) => {
+                  update({ faceShape }, 'faceShape');
+                }}
+              />
+            </>
           )}
           {tab === 'adjust' &&
             ADJUSTMENTS.map((key) => (

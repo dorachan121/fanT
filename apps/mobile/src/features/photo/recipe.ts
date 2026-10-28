@@ -5,7 +5,10 @@ import {
   BEAUTY_PARAM_RANGES,
   DATE_STAMP_FORMATS,
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_FACE_SHAPE_PARAMS,
+  FACE_SHAPE_PARAM_RANGES,
   type AdjustParams,
+  type FaceShapeParams,
   type BeautyParams,
   type ParamRange,
 } from '@fant/filters';
@@ -126,6 +129,8 @@ const photoRecipeSchema = z.strictObject({
     crop: cropSchema,
   }),
   deco: z.array(decoLayerSchema).max(MAX_DECO_LAYERS),
+  /** Face fine-tuning (BTY-04); recipes saved without it leave faces as they are. */
+  faceShape: paramsSchema(FACE_SHAPE_PARAM_RANGES).default(DEFAULT_FACE_SHAPE_PARAMS),
   /** Added after the first release: recipes saved without it have no frame. */
   frame: z
     .strictObject({ type: z.enum(FRAME_TYPES), color: hexColorSchema })
@@ -145,6 +150,7 @@ export function newRecipe(options: {
   readonly mirror: boolean;
   readonly crop: Crop;
   readonly adjust?: AdjustParams;
+  readonly faceShape?: FaceShapeParams;
 }): PhotoRecipe {
   return {
     version: 1,
@@ -157,6 +163,7 @@ export function newRecipe(options: {
     transform: { rotation: 0, mirror: options.mirror, crop: options.crop },
     deco: [],
     frame: null,
+    faceShape: options.faceShape ?? DEFAULT_FACE_SHAPE_PARAMS,
   };
 }
 
