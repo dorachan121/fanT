@@ -199,6 +199,17 @@ describe('mergeManifests', () => {
     expect(mergeManifests(builtIn, { ...EMPTY, films: [newer] }).films).toEqual([newer]);
     expect(mergeManifests(builtIn, null)).toBe(builtIn);
   });
+
+  it('takes the remote config (ANL-03)', () => {
+    const config = { features: { ai: false }, paywallLead: [{ ja: 'A' }, { ja: 'B' }] };
+    expect(mergeManifests(EMPTY, { ...EMPTY, config }).config).toEqual(config);
+    expect(mergeManifests(EMPTY, EMPTY).config).toBeUndefined();
+  });
+
+  it('rejects malformed config', () => {
+    expect(() => parseManifest({ ...EMPTY, config: { features: { ai: 'no' } } })).toThrow();
+    expect(() => parseManifest({ ...EMPTY, config: { paywallLead: [] } })).toThrow();
+  });
 });
 
 describe('availability', () => {

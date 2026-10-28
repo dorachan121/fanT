@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 import { aiStyleSchema } from './ai-style';
 import { characterSchema } from './character';
-import type { Availability } from './common';
+import { localizedTextSchema, type Availability } from './common';
 import { filmSchema } from './film';
 import { layoutSchema } from './layout';
 import { phraseSchema, stampSchema } from './stamp';
@@ -16,6 +16,18 @@ const collection = <T extends z.ZodType<{ id: string }>>(item: T) =>
       'IDs must be unique within a collection',
     );
 
+/**
+ * Remote configuration (ANL-03), delivered with the content: switches to turn a
+ * feature off without an app update, and copy that can run as an A/B test.
+ */
+export const remoteConfigSchema = z.strictObject({
+  /** Features that can be switched off, e.g. AI during a provider outage. On when absent. */
+  features: z.strictObject({ ai: z.boolean().optional() }).optional(),
+  /** The paywall's lead line; with several, each install sees one of them (A/B test). */
+  paywallLead: z.array(localizedTextSchema).min(1).max(4).optional(),
+});
+export type RemoteConfig = z.infer<typeof remoteConfigSchema>;
+
 /** Everything the app can offer (CNT-01), as delivered from the content server. */
 export const manifestSchema = z.strictObject({
   schemaVersion: z.literal(1),
@@ -25,6 +37,7 @@ export const manifestSchema = z.strictObject({
   stamps: collection(stampSchema),
   phrases: collection(phraseSchema),
   aiStyles: collection(aiStyleSchema),
+  config: remoteConfigSchema.optional(),
 });
 export type Manifest = z.infer<typeof manifestSchema>;
 
@@ -61,11 +74,12 @@ function mergeById<T extends Versioned>(builtIn: readonly T[], remote: readonly 
 
 /**
  * Built-in content (always available offline, CNT-05) plus downloaded content. A
- * downloaded item replaces a built-in one only when its version is newer.
+ * downloaded item replaces a built-in one only when its version is newer; a
+ * downloaded config replaces the built-in one.
  */
 export function mergeManifests(builtIn: Manifest, remote: Manifest | null): Manifest {
   if (remote === null) return builtIn;
-  const merged = { schemaVersion: 1 } as Manifest;
+  const merged = { schemaVersion: 1, config: remote.config ?? builtIn.config } as Manifest;
   for (const key of COLLECTIONS) {
     (merged as Record<string, unknown>)[key] = mergeById<Versioned>(builtIn[key], remote[key]);
   }

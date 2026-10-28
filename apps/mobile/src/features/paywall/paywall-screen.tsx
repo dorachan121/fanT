@@ -11,6 +11,7 @@ import { HeroEmoji } from '../../ui/hero-emoji';
 import { IconButton } from '../../ui/icon-button';
 import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError, track } from '../analytics/analytics';
+import { usePaywallLead } from '../remote-config/remote-config';
 import {
   loadPurchases,
   purchase,
@@ -66,12 +67,14 @@ export function PaywallScreen({ trigger }: { readonly trigger: string }) {
   const [selected, setSelected] = useState<StorePackage | null>(null);
   const [busy, setBusy] = useState(false);
   const chosen = selected ?? annual ?? lifetime;
+  const remoteLead = usePaywallLead();
+  const leadVariant = remoteLead?.variant;
 
   useEffect(() => {
-    track({ name: 'paywall_shown', trigger });
+    track({ name: 'paywall_shown', trigger, leadVariant });
     // Retries when the plans could not be loaded at launch.
     void loadPurchases();
-  }, [trigger]);
+  }, [trigger, leadVariant]);
 
   const buy = async () => {
     if (chosen === null) return;
@@ -117,9 +120,8 @@ export function PaywallScreen({ trigger }: { readonly trigger: string }) {
         <Text accessibilityRole="header" style={styles.title}>
           {strings.paywall.title}
         </Text>
-        <Text style={styles.lead}>
-          {trigger === 'settings' ? strings.paywall.lead : strings.paywall.locked}
-        </Text>
+        {trigger !== 'settings' && <Text style={styles.lead}>{strings.paywall.locked}</Text>}
+        <Text style={styles.lead}>{remoteLead?.text ?? strings.paywall.lead}</Text>
         <View style={styles.features}>
           {strings.paywall.features.map((feature) => (
             <Text key={feature} style={styles.feature}>

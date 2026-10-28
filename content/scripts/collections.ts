@@ -1,4 +1,4 @@
-import { readdirSync, readFileSync } from 'node:fs';
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 /** Content roots: builtin/ ships inside the app, remote/ is delivered only. */
@@ -17,6 +17,9 @@ export const COLLECTION_FILES = {
   phrases: 'phrases.json',
   aiStyles: 'ai-styles.json',
 } as const;
+
+/** Remote configuration (feature switches, A/B copy; ANL-03). */
+export const CONFIG_FILE = 'config.json';
 
 export function readJson(path: string): unknown {
   return JSON.parse(readFileSync(path, 'utf8'));
@@ -41,13 +44,14 @@ export function readRawManifest(root: Root): Record<string, unknown> {
     schemaVersion: 1,
     films: filmFiles(root).map(readJson),
   };
+  // A missing file is empty; a malformed one fails the build instead of vanishing.
   for (const [key, file] of Object.entries(COLLECTION_FILES)) {
-    try {
-      manifest[key] = readJson(join(ROOTS[root], file));
-    } catch {
-      manifest[key] = [];
-    }
+    const path = join(ROOTS[root], file);
+    manifest[key] = existsSync(path) ? readJson(path) : [];
   }
+  // Remote configuration (ANL-03) is optional.
+  const configPath = join(ROOTS[root], CONFIG_FILE);
+  if (existsSync(configPath)) manifest.config = readJson(configPath);
   return manifest;
 }
 

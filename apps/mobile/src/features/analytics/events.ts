@@ -9,7 +9,12 @@ export type AnalyticsEvent =
   | { readonly name: 'photo_taken'; readonly mode: string; readonly filmId: string }
   | { readonly name: 'photo_saved'; readonly kind: string }
   | { readonly name: 'photo_shared'; readonly kind: string }
-  | { readonly name: 'paywall_shown'; readonly trigger: string }
+  | {
+      readonly name: 'paywall_shown';
+      readonly trigger: string;
+      /** The remote config's lead variant shown (ANL-03), if any. */
+      readonly leadVariant?: number;
+    }
   | { readonly name: 'purchase_completed'; readonly productId: string }
   | { readonly name: 'ai_generated'; readonly styleId: string }
   | {

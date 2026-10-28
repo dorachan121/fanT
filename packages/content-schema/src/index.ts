@@ -38,7 +38,9 @@ export {
   mergeManifests,
   NEW_BADGE_DAYS,
   parseManifest,
+  remoteConfigSchema,
   type Manifest,
+  type RemoteConfig,
 } from './manifest';
 export {
   phraseSchema,

@@ -280,7 +280,7 @@ Skia で描いた加工は、カメラの撮影画像には直接乗りません
 | 端末内の保存 | SQLite・MMKV | SQLite（アルバムの一覧とレシピ、設定）とファイル（元画像・仕上がり）。MMKV は使わない |
 | 認証 | Firebase 匿名認証 | 端末の秘密鍵による匿名アカウント（D-11） |
 | 分析・クラッシュ | Firebase Analytics / Crashlytics | 自前の API とログ（D-12） |
-| リモート設定 | Remote Config | 使わない（ANL-03 は Phase 2）。コンテンツ配信で代用できる |
+| リモート設定 | Remote Config | 使わない。ANL-03 はコンテンツ配信の `config.json`（機能の停止・ペイウォールの文言の A/B テスト） |
 | App Check | 使う | リリース前に追加（[運用手順](../operations/README.md) §5） |
 | ネイティブモジュール | 人物の切り抜き（必要時） | 音量ボタンでの撮影だけ（D-14）。人物の切り抜き（PRI-04）は Phase 2 |
 | コンテンツ配信 | Cloud Storage ＋ CDN | 同じ。素材はハッシュ名で無期限キャッシュ（D-15） |

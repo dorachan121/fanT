@@ -4,7 +4,6 @@ import { useState, type ComponentProps } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { APP_CONFIG } from '../../config';
 import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { confirmDestructive } from '../../ui/dialogs';
@@ -15,6 +14,7 @@ import { ScreenHeader } from '../../ui/screen-header';
 import { colors, radius, spacing } from '../../ui/theme';
 import { deletePhotos } from '../album/album-db';
 import { useAlbumPhoto } from '../album/use-album';
+import { useAiAvailable } from '../remote-config/remote-config';
 import { savePhoto, sharePhotoFile } from './photo-actions';
 import { Text } from '../../ui/text';
 
@@ -27,6 +27,7 @@ interface PhotoScreenProps {
 /** One photo with what can be done to it: save, share, edit, deco, AI, delete (S-20/S-51). */
 export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
   const photo = useAlbumPhoto(id);
+  const aiAvailable = useAiAvailable();
   const { bottom } = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
   const [notice, showNotice] = useNotice();
@@ -86,7 +87,7 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
               router.push({ pathname: '/deco/[id]', params: { id: photo.id } });
             }}
           />
-          {APP_CONFIG.apiBaseUrl !== null && (
+          {aiAvailable && (
             <PhotoAction
               icon="sparkles"
               label={strings.photo.ai}

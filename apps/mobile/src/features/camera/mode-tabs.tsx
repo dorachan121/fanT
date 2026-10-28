@@ -8,6 +8,7 @@ import { Gradient } from '../../ui/gradient';
 import { Text } from '../../ui/text';
 import { colors, radius, spacing, TOUCH_TARGET } from '../../ui/theme';
 import { track } from '../analytics/analytics';
+import { useAiAvailable } from '../remote-config/remote-config';
 import { CAMERA_MODES, useCameraSettings, type CameraMode } from './camera-store';
 
 /**
@@ -16,6 +17,7 @@ import { CAMERA_MODES, useCameraSettings, type CameraMode } from './camera-store
  */
 export function ModeTabs() {
   const mode = useCameraSettings((state) => state.mode);
+  const aiAvailable = useAiAvailable();
   const select = (next: CameraMode) => {
     track({ name: 'mode_selected', mode: next });
     if (next === 'puri') router.push('/puri');
@@ -24,7 +26,7 @@ export function ModeTabs() {
   };
   return (
     <View accessibilityRole="tablist" style={styles.tabs}>
-      {CAMERA_MODES.map((candidate) => {
+      {CAMERA_MODES.filter((candidate) => candidate !== 'ai' || aiAvailable).map((candidate) => {
         const selected = candidate === mode;
         return (
           <Bouncy

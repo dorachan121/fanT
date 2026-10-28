@@ -23,8 +23,8 @@ let started = false;
 /** One request at a time, so a batch is never sent twice. */
 let flushing = false;
 
-/** Anonymous per-install ID (SET-04); reset by reinstalling the app. */
-function installId(): string {
+/** Anonymous per-install ID (SET-04); reset by reinstalling the app. Also keys A/B tests. */
+export function getInstallId(): string {
   let id = Storage.getItemSync(INSTALL_ID_KEY);
   if (id === null) {
     id = randomUUID();
@@ -71,7 +71,7 @@ async function flush(): Promise<void> {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          installId: installId(),
+          installId: getInstallId(),
           platform: Platform.OS,
           appVersion: APP_CONFIG.appVersion,
           events: batch,
