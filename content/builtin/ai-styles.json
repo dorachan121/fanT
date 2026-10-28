@@ -50,5 +50,57 @@
       "en": "A 90s fashion magazine cover"
     },
     "credits": 1
+  },
+  {
+    "id": "chibi",
+    "version": 1,
+    "name": {
+      "ja": "ちびキャラ風",
+      "en": "Chibi"
+    },
+    "description": {
+      "ja": "頭の大きなちびキャラに",
+      "en": "A cute big-headed mini character"
+    },
+    "credits": 1
+  },
+  {
+    "id": "clay",
+    "version": 1,
+    "name": {
+      "ja": "ねんど風",
+      "en": "Clay"
+    },
+    "description": {
+      "ja": "ころんとした粘土人形に",
+      "en": "A rounded clay doll"
+    },
+    "credits": 1
+  },
+  {
+    "id": "pixel_art",
+    "version": 1,
+    "name": {
+      "ja": "ドット絵風",
+      "en": "Pixel art"
+    },
+    "description": {
+      "ja": "レトロゲームのドット絵に",
+      "en": "Retro game pixel art"
+    },
+    "credits": 1
+  },
+  {
+    "id": "pop_art",
+    "version": 1,
+    "name": {
+      "ja": "ポップアート風",
+      "en": "Pop art"
+    },
+    "description": {
+      "ja": "カラフルなポップアートに",
+      "en": "Colourful pop art"
+    },
+    "credits": 1
   }
 ]

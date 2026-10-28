@@ -70,6 +70,12 @@ describe('builtInManifest', () => {
     expect(parts.some(({ depth }) => depth !== undefined)).toBe(true);
   });
 
+  it('offers 15+ films, 60+ stamps and 8+ AI styles (CNT-06)', () => {
+    expect(manifest.films.length).toBeGreaterThanOrEqual(15);
+    expect(manifest.stamps.length).toBeGreaterThanOrEqual(60);
+    expect(manifest.aiStyles.length).toBeGreaterThanOrEqual(8);
+  });
+
   it('offers 2+ free layouts and 30 stamps (R-08)', () => {
     expect(manifest.layouts.filter(({ tier }) => tier === 'free').length).toBeGreaterThanOrEqual(2);
     expect(manifest.stamps.length).toBeGreaterThanOrEqual(30);

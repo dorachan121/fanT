@@ -45,6 +45,26 @@ export const STYLES: Readonly<Record<string, StyleDefinition>> = {
     prompt:
       'Turn the photo into a 1990s fashion magazine cover with film grain, bold masthead area and stylish layout, without any real magazine name. Keep the person recognizable.',
   },
+  chibi: {
+    credits: 1,
+    prompt:
+      'Redraw the person as a cute chibi character with a big head, small body and sparkling eyes, in clean bright colors. Keep their hairstyle, outfit colors and expression recognizable.',
+  },
+  clay: {
+    credits: 1,
+    prompt:
+      'Turn the person into a rounded handmade clay doll with soft fingerprint texture, pastel background and soft light. Keep their hairstyle, outfit and expression recognizable.',
+  },
+  pixel_art: {
+    credits: 1,
+    prompt:
+      'Redraw the photo as retro video game pixel art with a limited bright palette and crisp square pixels. Keep the person recognizable.',
+  },
+  pop_art: {
+    credits: 1,
+    prompt:
+      'Turn the photo into colorful pop art with bold outlines, halftone dots and flat vivid colors, not copying any specific artist. Keep the person recognizable.',
+  },
 };
 
 /** Common instructions for every style: safety and consent (AI-05). */

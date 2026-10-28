@@ -3,13 +3,19 @@ import { parseManifest, type Manifest } from '@fant/content-schema';
 import aiStyles from '../builtin/ai-styles.json';
 import characters from '../builtin/characters.json';
 import ccd2005 from '../builtin/films/ccd_2005.json';
+import cinema from '../builtin/films/cinema.json';
 import disposable from '../builtin/films/disposable.json';
 import instant from '../builtin/films/instant.json';
 import keitai from '../builtin/films/keitai.json';
 import mono from '../builtin/films/mono.json';
 import natural from '../builtin/films/natural.json';
 import nightFlash from '../builtin/films/night_flash.json';
+import pastel from '../builtin/films/pastel.json';
 import puri from '../builtin/films/puri.json';
+import sakura from '../builtin/films/sakura.json';
+import sepia from '../builtin/films/sepia.json';
+import summer from '../builtin/films/summer.json';
+import toy from '../builtin/films/toy.json';
 import vhs from '../builtin/films/vhs.json';
 import layouts from '../builtin/layouts.json';
 import phrases from '../builtin/phrases.json';
@@ -26,7 +32,23 @@ export function builtInManifest(): Manifest {
   builtIn ??= parseManifest({
     schemaVersion: 1,
     // Free films first: the order the camera offers them in.
-    films: [natural, ccd2005, disposable, instant, puri, keitai, mono, vhs, nightFlash],
+    films: [
+      natural,
+      ccd2005,
+      disposable,
+      instant,
+      puri,
+      pastel,
+      summer,
+      sakura,
+      keitai,
+      mono,
+      vhs,
+      nightFlash,
+      sepia,
+      cinema,
+      toy,
+    ],
     characters,
     layouts,
     stamps,
