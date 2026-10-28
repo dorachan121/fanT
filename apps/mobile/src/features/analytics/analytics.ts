@@ -35,7 +35,11 @@ function installId(): string {
 
 /** Keeps unsent events across launches (a crash stops the app before it can send). */
 function persistQueue(): void {
-  Storage.setItemSync(PENDING_KEY, JSON.stringify(queue.slice(-MAX_PENDING)));
+  try {
+    Storage.setItemSync(PENDING_KEY, JSON.stringify(queue.slice(-MAX_PENDING)));
+  } catch {
+    // Storage full or unavailable: the events are still sent from memory.
+  }
 }
 
 function restoreQueue(): void {
@@ -89,7 +93,7 @@ async function flush(): Promise<void> {
   }
 }
 
-/** Records an event; sent in batches (ANL-01). */
+/** Records an event; sent in batches (ANL-01). Never throws, so it is safe anywhere in the UI. */
 export function track(event: AnalyticsEvent): void {
   if (__DEV__) console.info('[analytics]', event);
   queue.push({ event, at: Date.now() });
