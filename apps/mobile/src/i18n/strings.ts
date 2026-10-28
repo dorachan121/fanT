@@ -81,6 +81,8 @@ export const strings = {
     ai: 'AI変身',
     retake: '撮り直す',
     saved: '写真アプリに保存したよ💗',
+    stories: 'ストーリーズ',
+    instagramMissing: 'Instagram が見つからなかったよ。アプリを入れてからためしてね📱',
     saveSize: { full: 'フル解像度', sns: 'SNS向け（長辺2048px）' },
     deleteConfirm: 'この写真、消しちゃう？',
     libraryDenied: '写真の保存がオフになってるみたい🥺 設定アプリから許可してね。',

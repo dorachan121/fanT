@@ -15,7 +15,7 @@ import { colors, radius, spacing } from '../../ui/theme';
 import { deletePhotos } from '../album/album-db';
 import { useAlbumPhoto } from '../album/use-album';
 import { useAiAvailable } from '../remote-config/remote-config';
-import { savePhoto, sharePhotoFile } from './photo-actions';
+import { savePhoto, sharePhotoFile, shareToStoriesFile, storiesAvailable } from './photo-actions';
 import { Text } from '../../ui/text';
 
 interface PhotoScreenProps {
@@ -93,6 +93,15 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
               label={strings.photo.ai}
               onPress={() => {
                 router.push({ pathname: '/ai/styles', params: { photoId: photo.id } });
+              }}
+            />
+          )}
+          {storiesAvailable && (
+            <PhotoAction
+              icon="logo-instagram"
+              label={strings.photo.stories}
+              onPress={() => {
+                void shareToStoriesFile(photo);
               }}
             />
           )}

@@ -20,3 +20,4 @@
 | D-14 | 音量ボタンでの撮影 | **最小限のローカル Expo モジュール**（`apps/mobile/modules/volume-shutter`、2026-10-27）。既存のライブラリが旧アーキテクチャ専用のため、D-09（自作のネイティブコードを持たない）の例外とする。iOS は `AVCaptureEventInteraction`（17.2 以上）、Android は未処理のキーイベントを使う |
 | D-15 | コンテンツ配信のキャッシュ | **素材は内容のハッシュ名で配信し、無期限にキャッシュする**（2026-10-27）。`manifest.json` だけ短いキャッシュにする。更新した素材が古いまま配られることがない |
 | D-16 | 画像生成 AI の既定の提供元 | **Vertex AI の Gemini 画像モデル＋Cloud Vision SafeSearch**（2026-10-28、暫定）。サーバーと同じ Google Cloud プロジェクトで動き、API キーを持たずにサービスアカウントで認証でき、送った写真が学習に使われない。`AI_PROVIDER` で切り替えられるので、品質と費用を比べて最終決定する（Q-04） |
+| D-17 | Instagram ストーリーズへの共有 | **最小限のローカル Expo モジュール**（`apps/mobile/modules/instagram-stories`、2026-10-28）。Instagram が公開している方法（iOS はペーストボード＋`instagram-stories://`、Android は `ADD_TO_STORY` インテント＋専用の FileProvider）で、写真をステッカーとしてアプリのグラデーションの上に渡す。D-14 と同じく、既存ライブラリが要らない機能まで持ち込むための例外。Facebook のアプリ ID が必要 |

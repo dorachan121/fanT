@@ -40,6 +40,12 @@ function optional(name: string): string | null {
   return value === undefined || value === '' ? null : value;
 }
 
+function optionalDigits(name: string): string | null {
+  const value = optional(name);
+  if (value !== null && !/^\d{5,20}$/.test(value)) throw new Error(`${name} must be digits`);
+  return value;
+}
+
 /** Shown when the camera permission is requested (ONB-02). */
 const CAMERA_USAGE = '写真を撮影するためにカメラを使用します。';
 
@@ -60,6 +66,8 @@ const config: ExpoConfig = {
     bundleIdentifier: appId,
     infoPlist: {
       NSCameraUsageDescription: CAMERA_USAGE,
+      // Lets the app check that Instagram can take a story (SHR-03).
+      LSApplicationQueriesSchemes: ['instagram-stories'],
     },
   },
   android: {
@@ -122,6 +130,8 @@ const config: ExpoConfig = {
       android: optional('REVENUECAT_ANDROID_API_KEY'),
     },
     supportEmail: optional('SUPPORT_EMAIL'),
+    // Instagram Stories sharing needs the app's Facebook App ID (SHR-03); off without it.
+    facebookAppId: optionalDigits('FACEBOOK_APP_ID'),
   },
 };
 

@@ -8,7 +8,7 @@ export type AnalyticsEvent =
   | { readonly name: 'film_selected'; readonly filmId: string }
   | { readonly name: 'photo_taken'; readonly mode: string; readonly filmId: string }
   | { readonly name: 'photo_saved'; readonly kind: string }
-  | { readonly name: 'photo_shared'; readonly kind: string }
+  | { readonly name: 'photo_shared'; readonly kind: string; readonly target?: 'stories' }
   | {
       readonly name: 'paywall_shown';
       readonly trigger: string;

@@ -2,6 +2,8 @@ import { File } from 'expo-file-system';
 import { Album, Asset, requestPermissionsAsync } from 'expo-media-library';
 import { shareAsync } from 'expo-sharing';
 
+import { shareToInstagramStories } from '../../../modules/instagram-stories/src';
+import { GRADIENT } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { resizeJpeg } from '../../engine/photo';
 import { tempDirectory } from '../../lib/temp-files';
@@ -50,6 +52,17 @@ export async function saveToLibrary(source: File, size: ExportSize): Promise<voi
   } finally {
     file.delete();
   }
+}
+
+/**
+ * Hands the photo to Instagram Stories as a sticker over the app's pink-lavender
+ * gradient (SHR-03), sized for social media; `false` when Instagram is missing.
+ * The file stays in the scratch folder, since Instagram reads it after this
+ * returns; the folder is cleared at the next launch.
+ */
+export function shareToStories(source: File, appId: string): Promise<boolean> {
+  const [topColor, bottomColor] = GRADIENT;
+  return shareToInstagramStories(exportFile(source, 'sns').uri, { appId, topColor, bottomColor });
 }
 
 /** Opens the system share sheet with the photo (SHR-02). */

@@ -10,6 +10,10 @@ const extraSchema = z.object({
   apiBaseUrl: z.url({ protocol: /^https$/ }).nullable(),
   revenueCatApiKey: z.object({ ios: nullableString, android: nullableString }),
   supportEmail: z.email().nullable(),
+  facebookAppId: z
+    .string()
+    .regex(/^\d{5,20}$/)
+    .nullable(),
 });
 
 /**
@@ -30,5 +34,7 @@ export const APP_CONFIG = {
   revenueCatApiKey:
     Platform.OS === 'ios' ? extra.revenueCatApiKey.ios : extra.revenueCatApiKey.android,
   supportEmail: extra.supportEmail,
+  /** Facebook App ID for Instagram Stories sharing (SHR-03); `null` hides it. */
+  facebookAppId: extra.facebookAppId,
   appVersion: Constants.expoConfig?.version ?? '0.0.0',
 } as const;

@@ -19,6 +19,7 @@
 | `API_BASE_URL` | Cloud Functions の `api` の URL（https、末尾の `/` なし） | `https://asia-northeast1-<project>.cloudfunctions.net/api` |
 | `REVENUECAT_IOS_API_KEY` / `REVENUECAT_ANDROID_API_KEY` | RevenueCat の公開 SDK キー（秘密ではない） | `appl_…` / `goog_…` |
 | `SUPPORT_EMAIL` | お問い合わせ先（SET-03）。未設定なら項目を出さない | |
+| `FACEBOOK_APP_ID` | Instagram ストーリーズへの共有（SHR-03）に使う Facebook のアプリ ID。Meta for Developers でアプリを作って取得する。未設定なら項目を出さない | `1234567890` |
 
 ```sh
 eas env:create --environment production --name API_BASE_URL --value https://…

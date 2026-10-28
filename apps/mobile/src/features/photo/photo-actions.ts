@@ -6,7 +6,9 @@ import { showError } from '../../ui/dialogs';
 import { reportError, track } from '../analytics/analytics';
 import type { AlbumPhoto } from '../album/album-types';
 import { useSettings, type ExportSize } from '../settings/settings-store';
-import { PhotoLibraryPermissionError, saveToLibrary, sharePhoto } from './export';
+import { instagramStoriesSupported } from '../../../modules/instagram-stories/src';
+import { APP_CONFIG } from '../../config';
+import { PhotoLibraryPermissionError, saveToLibrary, sharePhoto, shareToStories } from './export';
 
 /** Asks for a store review after this many saves (ANL-04): a moment the user is happy. */
 const REVIEW_AFTER_SAVES = 5;
@@ -49,6 +51,25 @@ export async function savePhoto(photo: AlbumPhoto): Promise<boolean> {
     reportError(error, 'review.request');
   });
   return true;
+}
+
+/** Whether this build can share to Instagram Stories (SHR-03). */
+export const storiesAvailable = APP_CONFIG.facebookAppId !== null && instagramStoriesSupported;
+
+/** Shares to Instagram Stories (SHR-03), explaining when Instagram is not installed. */
+export async function shareToStoriesFile(photo: AlbumPhoto): Promise<void> {
+  const appId = APP_CONFIG.facebookAppId;
+  if (appId === null) return;
+  try {
+    if (await shareToStories(new File(photo.outputUri), appId)) {
+      track({ name: 'photo_shared', kind: photo.kind, target: 'stories' });
+    } else {
+      showError(strings.photo.instagramMissing);
+    }
+  } catch (error) {
+    reportError(error, 'photo.stories');
+    showError();
+  }
 }
 
 /** Opens the share sheet (SHR-02). */
