@@ -34,6 +34,9 @@ audit:
     # zod 3.x memory exhaustion (fixed only in zod 4), via @expo/cli validating
     # local config. Build-time CLI only; never parses untrusted input in the app.
     - GHSA-mrhx-c7xc-m3w5
+    # deepmerge prototype poisoning (no patched release yet), via @expo/config merging
+    # the project's own app config at build time. Not in the app bundle.
+    - GHSA-gcqx-w48m-w2h4
 
 # Shared versions for tooling used by more than one workspace package.
 # Expo / React Native dependencies are managed per app with `expo install`.
