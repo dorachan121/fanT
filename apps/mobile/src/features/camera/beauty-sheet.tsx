@@ -1,4 +1,4 @@
-import { BEAUTY_LEVELS, type BeautyParams } from '@fant/filters';
+import { BEAUTY_LEVELS, BEAUTY_PARAM_RANGES, type BeautyParams } from '@fant/filters';
 import { View, StyleSheet } from 'react-native';
 
 import { strings } from '../../i18n';
@@ -35,8 +35,8 @@ export function BeautyControls({ beauty, onChange }: BeautyControlsProps) {
           key={key}
           label={strings.beauty[key]}
           value={beauty[key]}
-          min={0}
-          max={1}
+          min={BEAUTY_PARAM_RANGES[key].min}
+          max={BEAUTY_PARAM_RANGES[key].max}
           onChange={(value) => {
             onChange({ ...beauty, [key]: value });
           }}

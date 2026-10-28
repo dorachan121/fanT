@@ -1,4 +1,9 @@
-import { calendarDateOf, DATE_STAMP_ORANGE, type AdjustParamName } from '@fant/filters';
+import {
+  ADJUST_PARAM_RANGES,
+  calendarDateOf,
+  DATE_STAMP_ORANGE,
+  type AdjustParamName,
+} from '@fant/filters';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
@@ -186,8 +191,8 @@ export function EditScreen({ id }: { readonly id: string }) {
                 key={key}
                 label={strings.edit[key]}
                 value={recipe.adjust[key]}
-                min={-1}
-                max={1}
+                min={ADJUST_PARAM_RANGES[key].min}
+                max={ADJUST_PARAM_RANGES[key].max}
                 centered
                 formatValue={(value) => `${value > 0 ? '+' : ''}${String(Math.round(value * 100))}`}
                 onChange={(value) => {
