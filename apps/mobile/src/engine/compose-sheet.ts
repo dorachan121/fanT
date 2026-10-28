@@ -13,6 +13,7 @@ import { drawDeco, type DecoAssets } from './draw-deco';
 import { drawShape } from './draw-shape';
 import { drawStyledText } from './draw-text';
 import { STAMP_SHAPE_ART } from './shapes';
+import { makeSurface } from './surface';
 
 export interface SheetCell {
   readonly image: SkImage;
@@ -94,8 +95,7 @@ export function composeSheet(
   caption: string,
 ): SkImage {
   const { width, height } = layout;
-  const surface = Skia.Surface.MakeOffscreen(width, height) ?? Skia.Surface.Make(width, height);
-  if (surface === null) throw new Error('Failed to allocate the sheet surface');
+  const surface = makeSurface(width, height);
   const background = Skia.Paint();
   try {
     const canvas = surface.getCanvas();
@@ -140,8 +140,7 @@ export function composeSheet(
 export function renderCell(cell: SheetCell, assets: DecoAssets): SkImage {
   const width = cell.image.width();
   const height = cell.image.height();
-  const surface = Skia.Surface.MakeOffscreen(width, height) ?? Skia.Surface.Make(width, height);
-  if (surface === null) throw new Error('Failed to allocate the cell surface');
+  const surface = makeSurface(width, height);
   try {
     const canvas = surface.getCanvas();
     canvas.drawImage(cell.image, 0, 0);

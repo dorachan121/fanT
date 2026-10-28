@@ -21,6 +21,7 @@ import { drawStyledText } from './draw-text';
 import { filterEffects } from './filter-effects';
 import { loadFilmLut } from './lut';
 import { detectFacesInImage } from './still-faces';
+import { makeSurface } from './surface';
 
 /** JPEG quality for saved photos (03 §3: about 90). */
 const JPEG_QUALITY = 92;
@@ -84,11 +85,7 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
       : [];
   const { character } = input;
 
-  const surface =
-    Skia.Surface.MakeOffscreen(size.width, size.height) ??
-    Skia.Surface.Make(size.width, size.height);
-  if (surface === null)
-    throw new Error(`Failed to allocate a ${String(size.width)}x${String(size.height)} surface`);
+  const surface = makeSurface(size.width, size.height);
   const matrix = Skia.Matrix(toMatrix3(transform));
   const source = image.makeShaderOptions(
     TileMode.Clamp,
@@ -134,10 +131,7 @@ export function resizeJpeg(bytes: Uint8Array, maxLongEdge: number): Uint8Array {
   try {
     const size = fitLongEdge(imageSize(image), maxLongEdge);
     if (size.width === image.width()) return bytes;
-    const surface =
-      Skia.Surface.MakeOffscreen(size.width, size.height) ??
-      Skia.Surface.Make(size.width, size.height);
-    if (surface === null) throw new Error('Failed to allocate a surface');
+    const surface = makeSurface(size.width, size.height);
     const paint = Skia.Paint();
     try {
       paint.setAntiAlias(true);
@@ -179,8 +173,7 @@ export function markAiGenerated(bytes: Uint8Array): {
   const image = decodeImage(bytes);
   const width = image.width();
   const height = image.height();
-  const surface = Skia.Surface.MakeOffscreen(width, height) ?? Skia.Surface.Make(width, height);
-  if (surface === null) throw new Error('Failed to allocate a surface');
+  const surface = makeSurface(width, height);
   try {
     const canvas = surface.getCanvas();
     canvas.drawImage(image, 0, 0);

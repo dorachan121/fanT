@@ -15,6 +15,7 @@ import { reportError } from '../features/analytics/analytics';
 import { drawFiltered } from './draw-filtered';
 import { filterEffects } from './filter-effects';
 import { loadFilmLut } from './lut';
+import { makeSurface } from './surface';
 
 const WIDTH = 96;
 const HEIGHT = 128;
@@ -27,8 +28,7 @@ let sample: SkImage | undefined;
  */
 function sampleImage(): SkImage {
   if (sample !== undefined) return sample;
-  const surface = Skia.Surface.MakeOffscreen(WIDTH, HEIGHT) ?? Skia.Surface.Make(WIDTH, HEIGHT);
-  if (surface === null) throw new Error('Failed to allocate the thumbnail surface');
+  const surface = makeSurface(WIDTH, HEIGHT);
   const canvas = surface.getCanvas();
   const paint = Skia.Paint();
   const sky = Skia.Shader.MakeLinearGradient(
@@ -83,8 +83,7 @@ const thumbnails = new Map<string, Promise<SkImage>>();
 async function renderThumbnail(film: Film): Promise<SkImage> {
   const lut = await loadFilmLut(film);
   const image = sampleImage();
-  const surface = Skia.Surface.MakeOffscreen(WIDTH, HEIGHT) ?? Skia.Surface.Make(WIDTH, HEIGHT);
-  if (surface === null) throw new Error('Failed to allocate the thumbnail surface');
+  const surface = makeSurface(WIDTH, HEIGHT);
   const source = image.makeShaderOptions(
     TileMode.Clamp,
     TileMode.Clamp,
