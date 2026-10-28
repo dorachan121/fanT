@@ -1,9 +1,13 @@
 import { File } from 'expo-file-system';
 import { launchImageLibraryAsync } from 'expo-image-picker';
 
+import { resizeJpeg } from '../../engine/photo';
 import { createPhoto } from './photo-service';
 import { neutralRecipe } from './recipe';
 import type { AlbumPhoto } from '../album/album-types';
+
+/** About a 16 MP photo; larger imports are scaled down to this long edge. */
+const MAX_IMPORT_LONG_EDGE = 4096;
 
 /** Asks the system photo picker for one image; `null` when the user cancels. */
 export async function pickImageFile(): Promise<File | null> {
@@ -26,7 +30,8 @@ export async function importPhoto(): Promise<AlbumPhoto | null> {
   if (file === null) return null;
   return createPhoto({
     kind: 'import',
-    original: await file.bytes(),
+    // Very large images (panoramas, scans) would exceed what the device can render.
+    original: resizeJpeg(await file.bytes(), MAX_IMPORT_LONG_EDGE),
     recipeFor: () => neutralRecipe(Math.random()),
   });
 }
