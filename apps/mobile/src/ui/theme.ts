@@ -18,7 +18,6 @@ export const colors = {
   accentText: '#FFFFFF',
   lavender: '#B79BFF',
   lavenderSoft: '#EEE6FF',
-  mint: '#6FD8C0',
   mintSoft: '#DDF6EF',
   lemon: '#FFE27A',
   danger: '#FF5577',
