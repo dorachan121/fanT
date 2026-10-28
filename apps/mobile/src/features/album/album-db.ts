@@ -237,6 +237,27 @@ export function purgeExpiredOriginals(now = Date.now()): number {
   return expired.length;
 }
 
+/**
+ * Deletes photo folders without a row: left behind when the app was killed between
+ * writing a new photo's files and adding it. Run at launch, before anything is shot.
+ */
+export function removeOrphanFiles(): number {
+  if (!ALBUM_ROOT.exists) return 0;
+  const known = new Set(
+    db()
+      .getAllSync<{ id: string }>('SELECT id FROM photos')
+      .map(({ id }) => id),
+  );
+  let removed = 0;
+  for (const entry of ALBUM_ROOT.list()) {
+    if (entry instanceof Directory && !known.has(entry.name)) {
+      entry.delete();
+      removed++;
+    }
+  }
+  return removed;
+}
+
 /** Applies a new retention setting to the originals already kept. */
 export function applyOriginalRetention(retentionDays: number | null): void {
   if (retentionDays === null) {

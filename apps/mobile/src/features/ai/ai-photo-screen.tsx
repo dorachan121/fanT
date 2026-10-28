@@ -1,4 +1,4 @@
-import { File, Paths } from 'expo-file-system';
+import { File } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
 import { FlatList, StyleSheet, useWindowDimensions, View } from 'react-native';
@@ -12,6 +12,7 @@ import { colors, radius, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { useAlbum } from '../album/use-album';
 import { pickImageFile } from '../photo/import-photo';
+import { tempDirectory } from '../../lib/temp-files';
 
 const COLUMNS = 3;
 
@@ -30,7 +31,7 @@ export function AiPhotoScreen() {
       const picked = await pickImageFile();
       if (picked === null) return;
       // A private copy: the picker's file may be removed when the app is backgrounded.
-      const copy = new File(Paths.cache, `ai-source-${String(Date.now())}.jpg`);
+      const copy = new File(tempDirectory('ai'), `source-${String(Date.now())}.jpg`);
       picked.copySync(copy);
       choose(copy.uri);
     } catch (error) {

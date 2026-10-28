@@ -1,9 +1,10 @@
 import { UPLOAD_LONG_EDGE, type ApiErrorCode, type Generation } from '@fant/api-types';
-import { Directory, File, Paths } from 'expo-file-system';
+import { File } from 'expo-file-system';
 import { useEffect, useRef, useState } from 'react';
 
 import { resizeJpeg } from '../../engine/photo';
 import { sleep } from '../../lib/sleep';
+import { tempDirectory } from '../../lib/temp-files';
 import { reportError, track } from '../analytics/analytics';
 import { AiError, cancelGeneration, getGeneration, startGeneration } from './ai-client';
 import { useAi } from './ai-store';
@@ -17,8 +18,6 @@ export type GenerationState =
   | { readonly phase: 'done'; readonly id: string; readonly resultUri: string }
   | { readonly phase: 'failed'; readonly code: ApiErrorCode | 'offline' }
   | { readonly phase: 'cancelled' };
-
-const RESULTS = new Directory(Paths.cache, 'ai');
 
 /**
  * Runs one generation (S-43): uploads a downscaled copy (nothing larger leaves the
@@ -65,8 +64,7 @@ export function useGeneration(sourceUri: string, styleId: string) {
         }
         settle(generation);
         if (generation.status === 'succeeded' && generation.imageUrl !== null) {
-          RESULTS.create({ intermediates: true, idempotent: true });
-          const file = new File(RESULTS, `${generation.id}.jpg`);
+          const file = new File(tempDirectory('ai'), `${generation.id}.jpg`);
           if (file.exists) file.delete();
           await File.downloadFileAsync(generation.imageUrl, file);
           track({ name: 'ai_generated', styleId });

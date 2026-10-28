@@ -1,9 +1,10 @@
-import { Directory, File, Paths } from 'expo-file-system';
+import { File } from 'expo-file-system';
 import { Album, Asset, requestPermissionsAsync } from 'expo-media-library';
 import { shareAsync } from 'expo-sharing';
 
 import { reportError } from '../analytics/analytics';
 import { resizeJpeg } from '../../engine/photo';
+import { tempDirectory } from '../../lib/temp-files';
 
 /** The device album photos are saved into (SHR-01). */
 const DEVICE_ALBUM = 'fanT';
@@ -18,9 +19,7 @@ export type ExportSize = 'full' | 'sns';
 
 /** Writes the photo to a temporary file of the chosen size; the caller deletes it. */
 function exportFile(source: File, size: ExportSize): File {
-  const directory = new Directory(Paths.cache, 'export');
-  directory.create({ intermediates: true, idempotent: true });
-  const file = new File(directory, `fant-${String(Date.now())}.jpg`);
+  const file = new File(tempDirectory('export'), `fant-${String(Date.now())}.jpg`);
   const bytes = source.bytesSync();
   file.writeSync(size === 'sns' ? resizeJpeg(bytes, SNS_LONG_EDGE) : bytes);
   return file;

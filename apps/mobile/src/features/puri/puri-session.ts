@@ -1,7 +1,8 @@
-import { Directory, File, Paths } from 'expo-file-system';
+import { File } from 'expo-file-system';
 import { create } from 'zustand';
 
 import type { DecoLayer } from '../photo/recipe';
+import { tempDirectory } from '../../lib/temp-files';
 
 /** One purikura shot, already cropped to its cell and rendered with the puri look. */
 export interface PuriShot {
@@ -10,7 +11,7 @@ export interface PuriShot {
 }
 
 /** Shots live in the cache until the sheet is finished; they never reach the album alone. */
-const SHOTS = new Directory(Paths.cache, 'puri');
+const SHOTS_FOLDER = 'puri';
 
 interface PuriSession {
   readonly layoutId: string | null;
@@ -22,7 +23,7 @@ interface PuriSession {
 }
 
 function clearShots(): void {
-  if (SHOTS.exists) SHOTS.delete();
+  tempDirectory(SHOTS_FOLDER).delete();
 }
 
 /** The purikura in progress (S-30–S-34). */
@@ -34,9 +35,11 @@ export const usePuriSession = create<PuriSession>()((set, get) => ({
     set({ layoutId, shots: Array.from({ length: cellCount }, () => null) });
   },
   setShot: (index, jpeg) => {
-    SHOTS.create({ intermediates: true, idempotent: true });
     // A new file name per take, so a retake never shows a cached image.
-    const file = new File(SHOTS, `${String(index)}-${String(Date.now())}.jpg`);
+    const file = new File(
+      tempDirectory(SHOTS_FOLDER),
+      `${String(index)}-${String(Date.now())}.jpg`,
+    );
     file.writeSync(jpeg);
     const previous = get().shots[index];
     if (previous !== null && previous !== undefined) {

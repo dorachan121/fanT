@@ -3,10 +3,11 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { purgeExpiredOriginals } from '../features/album/album-db';
+import { purgeExpiredOriginals, removeOrphanFiles } from '../features/album/album-db';
 import { reportError, startAnalytics } from '../features/analytics/analytics';
 import { useContent } from '../features/content/content-store';
 import { startPurchases } from '../features/purchases/purchases-store';
+import { clearTempFiles } from '../lib/temp-files';
 import { useAppFonts } from '../ui/fonts';
 import { colors } from '../ui/theme';
 
@@ -20,9 +21,11 @@ function useStartup() {
     void useContent.getState().refresh();
     void startPurchases();
     try {
+      clearTempFiles();
       purgeExpiredOriginals();
+      removeOrphanFiles();
     } catch (error) {
-      reportError(error, 'album.purge');
+      reportError(error, 'album.tidy');
     }
   }, []);
 }
