@@ -1,6 +1,6 @@
 import { TEXT_STAMP_STYLES, type Stamp, type TextStampStyle } from '@fant/content-schema';
 import { useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, Text as NativeText, StyleSheet, View } from 'react-native';
 
 import { localized, strings } from '../../i18n';
 import { Button } from '../../ui/button';
@@ -9,6 +9,7 @@ import { Bouncy } from '../../ui/bouncy';
 import { colors, radius, spacing } from '../../ui/theme';
 import { useContent } from '../content/content-store';
 import { available } from '../content/lookup';
+import { DECO_FONT_FAMILIES, DECO_FONTS, type DecoFont } from './deco-fonts';
 import { PEN_WIDTHS } from './deco-ops';
 import { Text, TextInput } from '../../ui/text';
 
@@ -76,11 +77,12 @@ export function TextComposer({
   onAdd,
 }: {
   readonly color: string;
-  readonly onAdd: (text: string, style: TextStampStyle) => void;
+  readonly onAdd: (text: string, style: TextStampStyle, font: DecoFont) => void;
 }) {
   const phrases = useContent((state) => state.manifest.phrases);
   const [text, setText] = useState('');
   const [style, setStyle] = useState<TextStampStyle>('outline');
+  const [font, setFont] = useState<DecoFont>('rounded');
   return (
     <View style={styles.composer}>
       <TextInput
@@ -121,11 +123,12 @@ export function TextComposer({
           />
         ))}
       </View>
+      <FontPicker sample={text.trim() === '' ? undefined : text} font={font} onChange={setFont} />
       <Button
         label={strings.common.done}
         disabled={text.trim() === ''}
         onPress={() => {
-          onAdd(text.trim(), style);
+          onAdd(text.trim(), style, font);
           setText('');
         }}
       />
@@ -133,7 +136,62 @@ export function TextComposer({
   );
 }
 
+/** The text's font (DCO-06), each shown in itself. */
+function FontPicker({
+  sample,
+  font,
+  onChange,
+}: {
+  readonly sample: string | undefined;
+  readonly font: DecoFont;
+  readonly onChange: (font: DecoFont) => void;
+}) {
+  return (
+    <FlatList
+      horizontal
+      data={DECO_FONTS}
+      keyExtractor={(candidate) => candidate}
+      showsHorizontalScrollIndicator={false}
+      contentContainerStyle={styles.stamps}
+      renderItem={({ item }) => (
+        <Bouncy
+          accessibilityRole="button"
+          accessibilityLabel={strings.deco.fonts[item]}
+          accessibilityState={{ selected: item === font }}
+          style={[styles.font, item === font && styles.selectedFont]}
+          onPress={() => {
+            onChange(item);
+          }}
+        >
+          <NativeText
+            numberOfLines={1}
+            style={[
+              styles.fontSample,
+              item === 'system' ? styles.systemFont : { fontFamily: DECO_FONT_FAMILIES[item] },
+            ]}
+          >
+            {sample ?? strings.deco.fonts[item]}
+          </NativeText>
+        </Bouncy>
+      )}
+    />
+  );
+}
+
 const styles = StyleSheet.create({
+  font: {
+    minHeight: 44,
+    maxWidth: 160,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.md,
+    borderRadius: radius.pill,
+    borderWidth: 2,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  selectedFont: { borderColor: colors.accent, backgroundColor: colors.accentSoft },
+  fontSample: { color: colors.text, fontSize: 16 },
+  systemFont: { fontWeight: '800' },
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
   label: { color: colors.text, fontSize: 13, fontWeight: '700' },
   widthButton: {

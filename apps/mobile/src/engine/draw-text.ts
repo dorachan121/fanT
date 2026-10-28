@@ -6,7 +6,10 @@ import {
   StrokeJoin,
   TextAlign,
   type SkCanvas,
+  type SkTypefaceFontProvider,
 } from '@shopify/react-native-skia';
+
+import { DECO_FONT_FAMILIES, type DecoFont } from '../features/deco/deco-fonts';
 
 import type { Point } from './affine.worklet';
 
@@ -18,10 +21,16 @@ export interface TextPlacement {
   readonly rotation: number;
 }
 
+/** A bundled font (DCO-06) and the loaded fonts to find it in. */
+export interface TextFont {
+  readonly font: DecoFont;
+  readonly fonts: SkTypefaceFontProvider | null;
+}
+
 /**
  * Heisei-style text (DCO-03, text stamps): a bold outline (gyaru-moji), a glowing
- * neon or a speech bubble. Uses the system fonts through Skia's paragraph layout,
- * which falls back per glyph, so Japanese and emoji always render.
+ * neon or a speech bubble, in the system font or a bundled one. Skia's paragraph
+ * layout falls back per glyph, so Japanese and emoji always render.
  */
 export function drawStyledText(
   canvas: SkCanvas,
@@ -29,16 +38,24 @@ export function drawStyledText(
   style: TextStampStyle,
   color: string,
   placement: TextPlacement,
+  font: TextFont = { font: 'system', fonts: null },
 ): void {
   const { fontSize } = placement;
+  const family =
+    font.font === 'system' || font.fonts === null ? null : DECO_FONT_FAMILIES[font.font];
   const layoutWidth = fontSize * Math.max(4, text.length * 1.4);
   const disposables: { dispose(): void }[] = [];
   const paragraphWith = (foreground: ReturnType<typeof Skia.Paint>) => {
-    const builder = Skia.ParagraphBuilder.Make({ textAlign: TextAlign.Center });
+    const builder = Skia.ParagraphBuilder.Make(
+      { textAlign: TextAlign.Center },
+      family === null ? undefined : (font.fonts ?? undefined),
+    );
     builder.pushStyle(
       {
         fontSize,
-        fontStyle: { weight: FontWeight.ExtraBold },
+        ...(family === null
+          ? { fontStyle: { weight: FontWeight.ExtraBold } }
+          : { fontFamilies: [family] }),
         shadows:
           style === 'neon'
             ? [

@@ -14,7 +14,11 @@
     "check:native": "expo prebuild --no-install --platform all --clean && node scripts/check-native-config.mjs"
   },
   "dependencies": {
+    "@expo-google-fonts/dela-gothic-one": "0.4.1",
+    "@expo-google-fonts/dotgothic16": "0.4.2",
+    "@expo-google-fonts/hachi-maru-pop": "0.4.1",
     "@expo-google-fonts/m-plus-rounded-1c": "0.4.4",
+    "@expo-google-fonts/yusei-magic": "0.4.2",
     "@expo/metro-runtime": "~58.0.15",
     "@expo/vector-icons": "^15.1.1",
     "@fant/api-types": "workspace:*",

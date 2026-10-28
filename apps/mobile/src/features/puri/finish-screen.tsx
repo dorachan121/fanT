@@ -8,6 +8,7 @@ import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { composeSheet, renderCell, type SheetCell } from '../../engine/compose-sheet';
+import { useDecoFonts } from '../../engine/deco-fonts';
 import { decodeImage, encodeJpeg } from '../../engine/photo';
 import type { SkImage } from '../../engine/skia';
 import { strings } from '../../i18n';
@@ -72,7 +73,11 @@ export function FinishScreen() {
   const [busy, setBusy] = useState(false);
   /** The oshi colour for the sheet (PRI-08); `null` keeps the layout's own. */
   const [oshiColor, setOshiColor] = useState<string | null>(null);
-  const assets = useMemo(() => ({ stamps: stampMap(manifest), images: {} }), [manifest]);
+  const fonts = useDecoFonts();
+  const assets = useMemo(
+    () => ({ stamps: stampMap(manifest), images: {}, fonts }),
+    [manifest, fonts],
+  );
 
   if (layout === undefined) return null;
   const shot = shots[selected];

@@ -22,6 +22,16 @@ describe('parseRecipe', () => {
     expect(read?.faceShape.eyes).toBe(0);
   });
 
+  it('reads text decorations saved before fonts existed in the system font', () => {
+    const text = { type: 'text', text: 'ずっ友', style: 'outline', color: '#ff5fa2' };
+    const older = {
+      ...neutralRecipe(0.5),
+      deco: [{ ...text, x: 0.5, y: 0.5, size: 0.1, rotation: 0 }],
+    };
+    const [layer] = parseRecipe(JSON.stringify(older))?.deco ?? [];
+    expect(layer).toMatchObject({ type: 'text', font: 'system' });
+  });
+
   it('rejects invalid or missing recipes', () => {
     expect(parseRecipe(null)).toBeNull();
     expect(parseRecipe('{')).toBeNull();

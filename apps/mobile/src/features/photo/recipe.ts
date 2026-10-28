@@ -22,6 +22,7 @@ import { z } from 'zod';
 import { makeupSchema, NO_MAKEUP, type Makeup } from '../makeup/makeup';
 import { hairSchema, healSpotSchema, MAX_HEAL_SPOTS, NO_HAIR_COLOR } from '../retouch/retouch';
 import { FRAME_TYPES } from './frames';
+import { DECO_FONTS } from '../deco/deco-fonts';
 
 /** Limits that keep a recipe small; the editor stops adding past them (DCO-*). */
 export const MAX_STROKE_POINTS = 2000;
@@ -78,6 +79,7 @@ const decoTextSchema = z.strictObject({
   type: z.literal('text'),
   text: z.string().min(1).max(40),
   style: z.enum(TEXT_STAMP_STYLES),
+  font: z.enum(DECO_FONTS).default('system'),
   color: hexColorSchema,
   x: position,
   y: position,

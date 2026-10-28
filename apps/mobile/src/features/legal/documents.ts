@@ -99,6 +99,11 @@ RevenueCat SDK — MIT License
 Zustand — MIT License
 Zod — MIT License
 Ionicons — MIT License
+M PLUS Rounded 1c (M+ FONTS Project) — SIL Open Font License 1.1
+Hachi Maru Pop (Nonty) — SIL Open Font License 1.1
+Yusei Magic (Tanukifont) — SIL Open Font License 1.1
+DotGothic16 (Fontworks) — SIL Open Font License 1.1
+Dela Gothic One (artakana) — SIL Open Font License 1.1
 
 各ライセンスの全文は、それぞれの配布元で確認できます。`,
   },

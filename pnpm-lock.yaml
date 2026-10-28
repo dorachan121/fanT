@@ -217,9 +217,21 @@ importers:
 
   apps/mobile:
     dependencies:
+      '@expo-google-fonts/dela-gothic-one':
+        specifier: 0.4.1
+        version: 0.4.1
+      '@expo-google-fonts/dotgothic16':
+        specifier: 0.4.2
+        version: 0.4.2
+      '@expo-google-fonts/hachi-maru-pop':
+        specifier: 0.4.1
+        version: 0.4.1
       '@expo-google-fonts/m-plus-rounded-1c':
         specifier: 0.4.4
         version: 0.4.4
+      '@expo-google-fonts/yusei-magic':
+        specifier: 0.4.2
+        version: 0.4.2
       '@expo/metro-runtime':
         specifier: ~58.0.15
         version: 58.0.15(@expo/log-box@58.0.13)(expo@58.0.17)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.0(@babel/core@7.29.7(supports-color@7.2.0))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@7.2.0))(supports-color@7.2.0))(@types/react@19.3.0)(react@19.3.0)(supports-color@7.2.0))(react@19.3.0)
@@ -1181,8 +1193,20 @@ packages:
     resolution: {integrity: sha512-IkO+/KEUvwbVpiURZg+P7zF74z5Jxe0UgJxVni+RtoHQ6IZieXaO02kmadomap/q+l6bc/jdPGGqTjhuZnuz1Q==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
+  '@expo-google-fonts/dela-gothic-one@0.4.1':
+    resolution: {integrity: sha512-+SqDc2MBfQdDeTsVZs8cw0QL5plZgTTyuZerkiwZVwoygG+//WMrOZ/d2QC37DlJWRNN69MVSNqo3d9xg0iunw==}
+
+  '@expo-google-fonts/dotgothic16@0.4.2':
+    resolution: {integrity: sha512-9/BjSRyB89Gk+mYxpJpIAyOGU3Vlae7mq7GjsIPdAhay3Y13Zwcz4/yf7/LM6UDT151PB2sZKsbsasWQoVpsUA==}
+
+  '@expo-google-fonts/hachi-maru-pop@0.4.1':
+    resolution: {integrity: sha512-Aay9Y5BoFgYky0ctL9envPSjIPyVQN7eNBekPtL96b7f8n0vF91ZyhaP4DXZvdw36ZuvfW4ANX57kBeNFzAg+A==}
+
   '@expo-google-fonts/m-plus-rounded-1c@0.4.4':
     resolution: {integrity: sha512-qGl+hIQLzVL73svgaTktKN8AyQYjYxBG3W2axoxhpVo/KmcICrnVlgFGfuc0r3flQ4KJlnv1UKzmYoRV7sPRpA==}
+
+  '@expo-google-fonts/yusei-magic@0.4.2':
+    resolution: {integrity: sha512-zCIjGDkGwcV+RO0avW74ooYfmSWFceXZVMBXJ9zSgaloRW0OKRUqfWzcl+CXskedgGOxD61xsEKzxvFShMaDSQ==}
 
   '@expo/cli@58.1.14':
     resolution: {integrity: sha512-Qrpkhb9XrQn+wuxaOVR0hh0dLzeFZjGZHC9Jz86hPsexPzP+/mnMigRoWVaeEP8q7b3Hsr98gozL5d94DzFOBw==}
@@ -5407,7 +5431,15 @@ snapshots:
       '@eslint/core': 1.2.1
       levn: 0.4.1
 
+  '@expo-google-fonts/dela-gothic-one@0.4.1': {}
+
+  '@expo-google-fonts/dotgothic16@0.4.2': {}
+
+  '@expo-google-fonts/hachi-maru-pop@0.4.1': {}
+
   '@expo-google-fonts/m-plus-rounded-1c@0.4.4': {}
+
+  '@expo-google-fonts/yusei-magic@0.4.2': {}
 
   '@expo/cli@58.1.14(@expo/dom-webview@58.0.2)(@expo/metro-runtime@58.0.15)(expo-constants@58.0.13)(expo-font@58.0.9(expo@58.0.17)(react-native@0.88.0(@babel/core@7.29.7(supports-color@7.2.0))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@7.2.0))(supports-color@7.2.0))(@types/react@19.3.0)(react@19.3.0)(supports-color@7.2.0))(react@19.3.0))(expo-router@58.0.25)(expo@58.0.17)(react-dom@19.3.0(react@19.3.0))(react-native@0.88.0(@babel/core@7.29.7(supports-color@7.2.0))(@react-native/metro-config@0.88.0(@babel/core@7.29.7(supports-color@7.2.0))(supports-color@7.2.0))(@types/react@19.3.0)(react@19.3.0)(supports-color@7.2.0))(react@19.3.0)(supports-color@7.2.0)(typescript@6.0.3)':
     dependencies:

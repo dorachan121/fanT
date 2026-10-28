@@ -2,6 +2,7 @@ import type { Character, Manifest, Stamp } from '@fant/content-schema';
 import { randomUUID } from 'expo-crypto';
 import { File } from 'expo-file-system';
 
+import { loadDecoFonts } from '../../engine/deco-fonts';
 import type { CharacterDrawing } from '../../engine/draw-character';
 import { loadContentImages } from '../../engine/images';
 import { decodeImage, encodeJpeg, imageSize, renderPhoto } from '../../engine/photo';
@@ -58,7 +59,7 @@ export async function renderRecipe(
     recipe,
     film: findFilm(manifest, recipe.film.id),
     character,
-    deco: { stamps: stampMap(manifest), images },
+    deco: { stamps: stampMap(manifest), images, fonts: await loadDecoFonts() },
     maxLongEdge: options.maxLongEdge,
   });
 }

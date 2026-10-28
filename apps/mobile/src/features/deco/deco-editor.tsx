@@ -11,6 +11,7 @@ import {
   useTapGesture,
 } from 'react-native-gesture-handler';
 
+import { useDecoFonts } from '../../engine/deco-fonts';
 import { recordDeco } from '../../engine/draw-deco';
 import { PhotoCanvas } from '../../engine/photo-canvas';
 import type { SkImage } from '../../engine/skia';
@@ -23,6 +24,7 @@ import { useContent } from '../content/content-store';
 import { stampMap } from '../content/lookup';
 import type { Size } from '../photo/geometry';
 import type { DecoLayer, DecoStamp, DecoStroke, DecoText } from '../photo/recipe';
+import type { DecoFont } from './deco-fonts';
 import { StampPalette, TextComposer, WidthPicker } from './deco-tools';
 import {
   addLayer,
@@ -65,7 +67,11 @@ export function DecoEditor({
   dateControls,
 }: DecoEditorProps) {
   const manifest = useContent((state) => state.manifest);
-  const assets = useMemo(() => ({ stamps: stampMap(manifest), images: {} }), [manifest]);
+  const fonts = useDecoFonts();
+  const assets = useMemo(
+    () => ({ stamps: stampMap(manifest), images: {}, fonts }),
+    [manifest, fonts],
+  );
   const [tool, setTool] = useState<DecoTool>('pen');
   const [color, setColor] = useState<string>(DECO_COLORS[1]);
   const [width, setWidth] = useState<number>(PEN_WIDTHS[1]);
@@ -236,11 +242,12 @@ export function DecoEditor({
             <ColorPalette color={color} onChange={setColor} />
             <TextComposer
               color={color}
-              onAdd={(text: string, style: TextStampStyle) => {
+              onAdd={(text: string, style: TextStampStyle, font: DecoFont) => {
                 place({
                   type: 'text',
                   text,
                   style,
+                  font,
                   color,
                   x: 0.5,
                   y: 0.5,
