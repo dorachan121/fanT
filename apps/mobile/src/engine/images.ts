@@ -6,7 +6,8 @@ import { resolveAsset } from '../features/content/assets';
 /** Decoded content images (character parts, image stamps) for the session, by hash. */
 const cache = new Map<string, Promise<SkImage>>();
 
-async function decode(uri: string): Promise<SkImage> {
+/** Decodes an image file (content images, LUTs). */
+export async function decodeImageFile(uri: string): Promise<SkImage> {
   const data = await Skia.Data.fromURI(uri);
   try {
     const image = Skia.Image.MakeImageFromEncoded(data);
@@ -28,7 +29,7 @@ export async function loadContentImages(
     refs.map(async (ref) => {
       let image = cache.get(ref.sha256);
       if (image === undefined) {
-        image = resolveAsset(ref).then(decode);
+        image = resolveAsset(ref).then(decodeImageFile);
         image.catch(() => cache.delete(ref.sha256));
         cache.set(ref.sha256, image);
       }

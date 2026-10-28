@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 
 import { reportError } from '../features/analytics/analytics';
 import { resolveAsset } from '../features/content/assets';
+import { decodeImageFile } from './images';
 
 /** A decoded LUT ready to bind as the film shader's `lut` child. */
 export interface LoadedLut {
@@ -39,20 +40,14 @@ export function identityLut(): LoadedLut {
 const cache = new Map<string, Promise<LoadedLut>>();
 
 async function decodeLut(uri: string): Promise<LoadedLut> {
-  const data = await Skia.Data.fromURI(uri);
-  try {
-    const image = Skia.Image.MakeImageFromEncoded(data);
-    if (image === null) throw new Error(`Failed to decode LUT ${uri}`);
-    const size = image.height();
-    // A malformed LUT is rejected rather than sampled out of bounds.
-    if (image.width() !== size * size || size < LUT_SIZE_RANGE.min || size > LUT_SIZE_RANGE.max) {
-      image.dispose();
-      throw new Error(`Invalid LUT dimensions ${String(image.width())}x${String(size)}`);
-    }
-    return { image, size };
-  } finally {
-    data.dispose();
+  const image = await decodeImageFile(uri);
+  const size = image.height();
+  // A malformed LUT is rejected rather than sampled out of bounds.
+  if (image.width() !== size * size || size < LUT_SIZE_RANGE.min || size > LUT_SIZE_RANGE.max) {
+    image.dispose();
+    throw new Error(`Invalid LUT dimensions ${String(image.width())}x${String(size)}`);
   }
+  return { image, size };
 }
 
 /** The film's LUT, loading (and downloading) it if needed. */
