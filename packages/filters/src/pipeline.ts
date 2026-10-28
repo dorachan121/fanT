@@ -4,6 +4,9 @@ import { BEAUTY_SHADER_NAME, BEAUTY_SHADER_SOURCE } from './beauty/beauty-shader
 import { toBeautyUniforms } from './beauty/beauty-uniforms';
 import { toDateStampUniforms, type DateStampGlyphs } from './date-stamp/date-stamp';
 import { DATE_STAMP_SHADER_NAME, DATE_STAMP_SHADER_SOURCE } from './date-stamp/date-stamp-shader';
+import type { DetailParams, LocalAdjustment } from './detail/detail-params';
+import { DETAIL_SHADER_NAME, DETAIL_SHADER_SOURCE } from './detail/detail-shader';
+import { toDetailUniforms } from './detail/detail-uniforms';
 import type { FaceShapeParams } from './face-shape/face-shape-params';
 import { FACE_SHAPE_SHADER_NAME, FACE_SHAPE_SHADER_SOURCE } from './face-shape/face-shape-shader';
 import { toFaceShapeUniforms, type ShapedFace } from './face-shape/face-shape-uniforms';
@@ -25,6 +28,7 @@ export interface FilterEffects<TShader> {
   readonly faceShape: ShaderEffect<TShader>;
   readonly adjust: ShaderEffect<TShader>;
   readonly beauty: ShaderEffect<TShader>;
+  readonly detail: ShaderEffect<TShader>;
   readonly film: ShaderEffect<TShader>;
   readonly dateStamp: ShaderEffect<TShader>;
 }
@@ -34,6 +38,10 @@ export interface FilterSettings {
   readonly faceShape: FaceShapeParams;
   readonly adjust: AdjustParams;
   readonly beauty: BeautyParams;
+  /** The editor's detailed adjustments (EDT-07–09). */
+  readonly detail: DetailParams;
+  /** The editor's local areas (EDT-10). */
+  readonly local: readonly LocalAdjustment[];
   readonly film: FilmParams;
   readonly dateStamp: DateStampGlyphs;
 }
@@ -72,7 +80,8 @@ function isNeutral(params: Readonly<Record<string, number>>): boolean {
 }
 
 /**
- * Face fine-tuning, corrections and skin retouching (face shape → adjust → beauty).
+ * Face fine-tuning, corrections, skin retouching and detailed adjustments
+ * (face shape → adjust → beauty → detail).
  * Runs before anything drawn over the face (characters), so stickers are not
  * smoothed or reshaped.
  * Marked as a worklet so it can run on the camera frame thread.
@@ -103,6 +112,13 @@ export function chainRetouch<TShader>(
   if (!isNeutral(settings.beauty)) {
     shader = effects.beauty.makeShaderWithChildren(
       packUniforms(effects.beauty, toBeautyUniforms(settings.beauty, frame)),
+      [shader],
+    );
+    created.push(shader);
+  }
+  if (!isNeutral(settings.detail) || settings.local.length > 0) {
+    shader = effects.detail.makeShaderWithChildren(
+      packUniforms(effects.detail, toDetailUniforms(settings.detail, settings.local, frame)),
       [shader],
     );
     created.push(shader);
@@ -163,6 +179,7 @@ export function compileFilterEffects<TEffect>(
     faceShape: compileRuntimeEffect(factory, FACE_SHAPE_SHADER_NAME, FACE_SHAPE_SHADER_SOURCE),
     adjust: compileRuntimeEffect(factory, ADJUST_SHADER_NAME, ADJUST_SHADER_SOURCE),
     beauty: compileRuntimeEffect(factory, BEAUTY_SHADER_NAME, BEAUTY_SHADER_SOURCE),
+    detail: compileRuntimeEffect(factory, DETAIL_SHADER_NAME, DETAIL_SHADER_SOURCE),
     film: compileRuntimeEffect(factory, FILM_SHADER_NAME, FILM_SHADER_SOURCE),
     dateStamp: compileRuntimeEffect(factory, DATE_STAMP_SHADER_NAME, DATE_STAMP_SHADER_SOURCE),
   };

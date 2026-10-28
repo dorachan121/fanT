@@ -5,7 +5,10 @@ import {
   BEAUTY_PARAM_RANGES,
   DATE_STAMP_FORMATS,
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
+  DETAIL_PARAM_RANGES,
+  MAX_LOCAL_ADJUSTMENTS,
   FACE_SHAPE_PARAM_RANGES,
   type AdjustParams,
   type FaceShapeParams,
@@ -95,6 +98,18 @@ export type Crop = z.infer<typeof cropSchema>;
 
 export const FULL_CROP: Crop = { x: 0, y: 0, width: 1, height: 1 };
 
+const centeredUnit = z.number().min(-1).max(1);
+
+const localAdjustmentSchema = z.strictObject({
+  x: unit,
+  y: unit,
+  radius: z.number().min(0.02).max(1),
+  feather: unit,
+  brightness: centeredUnit,
+  saturation: centeredUnit,
+  temperature: centeredUnit,
+});
+
 export const calendarDateSchema = z.strictObject({
   year: z.number().int().min(1900).max(2099),
   month: z.number().int().min(1).max(12),
@@ -129,6 +144,10 @@ const photoRecipeSchema = z.strictObject({
     crop: cropSchema,
   }),
   deco: z.array(decoLayerSchema).max(MAX_DECO_LAYERS),
+  /** Detailed adjustments (EDT-07–09); missing in older recipes. */
+  detail: paramsSchema(DETAIL_PARAM_RANGES).default(DEFAULT_DETAIL_PARAMS),
+  /** Local areas (EDT-10); missing in older recipes. */
+  local: z.array(localAdjustmentSchema).max(MAX_LOCAL_ADJUSTMENTS).default([]),
   /** Face fine-tuning (BTY-04); recipes saved without it leave faces as they are. */
   faceShape: paramsSchema(FACE_SHAPE_PARAM_RANGES).default(DEFAULT_FACE_SHAPE_PARAMS),
   /** Added after the first release: recipes saved without it have no frame. */
@@ -164,6 +183,8 @@ export function newRecipe(options: {
     deco: [],
     frame: null,
     faceShape: options.faceShape ?? DEFAULT_FACE_SHAPE_PARAMS,
+    detail: DEFAULT_DETAIL_PARAMS,
+    local: [],
   };
 }
 

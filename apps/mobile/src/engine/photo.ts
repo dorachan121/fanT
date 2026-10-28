@@ -127,6 +127,8 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
         adjust: recipe.adjust,
         dateStamp: recipe.dateStamp,
         faceShape: recipe.faceShape,
+        detail: recipe.detail,
+        local: recipe.local,
       }),
       faces: shaping ? toShapedFaces(faces) : undefined,
       seed: recipe.seed,

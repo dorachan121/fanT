@@ -36,6 +36,19 @@ export {
 } from './date-stamp/date-stamp';
 export { DATE_STAMP_SHADER_NAME, DATE_STAMP_SHADER_SOURCE } from './date-stamp/date-stamp-shader';
 export {
+  DEFAULT_DETAIL_PARAMS,
+  DETAIL_PARAM_RANGES,
+  HSL_BANDS,
+  MAX_LOCAL_ADJUSTMENTS,
+  normalizeDetailParams,
+  type DetailParamName,
+  type DetailParams,
+  type HslBand,
+  type LocalAdjustment,
+} from './detail/detail-params';
+export { DETAIL_SHADER_NAME, DETAIL_SHADER_SOURCE } from './detail/detail-shader';
+export { toDetailUniforms, type DetailUniforms } from './detail/detail-uniforms';
+export {
   DEFAULT_FACE_SHAPE_PARAMS,
   FACE_SHAPE_PARAM_RANGES,
   normalizeFaceShapeParams,

@@ -5,6 +5,7 @@ import {
   chainFilters,
   compileFilterEffects,
   DEFAULT_ADJUST_PARAMS,
+  DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   IDENTITY_LUT,
   normalizeBeautyParams,
@@ -29,6 +30,8 @@ const NEUTRAL: FilterSettings = {
   faceShape: DEFAULT_FACE_SHAPE_PARAMS,
   adjust: DEFAULT_ADJUST_PARAMS,
   beauty: normalizeBeautyParams({ smoothing: 0, brightness: 0, rosiness: 0 }),
+  detail: DEFAULT_DETAIL_PARAMS,
+  local: [],
   film: normalizeFilmParams({ warmth: 0, fade: 0, vignette: 0, grain: 0 }),
   dateStamp: toDateStampGlyphs(null),
 };
@@ -65,6 +68,7 @@ describe('chainFilters', () => {
       'adjust',
       'beauty',
       'dateStamp',
+      'detail',
       'faceShape',
       'film',
     ]);
