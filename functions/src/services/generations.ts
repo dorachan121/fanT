@@ -9,7 +9,12 @@ import { creditsOf, debit, InsufficientCreditsError, refund } from '../domain/cr
 import { takeRate } from '../domain/rate-limit';
 import { newId } from '../domain/secrets';
 import { SAFETY_PROMPT, STYLES } from '../domain/styles';
-import type { Dependencies, GenerationRecord, Transaction } from '../ports';
+import {
+  ContentBlockedError,
+  type Dependencies,
+  type GenerationRecord,
+  type Transaction,
+} from '../ports';
 import { ApiFailure } from './errors';
 
 const HOUR_MS = 60 * 60 * 1000;
@@ -160,6 +165,8 @@ export async function processGeneration(deps: Dependencies, id: string): Promise
       return (await deps.moderator.isAllowed(generated, signal)) ? generated : ('blocked' as const);
     }, timeoutMs).catch((error: unknown) => {
       if (error instanceof Error && error.name === 'AbortError') return 'timeout' as const;
+      // The provider's own safety filters count like our moderation.
+      if (error instanceof ContentBlockedError) return 'blocked' as const;
       throw error;
     });
     if (output === 'blocked') {

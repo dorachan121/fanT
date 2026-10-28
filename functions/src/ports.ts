@@ -57,7 +57,15 @@ export interface ImageStore {
   deleteImages(id: string): Promise<void>;
 }
 
-/** The image generation provider (Q-04); prompts are added by the server. */
+/** The provider refused the request or its result on safety grounds (AI-05). */
+export class ContentBlockedError extends Error {
+  override readonly name = 'ContentBlockedError';
+}
+
+/**
+ * The image generation provider (Q-04); prompts are added by the server. Throws
+ * `ContentBlockedError` when the provider's own safety checks refuse.
+ */
 export interface ImageGenerator {
   generate(image: Uint8Array, prompt: string, signal: AbortSignal): Promise<Uint8Array>;
 }

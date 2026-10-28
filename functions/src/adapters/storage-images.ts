@@ -23,9 +23,12 @@ export class StorageImages implements ImageStore {
   }
 
   async putOutput(id: string, image: Uint8Array): Promise<void> {
-    await this.bucket
-      .file(`generations/${id}/output.jpg`)
-      .save(Buffer.from(image), { contentType: 'image/jpeg', resumable: false });
+    // Providers return JPEG or PNG; the app decodes either.
+    const isPng = image[0] === 0x89 && image[1] === 0x50 && image[2] === 0x4e && image[3] === 0x47;
+    await this.bucket.file(`generations/${id}/output.jpg`).save(Buffer.from(image), {
+      contentType: isPng ? 'image/png' : 'image/jpeg',
+      resumable: false,
+    });
   }
 
   async outputUrl(id: string): Promise<string> {

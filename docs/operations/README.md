@@ -34,9 +34,12 @@ eas env:create --environment production --name API_BASE_URL --value https://…
    ```
    `functions/.env.<projectId>`（コミットしない）にパラメーターを書く:
    ```
-   AI_PROVIDER=mock        # 画像生成の提供元（Q-04）。mock は開発用で、プロジェクト ID が -prod で終わる環境では起動しない
+   AI_PROVIDER=google      # 画像生成の提供元（Q-04）。google = Vertex AI の Gemini 画像モデル + Cloud Vision の SafeSearch。
+                           # mock は開発用（アップロードした写真をそのまま返す）で、プロジェクト ID が -prod で終わる環境では起動しない
+   AI_MODEL=gemini-2.5-flash-image   # google のときの Vertex AI のモデル
    MONTHLY_CREDITS=10      # 年額会員への毎月の付与数（Q-05）
    ```
+   `google` のときは、Vertex AI API と Cloud Vision API を有効にし、Functions のサービスアカウントに「Vertex AI ユーザー」（`roles/aiplatform.user`）を付ける。認証は Functions 自身のサービスアカウントで行うので、API キーは不要
 4. Functions のサービスアカウントに「サービス アカウント トークン作成者」（`roles/iam.serviceAccountTokenCreator`）を付ける（結果画像の署名付き URL に必要）
 5. デプロイする（`functions/dist` を `predeploy` が作る）
    ```sh
@@ -75,7 +78,7 @@ eas env:create --environment production --name API_BASE_URL --value https://…
 ## 5. リリース前の確認
 
 - 規約・プライバシーポリシー・特商法の表記の【…】を埋め、専門家に確認してもらう（`apps/mobile/src/features/legal/documents.ts`、Q-10/Q-12）
-- 画像生成の提供元を決め（Q-04）、`functions/src/ports.ts` の `ImageGenerator` と `Moderator` を実装して `AI_PROVIDER` で選べるようにする
+- 画像生成の提供元（Q-04）を最終決定する。`AI_PROVIDER=google` が実装済み。別の提供元にするときは `functions/src/ports.ts` の `ImageGenerator` と `Moderator` を実装して `AI_PROVIDER` に追加する。スタイルごとのプロンプト（`functions/src/domain/styles.ts`）を実際の結果を見て調整する
 - App Check（Play Integrity / App Attest）を有効にする（非機能要件 §5、R-05）。現在は端末ごとの秘密鍵、アドレスごとの登録数と分析イベント送信数の制限、アカウントごとの生成回数制限で守っている
 - アイコン・スプラッシュ・ストアの掲載情報、App Privacy・データセーフティの申告（非機能要件 §6）
 - [実装状況](../requirements/08-implementation-status.md) の「実機で確認すること」をすべて確認する

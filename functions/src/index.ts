@@ -8,6 +8,11 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 
 import { FirestoreStore } from './adapters/firestore-store';
+import {
+  GeminiImageGenerator,
+  metadataTokenSource,
+  SafeSearchModerator,
+} from './adapters/google-cloud';
 import { allowAllModerator, echoGenerator } from './adapters/mock-provider';
 import { StorageImages } from './adapters/storage-images';
 import { handleRequest } from './http/api';
@@ -18,8 +23,13 @@ import { deleteExpiredGenerations, processGeneration } from './services/generati
 initializeApp();
 
 const REGION = 'asia-northeast1';
-/** Which image generation provider to use (Q-04). Only `mock` exists until one is chosen. */
+/**
+ * Which image generation provider to use (Q-04): `google` (Gemini on Vertex AI with
+ * Cloud Vision moderation) or `mock` for the emulator and staging.
+ */
 const AI_PROVIDER = defineString('AI_PROVIDER', { default: 'mock' });
+/** The Vertex AI image model for `google`. */
+const AI_MODEL = defineString('AI_MODEL', { default: 'gemini-2.5-flash-image' });
 const MONTHLY_CREDITS = defineInt('MONTHLY_CREDITS', { default: 10 });
 const REVENUECAT_WEBHOOK_SECRET = defineSecret('REVENUECAT_WEBHOOK_SECRET');
 
@@ -31,6 +41,15 @@ function provider(): { generator: ImageGenerator; moderator: Moderator } {
       throw new Error('AI_PROVIDER=mock is not allowed in production');
     }
     return { generator: echoGenerator, moderator: allowAllModerator };
+  }
+  if (name === 'google') {
+    const project = process.env.GCLOUD_PROJECT;
+    if (project === undefined) throw new Error('GCLOUD_PROJECT is not set');
+    const token = metadataTokenSource();
+    return {
+      generator: new GeminiImageGenerator({ project, model: AI_MODEL.value(), token }),
+      moderator: new SafeSearchModerator({ token }),
+    };
   }
   throw new Error(`Unknown AI_PROVIDER "${name}"`);
 }
