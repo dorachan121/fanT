@@ -14,6 +14,7 @@ import type { z } from 'zod';
 
 import { APP_CONFIG } from '../../config';
 import { toBase64, toBase64Url } from '../../lib/base64';
+import { fetchWithTimeout } from '../../lib/fetch-with-timeout';
 import { linkPurchasesAccount } from '../purchases/purchases-store';
 
 const ACCOUNT_KEY = 'ai.account';
@@ -50,34 +51,37 @@ async function request<T>(
     readonly account?: StoredAccount;
   } = {},
 ): Promise<T> {
-  const controller = new AbortController();
-  const timer = setTimeout(() => {
-    controller.abort();
-  }, TIMEOUT_MS);
-  let response: Response;
+  const url = `${baseUrl()}${path}`;
+  let status: number;
+  let json: unknown;
   try {
-    response = await fetch(`${baseUrl()}${path}`, {
-      method: init.method ?? 'GET',
-      signal: controller.signal,
-      headers: {
-        'Content-Type': 'application/json',
-        ...(init.account === undefined
-          ? {}
-          : { Authorization: `Bearer ${init.account.accountId}.${init.account.secret}` }),
+    ({ status, json } = await fetchWithTimeout(
+      url,
+      {
+        method: init.method ?? 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(init.account === undefined
+            ? {}
+            : { Authorization: `Bearer ${init.account.accountId}.${init.account.secret}` }),
+        },
+        body: init.body === undefined ? undefined : JSON.stringify(init.body),
       },
-      body: init.body === undefined ? undefined : JSON.stringify(init.body),
-    });
+      TIMEOUT_MS,
+      async (response) => ({
+        status: response.status,
+        json:
+          response.status === 204 ? null : ((await response.json().catch(() => null)) as unknown),
+      }),
+    ));
   } catch {
     throw new AiError('offline', 'Network request failed');
-  } finally {
-    clearTimeout(timer);
   }
-  const json: unknown = response.status === 204 ? null : await response.json().catch(() => null);
-  if (!response.ok) {
+  if (status < 200 || status >= 300) {
     const parsed = apiErrorSchema.safeParse(json);
     throw new AiError(
       parsed.success ? parsed.data.error.code : 'internal',
-      `HTTP ${String(response.status)}`,
+      `HTTP ${String(status)}`,
     );
   }
   if (schema === null) return undefined as T;
@@ -87,14 +91,34 @@ async function request<T>(
   return parsed.data;
 }
 
+/** The stored account, or `null` when there is none or it cannot be read. */
+function parseAccount(stored: string | null): StoredAccount | null {
+  if (stored === null) return null;
+  try {
+    const value: unknown = JSON.parse(stored);
+    if (
+      typeof value === 'object' &&
+      value !== null &&
+      'accountId' in value &&
+      'secret' in value &&
+      typeof value.accountId === 'string' &&
+      typeof value.secret === 'string'
+    ) {
+      return { accountId: value.accountId, secret: value.secret };
+    }
+  } catch {
+    // Unreadable: treated as no account.
+  }
+  return null;
+}
+
 let account: Promise<StoredAccount> | undefined;
 
 async function loadOrCreateAccount(): Promise<StoredAccount> {
-  const stored = await SecureStore.getItemAsync(ACCOUNT_KEY);
+  const stored = parseAccount(await SecureStore.getItemAsync(ACCOUNT_KEY));
   if (stored !== null) {
-    const parsed = JSON.parse(stored) as StoredAccount;
-    void linkPurchasesAccount(parsed.accountId);
-    return parsed;
+    void linkPurchasesAccount(stored.accountId);
+    return stored;
   }
   // The secret never leaves the device except to authenticate; the server keeps a hash.
   const secret = toBase64Url(getRandomBytes(32));

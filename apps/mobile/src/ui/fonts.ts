@@ -9,7 +9,7 @@ import { useFonts } from 'expo-font';
  * M PLUS Rounded 1c (SIL Open Font License): round, friendly Japanese that suits
  * the app. Three weights cover body, emphasis and headings.
  */
-export const FONT_FAMILIES = {
+const FONT_FAMILIES = {
   regular: 'Rounded-Medium',
   bold: 'Rounded-Bold',
   heavy: 'Rounded-ExtraBold',

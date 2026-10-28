@@ -3,6 +3,7 @@ import { randomUUID } from 'expo-crypto';
 import { AppState, Platform } from 'react-native';
 
 import { APP_CONFIG } from '../../config';
+import { fetchWithTimeout } from '../../lib/fetch-with-timeout';
 import { toErrorEvent, type AnalyticsEvent } from './events';
 
 const INSTALL_ID_KEY = 'analytics.installId';
@@ -10,6 +11,7 @@ const PENDING_KEY = 'analytics.pending';
 const FLUSH_INTERVAL_MS = 30_000;
 const MAX_BATCH = 50;
 const MAX_PENDING = 200;
+const FLUSH_TIMEOUT_MS = 15_000;
 
 interface Envelope {
   readonly event: AnalyticsEvent;
@@ -18,6 +20,8 @@ interface Envelope {
 
 let queue: Envelope[] = [];
 let started = false;
+/** One request at a time, so a batch is never sent twice. */
+let flushing = false;
 
 /** Anonymous per-install ID (SET-04); reset by reinstalling the app. */
 function installId(): string {
@@ -43,27 +47,45 @@ function restoreQueue(): void {
   }
 }
 
+/** Whether a batch is done with: sent, or rejected in a way a retry cannot fix. */
+function isSettled(status: number): boolean {
+  if (status >= 200 && status < 300) return true;
+  // A malformed batch (e.g. from an older version) would otherwise block the queue forever;
+  // timeouts, rate limits and server errors are retried.
+  return status >= 400 && status < 500 && status !== 408 && status !== 429;
+}
+
 async function flush(): Promise<void> {
   const { apiBaseUrl } = APP_CONFIG;
-  if (apiBaseUrl === null || queue.length === 0) return;
+  if (apiBaseUrl === null || queue.length === 0 || flushing) return;
+  flushing = true;
   const batch = queue.slice(0, MAX_BATCH);
   try {
-    const response = await fetch(`${apiBaseUrl}/v1/events`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        installId: installId(),
-        platform: Platform.OS,
-        appVersion: APP_CONFIG.appVersion,
-        events: batch,
-      }),
-    });
-    if (response.ok) {
-      queue = queue.slice(batch.length);
+    const status = await fetchWithTimeout(
+      `${apiBaseUrl}/v1/events`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          installId: installId(),
+          platform: Platform.OS,
+          appVersion: APP_CONFIG.appVersion,
+          events: batch,
+        }),
+      },
+      FLUSH_TIMEOUT_MS,
+      (response) => Promise.resolve(response.status),
+    );
+    if (isSettled(status)) {
+      // By identity: the queue may have grown or been trimmed while the request ran.
+      const sent = new Set(batch);
+      queue = queue.filter((envelope) => !sent.has(envelope));
       persistQueue();
     }
   } catch {
     // Offline: the events stay queued for the next flush.
+  } finally {
+    flushing = false;
   }
 }
 
