@@ -1,4 +1,5 @@
 import type { TextStampStyle } from '@fant/content-schema';
+import { ColorPalette } from '../../ui/color-palette';
 import { useMemo, useRef, useState, type ReactNode } from 'react';
 import { StyleSheet, View, type LayoutRectangle } from 'react-native';
 import {
@@ -22,7 +23,7 @@ import { useContent } from '../content/content-store';
 import { stampMap } from '../content/lookup';
 import type { Size } from '../photo/geometry';
 import type { DecoLayer, DecoStamp, DecoStroke, DecoText } from '../photo/recipe';
-import { ColorPalette, StampPalette, TextComposer, WidthPicker } from './deco-tools';
+import { StampPalette, TextComposer, WidthPicker } from './deco-tools';
 import {
   addLayer,
   DECO_COLORS,

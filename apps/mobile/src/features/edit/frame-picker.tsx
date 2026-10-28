@@ -1,10 +1,10 @@
 import { StyleSheet, View } from 'react-native';
 
+import { ColorPalette } from '../../ui/color-palette';
 import { strings } from '../../i18n';
 import { Chip } from '../../ui/chip';
 import { Text } from '../../ui/text';
 import { colors, spacing } from '../../ui/theme';
-import { ColorPalette } from '../deco/deco-tools';
 import { DECO_COLORS } from '../deco/deco-ops';
 import { FRAME_TYPES, type Frame } from '../photo/frames';
 

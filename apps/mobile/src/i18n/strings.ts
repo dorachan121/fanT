@@ -96,6 +96,7 @@ export const strings = {
       film: 'フィルム',
       beauty: '美肌',
       adjust: '補正',
+      makeup: 'メイク',
       tone: 'トーン',
       hsl: 'カラー',
       local: '部分補正',
@@ -148,6 +149,18 @@ export const strings = {
     original: '元の比率',
     undo: '元に戻す',
     redo: 'やり直す',
+  },
+  makeup: {
+    title: '💄 メイク',
+    parts: {
+      lip: 'リップ',
+      blush: 'チーク',
+      eyeshadow: 'アイシャドウ',
+      brow: '眉',
+      lens: 'カラコン',
+    },
+    teeth: '歯を白く',
+    underEye: 'クマ消し',
   },
   frames: {
     none: 'なし',

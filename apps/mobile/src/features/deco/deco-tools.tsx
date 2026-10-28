@@ -6,40 +6,11 @@ import { localized, strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { Chip } from '../../ui/chip';
 import { Bouncy } from '../../ui/bouncy';
-import { colors, radius, softShadow, spacing } from '../../ui/theme';
+import { colors, radius, spacing } from '../../ui/theme';
 import { useContent } from '../content/content-store';
 import { available } from '../content/lookup';
-import { DECO_COLORS, PEN_WIDTHS } from './deco-ops';
+import { PEN_WIDTHS } from './deco-ops';
 import { Text, TextInput } from '../../ui/text';
-
-export function ColorPalette({
-  color,
-  onChange,
-}: {
-  readonly color: string;
-  readonly onChange: (color: string) => void;
-}) {
-  return (
-    <View style={styles.row}>
-      {DECO_COLORS.map((candidate) => (
-        <Bouncy
-          key={candidate}
-          accessibilityRole="button"
-          accessibilityLabel={candidate}
-          accessibilityState={{ selected: candidate === color }}
-          style={[
-            styles.swatch,
-            { backgroundColor: candidate },
-            candidate === color && styles.selectedSwatch,
-          ]}
-          onPress={() => {
-            onChange(candidate);
-          }}
-        />
-      ))}
-    </View>
-  );
-}
 
 export function WidthPicker({
   width,
@@ -165,15 +136,6 @@ export function TextComposer({
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: spacing.sm },
   label: { color: colors.text, fontSize: 13, fontWeight: '700' },
-  swatch: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    borderWidth: 3,
-    borderColor: colors.surface,
-    ...softShadow,
-  },
-  selectedSwatch: { borderColor: colors.accent, borderWidth: 4 },
   widthButton: {
     width: 44,
     height: 44,

@@ -16,6 +16,7 @@ import type { SkImage } from '../../engine/skia';
 import { reportError } from '../analytics/analytics';
 import { useContent } from '../content/content-store';
 import { findCharacter, findFilm, type ResolvedCharacter } from '../content/lookup';
+import type { Makeup } from '../makeup/makeup';
 import { filterSettingsFor } from '../photo/filter-settings';
 import { filmIntensityOf, useCameraSettings } from './camera-store';
 
@@ -26,6 +27,8 @@ export interface LookSpec {
   readonly beauty: BeautyParams;
   /** Face fine-tuning (BTY-04); off when omitted. */
   readonly faceShape?: FaceShapeParams;
+  /** Makeup (BTY-07/09/10); none when omitted. */
+  readonly makeup?: Makeup;
   readonly dateStamp: DateStamp | null;
   readonly character: { readonly id: string; readonly variantId: string | undefined } | null;
 }
@@ -37,6 +40,7 @@ export interface CameraLook {
   readonly dateStamp: DateStamp | null;
   readonly character: ResolvedCharacter | null;
   readonly settings: FilterSettings;
+  readonly makeup: Makeup | null;
   readonly lut: LoadedLut;
   /** The character as drawn on the preview. */
   readonly characterDrawing: CharacterDrawing | null;
@@ -95,7 +99,17 @@ export function useLook(spec: LookSpec, seed: number): CameraLook {
     [character, images],
   );
 
-  return { film, intensity, beauty, dateStamp, character, settings, lut, characterDrawing };
+  return {
+    film,
+    intensity,
+    beauty,
+    dateStamp,
+    character,
+    settings,
+    makeup: spec.makeup ?? null,
+    lut,
+    characterDrawing,
+  };
 }
 
 /** The look chosen on the camera screen (S-10). */
@@ -104,6 +118,7 @@ export function useCameraLook(seed: number): CameraLook {
   const intensity = useCameraSettings((state) => filmIntensityOf(state, state.filmId));
   const beauty = useCameraSettings((state) => state.beauty);
   const faceShape = useCameraSettings((state) => state.faceShape);
+  const makeup = useCameraSettings((state) => state.makeup);
   const dateSettings = useCameraSettings((state) => state.dateStamp);
   const mode = useCameraSettings((state) => state.mode);
   const characterId = useCameraSettings((state) => state.characterId);
@@ -125,8 +140,8 @@ export function useCameraLook(seed: number): CameraLook {
     [mode, characterId, variantId],
   );
   const spec = useMemo<LookSpec>(
-    () => ({ filmId, intensity, beauty, faceShape, dateStamp, character }),
-    [filmId, intensity, beauty, faceShape, dateStamp, character],
+    () => ({ filmId, intensity, beauty, faceShape, makeup, dateStamp, character }),
+    [filmId, intensity, beauty, faceShape, makeup, dateStamp, character],
   );
   return useLook(spec, seed);
 }

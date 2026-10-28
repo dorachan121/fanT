@@ -24,6 +24,9 @@ export function CharacterPreview({
       nose: null,
       cheeks: null,
       mouth: null,
+      outline: null,
+      yaw: 0,
+      pitch: 0,
     };
     const recorder = Skia.PictureRecorder();
     const canvas = recorder.beginRecording(Skia.XYWHRect(0, 0, size, size));

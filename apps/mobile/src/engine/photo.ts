@@ -15,16 +15,18 @@ import {
   toFaceGeometry,
   toShapedFaces,
 } from '../features/character/face-geometry.worklet';
+import { hasMakeup } from '../features/makeup/makeup';
 import { filterSettingsFor } from '../features/photo/filter-settings';
 import { coverPlacement, framedPhotoRect } from '../features/photo/frames';
 import { croppedSize, fitLongEdge, type Size } from '../features/photo/geometry';
 import type { PhotoRecipe } from '../features/photo/recipe';
 import { recipeTransform } from '../features/photo/transform';
 import { compose, scale, toMatrix3 } from './affine.worklet';
-import { drawCharacter, type CharacterDrawing } from './draw-character';
+import type { CharacterDrawing } from './draw-character';
 import { drawDeco, type DecoAssets } from './draw-deco';
 import { drawFiltered } from './draw-filtered';
 import { drawFrameBackground, drawFrameOverlay } from './draw-frame';
+import { faceOverlay } from './face-overlay';
 import { drawStyledText } from './draw-text';
 import { filterEffects } from './filter-effects';
 import { loadFilmLut } from './lut';
@@ -87,7 +89,7 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
 
   const shaping = shapesFaces(recipe.faceShape);
   const faces =
-    (input.character !== null || shaping) && input.originalUri !== null
+    (input.character !== null || shaping || hasMakeup(recipe.makeup)) && input.originalUri !== null
       ? primaryFaces(
           detectFacesInImage(input.originalUri).map((face) => toFaceGeometry(face, transform)),
         )
@@ -133,12 +135,7 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
       faces: shaping ? toShapedFaces(faces) : undefined,
       seed: recipe.seed,
       lut,
-      overlay:
-        character === null || faces.length === 0
-          ? null
-          : (overlayCanvas) => {
-              drawCharacter(overlayCanvas, character, faces);
-            },
+      overlay: faceOverlay(faces, recipe.makeup, character),
     });
     canvas.restore();
     drawFrameOverlay(canvas, recipe.frame, size, window, recipe.seed);

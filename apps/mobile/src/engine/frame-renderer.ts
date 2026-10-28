@@ -8,9 +8,11 @@ import {
   toShapedFaces,
   type FaceGeometry,
 } from '../features/character/face-geometry.worklet';
+import { hasMakeup, type Makeup } from '../features/makeup/makeup';
 import type { FrameSample } from '../features/performance/frame-stats.worklet';
 import { fromMatrix3, invert, toMatrix3 } from './affine.worklet';
-import { drawCharacter, type CharacterDrawing } from './draw-character';
+import type { CharacterDrawing } from './draw-character';
+import { faceOverlay } from './face-overlay';
 import { drawFiltered, type FilterInputs } from './draw-filtered';
 import type { FrameAnalyzer } from './face-tracking';
 
@@ -18,6 +20,8 @@ export interface FrameRendererOptions {
   readonly inputs: Omit<FilterInputs, 'overlay'>;
   /** Drawn on the tracked faces (character mode); face fine-tuning also uses them. */
   readonly character: CharacterDrawing | null;
+  /** Makeup on the tracked faces (BTY-07/09/10). */
+  readonly makeup: Makeup | null;
   readonly faces: Synchronizable<FaceGeometry[]>;
   readonly analyze: FrameAnalyzer | null;
   /** Receives each frame's timings (performance overlay, P-1). */
@@ -39,6 +43,7 @@ export interface FrameRendererOptions {
 export function useFrameRenderer({
   inputs,
   character,
+  makeup,
   faces,
   analyze,
   recordStats,
@@ -66,16 +71,13 @@ export function useFrameRenderer({
           );
           try {
             const shaping = shapesFaces(inputs.settings.faceShape);
-            const tracked = character === null && !shaping ? [] : faces.getBlocking();
+            const withMakeup = makeup !== null && hasMakeup(makeup);
+            const tracked =
+              character === null && !shaping && !withMakeup ? [] : faces.getBlocking();
             drawFiltered(canvas, source, output, {
               ...inputs,
               faces: shaping ? toShapedFaces(tracked) : undefined,
-              overlay:
-                character === null || tracked.length === 0
-                  ? null
-                  : (overlayCanvas) => {
-                      drawCharacter(overlayCanvas, character, tracked);
-                    },
+              overlay: faceOverlay(tracked, makeup, character),
             });
           } finally {
             source.dispose();
@@ -93,6 +95,6 @@ export function useFrameRenderer({
         frame.dispose();
       }
     },
-    [inputs, character, faces, analyze, recordStats],
+    [inputs, character, makeup, faces, analyze, recordStats],
   );
 }

@@ -21,8 +21,10 @@ const DETECT_EVERY_N_FRAMES = 2;
 export interface FaceTrackingOptions {
   /** Eye openness for winks (GST-01); `null` turns it off. */
   readonly onEyes: ((eyes: EyeOpenness | null) => void) | null;
-  /** Face positions for characters (CHR-01). */
+  /** Face positions for characters (CHR-01), face fine-tuning and makeup. */
   readonly trackFaces: boolean;
+  /** Feature outlines too (makeup, BTY-07); the detector does more work. */
+  readonly trackOutlines?: boolean;
 }
 
 /** Runs on the camera thread after drawing; returns whether it analysed the frame. */
@@ -43,16 +45,21 @@ export interface FaceTracking {
  * camera thread; only eye openness is sent to the JS thread (03 §6).
  * A detection failure is reported once and never breaks the preview.
  */
-export function useFaceTracking({ onEyes, trackFaces }: FaceTrackingOptions): FaceTracking {
+export function useFaceTracking({
+  onEyes,
+  trackFaces,
+  trackOutlines = false,
+}: FaceTrackingOptions): FaceTracking {
   const options = useMemo<FaceDetectorOptions>(
     () => ({
       performanceMode: 'fast',
       runClassifications: onEyes !== null,
       runLandmarks: trackFaces,
+      runContours: trackFaces && trackOutlines,
       // Ignore faces smaller than 15% of the frame (people in the background).
       minFaceSize: 0.15,
     }),
-    [onEyes, trackFaces],
+    [onEyes, trackFaces, trackOutlines],
   );
   const detector = useFaceDetector(options);
   const frameCount = useMemo(() => createSynchronizable(0), []);

@@ -1,4 +1,5 @@
 import { calendarDateOf, formatDateStamp } from '@fant/filters';
+import { ColorPalette } from '../../ui/color-palette';
 import { File } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -22,7 +23,6 @@ import { addPhoto } from '../album/album-db';
 import { useContent } from '../content/content-store';
 import { stampMap } from '../content/lookup';
 import { DecoEditor } from '../deco/deco-editor';
-import { ColorPalette } from '../deco/deco-tools';
 import { saveFileToLibrary } from '../photo/photo-actions';
 import { newPhotoId } from '../photo/photo-service';
 import { isLocked, usePremium } from '../purchases/purchases-store';

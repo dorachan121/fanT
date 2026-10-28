@@ -17,6 +17,7 @@ import {
 } from '@fant/filters';
 import { z } from 'zod';
 
+import { makeupSchema, NO_MAKEUP, type Makeup } from '../makeup/makeup';
 import { FRAME_TYPES } from './frames';
 
 /** Limits that keep a recipe small; the editor stops adding past them (DCO-*). */
@@ -152,6 +153,8 @@ const photoRecipeSchema = z.strictObject({
   detail: paramsSchema(DETAIL_PARAM_RANGES).default(DEFAULT_DETAIL_PARAMS),
   /** Local areas (EDT-10); missing in older recipes. */
   local: z.array(localAdjustmentSchema).max(MAX_LOCAL_ADJUSTMENTS).default([]),
+  /** Makeup and touch-ups (BTY-07/09/10); missing in older recipes. */
+  makeup: makeupSchema.default(NO_MAKEUP),
   /** Face fine-tuning (BTY-04); recipes saved without it leave faces as they are. */
   faceShape: paramsSchema(FACE_SHAPE_PARAM_RANGES).default(DEFAULT_FACE_SHAPE_PARAMS),
   /** Added after the first release: recipes saved without it have no frame. */
@@ -174,6 +177,7 @@ export function newRecipe(options: {
   readonly crop: Crop;
   readonly adjust?: AdjustParams;
   readonly faceShape?: FaceShapeParams;
+  readonly makeup?: Makeup;
 }): PhotoRecipe {
   return {
     version: 1,
@@ -187,6 +191,7 @@ export function newRecipe(options: {
     deco: [],
     frame: null,
     faceShape: options.faceShape ?? DEFAULT_FACE_SHAPE_PARAMS,
+    makeup: options.makeup ?? NO_MAKEUP,
     detail: DEFAULT_DETAIL_PARAMS,
     local: [],
   };

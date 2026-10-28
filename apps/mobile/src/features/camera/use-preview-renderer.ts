@@ -32,6 +32,7 @@ export function usePreviewRenderer({
   const onFrame = useFrameRenderer({
     inputs,
     character: showCharacter ? look.characterDrawing : null,
+    makeup: look.makeup,
     faces: tracking.faces,
     analyze: tracking.analyze,
     // Measured once a second on the camera thread: cheap enough to keep on.

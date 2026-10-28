@@ -21,6 +21,33 @@ export interface DetectedFace {
     readonly MOUTH_RIGHT?: Point;
     readonly MOUTH_BOTTOM?: Point;
   };
+  /** Outlines of the features (makeup, BTY-07); only the most prominent face has them. */
+  readonly contours?: {
+    readonly UPPER_LIP_TOP?: readonly Point[];
+    readonly UPPER_LIP_BOTTOM?: readonly Point[];
+    readonly LOWER_LIP_TOP?: readonly Point[];
+    readonly LOWER_LIP_BOTTOM?: readonly Point[];
+    readonly LEFT_EYE?: readonly Point[];
+    readonly RIGHT_EYE?: readonly Point[];
+    readonly LEFT_EYEBROW_TOP?: readonly Point[];
+    readonly LEFT_EYEBROW_BOTTOM?: readonly Point[];
+    readonly RIGHT_EYEBROW_TOP?: readonly Point[];
+    readonly RIGHT_EYEBROW_BOTTOM?: readonly Point[];
+  };
+  /** Head rotation in degrees (left/right and up/down), for 3D effects (CHR-09). */
+  readonly yawAngle?: number;
+  readonly pitchAngle?: number;
+}
+
+/** A face's feature outlines in output pixels, as closed polygons. */
+export interface FaceOutline {
+  /** The whole lips. */
+  readonly lips: readonly Point[] | null;
+  /** The mouth opening between the lips (teeth, BTY-09). */
+  readonly mouth: readonly Point[] | null;
+  /** Left then right as seen in the image. */
+  readonly eyes: readonly [readonly Point[], readonly Point[]] | null;
+  readonly brows: readonly [readonly Point[], readonly Point[]] | null;
 }
 
 /**
@@ -36,6 +63,10 @@ export interface FaceGeometry {
   readonly nose: Point | null;
   readonly cheeks: readonly [Point, Point] | null;
   readonly mouth: Point | null;
+  readonly outline: FaceOutline | null;
+  /** Head turned left/right and up/down, in degrees as seen in the image. */
+  readonly yaw: number;
+  readonly pitch: number;
 }
 
 /** Faces drawn per frame at most (BTY-05/CHR-05). */
@@ -45,6 +76,66 @@ function sortedPair(a: Point | undefined, b: Point | undefined): readonly [Point
   'worklet';
   if (a === undefined || b === undefined) return null;
   return a.x <= b.x ? [a, b] : [b, a];
+}
+
+/**
+ * Points ordered around their centre, so outlines become simple polygons whatever
+ * order the detector reports them in.
+ */
+export function polygonAround(points: readonly Point[]): Point[] {
+  'worklet';
+  let cx = 0;
+  let cy = 0;
+  for (const point of points) {
+    cx += point.x;
+    cy += point.y;
+  }
+  cx /= Math.max(1, points.length);
+  cy /= Math.max(1, points.length);
+  return [...points].sort(
+    (a, b) => Math.atan2(a.y - cy, a.x - cx) - Math.atan2(b.y - cy, b.x - cx),
+  );
+}
+
+function centreX(points: readonly Point[]): number {
+  'worklet';
+  let sum = 0;
+  for (const point of points) sum += point.x;
+  return sum / Math.max(1, points.length);
+}
+
+/** Two outlines ordered left then right as seen in the image, or `null`. */
+function outlinePair(
+  a: readonly Point[] | null,
+  b: readonly Point[] | null,
+): readonly [readonly Point[], readonly Point[]] | null {
+  'worklet';
+  if (a === null || b === null) return null;
+  return centreX(a) <= centreX(b) ? [a, b] : [b, a];
+}
+
+function toOutline(face: DetectedFace, map: Affine): FaceOutline | null {
+  'worklet';
+  const contours = face.contours;
+  if (contours === undefined) return null;
+  const join = (...parts: (readonly Point[] | undefined)[]) => {
+    'worklet';
+    const points: Point[] = [];
+    for (const part of parts) {
+      if (part === undefined) return null;
+      for (const point of part) points.push(apply(map, point));
+    }
+    return points.length < 3 ? null : polygonAround(points);
+  };
+  return {
+    lips: join(contours.UPPER_LIP_TOP, contours.LOWER_LIP_BOTTOM),
+    mouth: join(contours.UPPER_LIP_BOTTOM, contours.LOWER_LIP_TOP),
+    eyes: outlinePair(join(contours.LEFT_EYE), join(contours.RIGHT_EYE)),
+    brows: outlinePair(
+      join(contours.LEFT_EYEBROW_TOP, contours.LEFT_EYEBROW_BOTTOM),
+      join(contours.RIGHT_EYEBROW_TOP, contours.RIGHT_EYEBROW_BOTTOM),
+    ),
+  };
 }
 
 /** Converts a detected face to output pixels with `map` (detector → output coordinates). */
@@ -71,6 +162,8 @@ export function toFaceGeometry(face: DetectedFace, map: Affine): FaceGeometry {
         };
   const roll =
     eyes === null ? 0 : (Math.atan2(eyes[1].y - eyes[0].y, eyes[1].x - eyes[0].x) * 180) / Math.PI;
+  // A mirrored map (front camera) turns the head the other way as seen.
+  const mirrored = map[0] * map[4] - map[1] * map[3] < 0;
   return {
     center: { x: (corner1.x + corner2.x) / 2, y: (corner1.y + corner2.y) / 2 },
     width: Math.abs(corner2.x - corner1.x),
@@ -79,6 +172,9 @@ export function toFaceGeometry(face: DetectedFace, map: Affine): FaceGeometry {
     nose: mapped(landmarks.NOSE_BASE) ?? null,
     cheeks: sortedPair(mapped(landmarks.LEFT_CHEEK), mapped(landmarks.RIGHT_CHEEK)),
     mouth,
+    outline: toOutline(face, map),
+    yaw: (face.yawAngle ?? 0) * (mirrored ? -1 : 1),
+    pitch: face.pitchAngle ?? 0,
   };
 }
 

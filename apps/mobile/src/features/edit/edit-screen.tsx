@@ -21,6 +21,7 @@ import { reportError } from '../analytics/analytics';
 import { BeautyControls, FaceShapeControls } from '../camera/beauty-sheet';
 import { useContent } from '../content/content-store';
 import { findFilm } from '../content/lookup';
+import { MakeupControls } from '../makeup/makeup-controls';
 import { saveEdit } from '../photo/photo-service';
 import type { PhotoRecipe } from '../photo/recipe';
 import { isLocked, usePremium } from '../purchases/purchases-store';
@@ -35,7 +36,17 @@ import { TonePanel } from './panels/tone-panel';
 import { PhotoTapLayer, type PhotoMarker } from './photo-tap-layer';
 import { usePhotoSession } from './use-photo-session';
 
-const TABS = ['film', 'beauty', 'adjust', 'tone', 'hsl', 'local', 'crop', 'frame'] as const;
+const TABS = [
+  'film',
+  'beauty',
+  'makeup',
+  'adjust',
+  'tone',
+  'hsl',
+  'local',
+  'crop',
+  'frame',
+] as const;
 type Tab = (typeof TABS)[number];
 
 /** Re-edits a photo from its original (S-21): every tool works on the recipe, undoably. */
@@ -98,6 +109,14 @@ export function EditScreen({ id }: { readonly id: string }) {
           }}
         />
       </>
+    ),
+    makeup: () => (
+      <MakeupControls
+        makeup={recipe.makeup}
+        onChange={(makeup) => {
+          update({ makeup }, 'makeup');
+        }}
+      />
     ),
     adjust: () => <AdjustPanel {...props} />,
     tone: () => <TonePanel {...props} />,

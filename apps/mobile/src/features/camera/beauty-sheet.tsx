@@ -14,6 +14,7 @@ import { Slider } from '../../ui/slider';
 import { Text } from '../../ui/text';
 import { colors, spacing } from '../../ui/theme';
 import { ParamSliders } from '../../ui/param-sliders';
+import { MakeupControls } from '../makeup/makeup-controls';
 import { useCameraSettings } from './camera-store';
 import { BEAUTY_LEVEL_ORDER, beautyLevelOf } from './presets';
 
@@ -88,6 +89,7 @@ export function BeautySheet({
   onClose,
 }: BeautyControlsProps & { readonly visible: boolean; readonly onClose: () => void }) {
   const faceShape = useCameraSettings((state) => state.faceShape);
+  const makeup = useCameraSettings((state) => state.makeup);
   return (
     <Sheet visible={visible} title={strings.beauty.title} onClose={onClose}>
       <BeautyControls beauty={beauty} onChange={onChange} />
@@ -95,6 +97,12 @@ export function BeautySheet({
         faceShape={faceShape}
         onChange={(next) => {
           useCameraSettings.getState().update({ faceShape: next });
+        }}
+      />
+      <MakeupControls
+        makeup={makeup}
+        onChange={(next) => {
+          useCameraSettings.getState().update({ makeup: next });
         }}
       />
     </Sheet>

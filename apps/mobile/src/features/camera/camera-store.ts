@@ -12,6 +12,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 import { persistValidated } from '../../lib/kv-storage';
+import { makeupSchema, NO_MAKEUP } from '../makeup/makeup';
 import { ASPECT_RATIOS, calendarDateSchema, paramsSchema } from '../photo/recipe';
 
 export const CAMERA_MODES = ['film', 'character', 'puri', 'ai'] as const;
@@ -37,6 +38,8 @@ const cameraSchema = z.object({
   beauty: paramsSchema(BEAUTY_PARAM_RANGES),
   /** Face fine-tuning (BTY-04); off by default. */
   faceShape: paramsSchema(FACE_SHAPE_PARAM_RANGES),
+  /** Makeup and touch-ups (BTY-07/09/10); off by default. */
+  makeup: makeupSchema,
   dateStamp: z.object({
     enabled: z.boolean(),
     format: z.enum(DATE_STAMP_FORMATS),
@@ -62,6 +65,7 @@ const DEFAULT_CAMERA_SETTINGS: CameraSettings = {
   favoriteFilms: [],
   beauty: DEFAULT_BEAUTY_PARAMS,
   faceShape: DEFAULT_FACE_SHAPE_PARAMS,
+  makeup: NO_MAKEUP,
   dateStamp: { enabled: false, format: 'yy mm dd', customDate: null },
   characterId: 'bear',
   characterVariants: {},
