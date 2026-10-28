@@ -12,7 +12,7 @@ import { HeroEmoji } from '../../ui/hero-emoji';
 import { colors, spacing } from '../../ui/theme';
 import { useAi } from '../ai/ai-store';
 import { reportError } from '../analytics/analytics';
-import { purchase, usePurchases } from '../purchases/purchases-store';
+import { loadPurchases, purchase, usePurchases } from '../purchases/purchases-store';
 import { Text } from '../../ui/text';
 
 /** Credit packs and the annual plan's monthly credits (S-61, PAY-03). */
@@ -24,6 +24,8 @@ export function CreditsScreen() {
 
   useEffect(() => {
     void useAi.getState().refreshCredits();
+    // Retries when the packs could not be loaded at launch.
+    void loadPurchases();
   }, []);
 
   const buy = async (packageId: string) => {

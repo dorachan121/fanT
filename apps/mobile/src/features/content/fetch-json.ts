@@ -1,9 +1,5 @@
+import { DownloadError } from '../../lib/download-file';
 import { fetchWithTimeout } from '../../lib/fetch-with-timeout';
-
-/** A download that took too long or was too large; the caller keeps what it has. */
-class DownloadError extends Error {
-  override readonly name = 'DownloadError';
-}
 
 /**
  * Fetches JSON with a timeout and a size limit, so a slow or hostile server cannot

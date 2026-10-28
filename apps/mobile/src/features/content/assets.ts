@@ -4,6 +4,7 @@ import { Asset } from 'expo-asset';
 import { Directory, File, Paths } from 'expo-file-system';
 
 import { APP_CONFIG } from '../../config';
+import { downloadFile } from '../../lib/download-file';
 
 /** Downloaded assets, named by content hash: immutable and shared between items. */
 const CACHE = new Directory(Paths.cache, 'content-assets');
@@ -27,25 +28,10 @@ async function download(ref: AssetRef): Promise<string> {
 
   CACHE.create({ intermediates: true, idempotent: true });
   const partial = new File(CACHE, `${ref.sha256}.partial`);
-  if (partial.exists) partial.delete();
-  // A slow or oversized delivery is cut off rather than hanging or filling the disk.
-  const controller = new AbortController();
-  const timer = setTimeout(() => {
-    controller.abort();
-  }, DOWNLOAD_TIMEOUT_MS);
-  try {
-    await File.downloadFileAsync(`${contentBaseUrl}/${ref.path}`, partial, {
-      signal: controller.signal,
-      onProgress: ({ bytesWritten }) => {
-        if (bytesWritten > MAX_ASSET_BYTES) controller.abort();
-      },
-    });
-  } catch (error) {
-    if (partial.exists) partial.delete();
-    throw error;
-  } finally {
-    clearTimeout(timer);
-  }
+  await downloadFile(`${contentBaseUrl}/${ref.path}`, partial, {
+    timeoutMs: DOWNLOAD_TIMEOUT_MS,
+    maxBytes: MAX_ASSET_BYTES,
+  });
   // A corrupted or tampered download is discarded, never used (CNT-02).
   if ((await partial.digest('SHA-256')) !== ref.sha256) {
     partial.delete();

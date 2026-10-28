@@ -12,6 +12,7 @@ import { IconButton } from '../../ui/icon-button';
 import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError, track } from '../analytics/analytics';
 import {
+  loadPurchases,
   purchase,
   restorePurchases,
   usePremium,
@@ -68,6 +69,8 @@ export function PaywallScreen({ trigger }: { readonly trigger: string }) {
 
   useEffect(() => {
     track({ name: 'paywall_shown', trigger });
+    // Retries when the plans could not be loaded at launch.
+    void loadPurchases();
   }, [trigger]);
 
   const buy = async () => {

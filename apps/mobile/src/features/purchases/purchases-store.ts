@@ -61,6 +61,7 @@ function applyCustomerInfo(info: CustomerInfo): void {
 }
 
 let configured = false;
+let loading: Promise<void> | null = null;
 
 /**
  * Connects to the stores through RevenueCat (PAY-06). The entitlement is verified by
@@ -74,6 +75,27 @@ export async function startPurchases(): Promise<void> {
   try {
     Purchases.configure({ apiKey });
     Purchases.addCustomerInfoUpdateListener(applyCustomerInfo);
+  } catch (error) {
+    reportError(error, 'purchases.configure');
+    return;
+  }
+  await loadPurchases();
+}
+
+/**
+ * Loads the entitlement and the plans on sale. Safe to call again: the paywall and
+ * credit screens do when the first attempt failed (e.g. offline at launch).
+ */
+export function loadPurchases(): Promise<void> {
+  if (!configured || usePurchases.getState().available) return Promise.resolve();
+  loading ??= fetchPurchases().finally(() => {
+    loading = null;
+  });
+  return loading;
+}
+
+async function fetchPurchases(): Promise<void> {
+  try {
     applyCustomerInfo(await Purchases.getCustomerInfo());
     const offerings = await Purchases.getOfferings();
     const current = offerings.current;
@@ -86,7 +108,7 @@ export async function startPurchases(): Promise<void> {
         .sort((a, b) => (a.credits ?? 0) - (b.credits ?? 0)),
     });
   } catch (error) {
-    reportError(error, 'purchases.start');
+    reportError(error, 'purchases.load');
   }
 }
 
