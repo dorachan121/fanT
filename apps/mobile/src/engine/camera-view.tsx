@@ -14,6 +14,8 @@ import {
   type SkiaCameraRef,
 } from 'react-native-vision-camera-skia';
 
+import { reportError } from '../features/analytics/analytics';
+
 export { useCameraPermission } from 'react-native-vision-camera';
 
 export type Lens = 'front' | 'back';
@@ -99,7 +101,10 @@ export function CameraView({
   style,
 }: CameraViewProps) {
   const camera = useRef<SkiaCameraRef>(null);
-  const device = useCameraDevice(lens, WIDE_ANGLE_ONLY);
+  const wideAngle = useCameraDevice(lens, WIDE_ANGLE_ONLY);
+  // Some devices label no camera on that side as wide-angle; any camera beats none.
+  const anyDevice = useCameraDevice(lens);
+  const device = wideAngle ?? anyDevice;
   // JPEG keeps decoding portable (Skia has no HEIC codec on every platform).
   const photoOutput = usePhotoOutput({ containerFormat: 'jpeg', qualityPrioritization: 'quality' });
   // A stable array keeps the camera session from being reconfigured on every render.
@@ -148,6 +153,9 @@ export function CameraView({
       pixelFormat="yuv"
       outputs={outputs}
       onFrame={onFrame}
+      onError={(error) => {
+        reportError(error, 'camera.session');
+      }}
     />
   );
 }
