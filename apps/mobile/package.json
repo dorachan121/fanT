@@ -23,7 +23,6 @@
     "@fant/filters": "workspace:*",
     "@shopify/react-native-skia": "2.14.0",
     "expo": "~58.0.17",
-    "expo-application": "~58.1.2",
     "expo-asset": "~58.0.18",
     "expo-build-properties": "~58.0.11",
     "expo-constants": "~58.0.13",

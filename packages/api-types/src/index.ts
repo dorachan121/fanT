@@ -23,7 +23,6 @@ export type ApiErrorCode = (typeof API_ERROR_CODES)[number];
 export const apiErrorSchema = z.object({
   error: z.object({ code: z.enum(API_ERROR_CODES), message: z.string() }),
 });
-export type ApiError = z.infer<typeof apiErrorSchema>;
 
 /** A device's credential: 32 random bytes in base64url, generated and kept on the device. */
 export const accountSecretSchema = z
@@ -31,7 +30,6 @@ export const accountSecretSchema = z
   .regex(/^[A-Za-z0-9_-]{43}$/, 'A 256-bit base64url secret');
 
 export const createAccountRequestSchema = z.strictObject({ secret: accountSecretSchema });
-export type CreateAccountRequest = z.infer<typeof createAccountRequestSchema>;
 
 export const accountIdSchema = z.string().regex(/^[a-z0-9]{20,40}$/);
 
@@ -52,7 +50,6 @@ export const createAccountResponseSchema = z.object({
 export type CreateAccountResponse = z.infer<typeof createAccountResponseSchema>;
 
 export const creditsResponseSchema = z.object({ credits: creditsSchema });
-export type CreditsResponse = z.infer<typeof creditsResponseSchema>;
 
 /** Largest accepted upload: a 1024px JPEG is far smaller. */
 export const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
@@ -68,7 +65,6 @@ export const createGenerationRequestSchema = z.strictObject({
     .max(Math.ceil((MAX_UPLOAD_BYTES * 4) / 3) + 4)
     .regex(/^[A-Za-z0-9+/]+={0,2}$/, 'base64'),
 });
-export type CreateGenerationRequest = z.infer<typeof createGenerationRequestSchema>;
 
 export const GENERATION_STATUSES = [
   'queued',
