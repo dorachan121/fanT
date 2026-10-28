@@ -11,6 +11,8 @@ import {
 } from '@fant/filters';
 import { z } from 'zod';
 
+import { FRAME_TYPES } from './frames';
+
 /** Limits that keep a recipe small; the editor stops adding past them (DCO-*). */
 export const MAX_STROKE_POINTS = 2000;
 export const MAX_DECO_LAYERS = 500;
@@ -54,6 +56,8 @@ const decoStampSchema = z.strictObject({
   /** Size as a fraction of the photo's short edge. */
   size: z.number().min(0.02).max(2),
   rotation: z.number().min(-360).max(360),
+  /** A colour chosen for a shape or text stamp, e.g. the oshi colour (PRI-08). */
+  color: hexColorSchema.optional(),
 });
 
 const decoTextSchema = z.strictObject({
@@ -122,6 +126,11 @@ const photoRecipeSchema = z.strictObject({
     crop: cropSchema,
   }),
   deco: z.array(decoLayerSchema).max(MAX_DECO_LAYERS),
+  /** Added after the first release: recipes saved without it have no frame. */
+  frame: z
+    .strictObject({ type: z.enum(FRAME_TYPES), color: hexColorSchema })
+    .nullable()
+    .default(null),
 });
 export type PhotoRecipe = z.infer<typeof photoRecipeSchema>;
 export type QuarterTurn = PhotoRecipe['transform']['rotation'];
@@ -147,6 +156,7 @@ export function newRecipe(options: {
     character: options.character,
     transform: { rotation: 0, mirror: options.mirror, crop: options.crop },
     deco: [],
+    frame: null,
   };
 }
 

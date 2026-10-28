@@ -29,11 +29,12 @@ import { ASPECT_VALUES, centerCrop, rotatedSize, turnClockwise } from '../photo/
 import { saveEdit } from '../photo/photo-service';
 import { ASPECT_RATIOS, FULL_CROP, type AspectRatio, type PhotoRecipe } from '../photo/recipe';
 import { isLocked, usePremium } from '../purchases/purchases-store';
+import { FramePicker } from './frame-picker';
 import { usePhotoSession } from './use-photo-session';
 import { Text } from '../../ui/text';
 
-type Tab = 'film' | 'beauty' | 'adjust' | 'crop';
-const TABS: readonly Tab[] = ['film', 'beauty', 'adjust', 'crop'];
+type Tab = 'film' | 'beauty' | 'adjust' | 'crop' | 'frame';
+const TABS: readonly Tab[] = ['film', 'beauty', 'adjust', 'crop', 'frame'];
 const ADJUSTMENTS: readonly AdjustParamName[] = [
   'brightness',
   'contrast',
@@ -41,7 +42,7 @@ const ADJUSTMENTS: readonly AdjustParamName[] = [
   'temperature',
 ];
 
-/** Re-edits a photo from its original (S-21): film, beauty, corrections, crop and rotation. */
+/** Re-edits a photo from its original (S-21): film, beauty, corrections, crop, rotation and frame. */
 export function EditScreen({ id }: { readonly id: string }) {
   const session = usePhotoSession(id);
   const { bottom } = useSafeAreaInsets();
@@ -246,6 +247,14 @@ export function EditScreen({ id }: { readonly id: string }) {
                 />
               </View>
             </>
+          )}
+          {tab === 'frame' && (
+            <FramePicker
+              frame={recipe.frame}
+              onChange={(frame) => {
+                update({ frame });
+              }}
+            />
           )}
         </ScrollView>
         <Button label={strings.common.save} busy={saving} onPress={() => void save()} />

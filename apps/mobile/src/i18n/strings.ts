@@ -84,7 +84,13 @@ export const strings = {
   },
   edit: {
     title: '編集',
-    tabs: { film: 'フィルム', beauty: '美肌', adjust: '補正', crop: 'トリミング' },
+    tabs: {
+      film: 'フィルム',
+      beauty: '美肌',
+      adjust: '補正',
+      crop: 'トリミング',
+      frame: 'フレーム',
+    },
     brightness: '明るさ',
     contrast: 'コントラスト',
     saturation: '彩度',
@@ -94,6 +100,13 @@ export const strings = {
     original: '元の比率',
     undo: '元に戻す',
     redo: 'やり直す',
+  },
+  frames: {
+    none: 'なし',
+    polaroid: '📸 チェキ風',
+    digicam: '🔋 デジカメ液晶',
+    oshi: '💖 推し色',
+    oshiColor: '推しの色をえらんでね',
   },
   deco: {
     title: 'デコ',
@@ -112,6 +125,7 @@ export const strings = {
     dateOn: '日付を入れる',
     dateOff: '日付を消す',
     removeLayer: 'この飾りを消す',
+    layerColor: 'この飾りの色（推し色にも💖）',
   },
   album: {
     title: 'アルバム',
@@ -130,6 +144,7 @@ export const strings = {
     finish: '仕上げる✨',
     saveCell: 'このコマを保存',
     deco: 'らくがき',
+    sheetColor: '台紙そのまま',
   },
   ai: {
     title: '✨ AI変身',

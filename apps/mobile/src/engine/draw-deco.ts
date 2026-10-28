@@ -124,14 +124,14 @@ function drawLayer(
   if (stamp === undefined) return;
   const { art } = stamp;
   if (art.type === 'shape') {
-    drawShape(canvas, STAMP_SHAPE_ART[art.shape], art.color, {
+    drawShape(canvas, STAMP_SHAPE_ART[art.shape], layer.color ?? art.color, {
       center,
       size,
       rotation: layer.rotation,
       mirrored: false,
     });
   } else if (art.type === 'text') {
-    drawStyledText(canvas, art.text, art.style, art.color, {
+    drawStyledText(canvas, art.text, art.style, layer.color ?? art.color, {
       center,
       fontSize: size * 0.45,
       rotation: layer.rotation,

@@ -1,5 +1,6 @@
 import type { Film } from '@fant/content-schema';
 import {
+  ClipOp,
   FilterMode,
   ImageFormat,
   MipmapMode,
@@ -10,6 +11,7 @@ import {
 
 import { primaryFaces, toFaceGeometry } from '../features/character/face-geometry.worklet';
 import { filterSettingsFor } from '../features/photo/filter-settings';
+import { coverPlacement, framedPhotoRect } from '../features/photo/frames';
 import { croppedSize, fitLongEdge, type Size } from '../features/photo/geometry';
 import type { PhotoRecipe } from '../features/photo/recipe';
 import { recipeTransform } from '../features/photo/transform';
@@ -17,6 +19,7 @@ import { compose, scale, toMatrix3 } from './affine.worklet';
 import { drawCharacter, type CharacterDrawing } from './draw-character';
 import { drawDeco, type DecoAssets } from './draw-deco';
 import { drawFiltered } from './draw-filtered';
+import { drawFrameBackground, drawFrameOverlay } from './draw-frame';
 import { drawStyledText } from './draw-text';
 import { filterEffects } from './filter-effects';
 import { loadFilmLut } from './lut';
@@ -96,6 +99,18 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
   );
   try {
     const canvas = surface.getCanvas();
+    // A frame shrinks the photo into its window; the photo is cropped, never stretched.
+    const window = framedPhotoRect(recipe.frame, size);
+    const placement = coverPlacement(size, window);
+    drawFrameBackground(canvas, recipe.frame, size);
+    canvas.save();
+    canvas.clipRect(
+      Skia.XYWHRect(window.x, window.y, window.width, window.height),
+      ClipOp.Intersect,
+      true,
+    );
+    canvas.translate(placement.x, placement.y);
+    canvas.scale(placement.scale, placement.scale);
     drawFiltered(canvas, source, size, {
       effects: filterEffects(),
       settings: filterSettingsFor({
@@ -115,6 +130,9 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
               drawCharacter(overlayCanvas, character, faces);
             },
     });
+    canvas.restore();
+    drawFrameOverlay(canvas, recipe.frame, size, window, recipe.seed);
+    // Decorations cover the whole output, so the frame can be written on too.
     drawDeco(canvas, recipe.deco, size.width, size.height, input.deco);
     surface.flush();
     return surface.makeImageSnapshot();

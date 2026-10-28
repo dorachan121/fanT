@@ -15,12 +15,13 @@ import { PhotoCanvas } from '../../engine/photo-canvas';
 import type { SkImage } from '../../engine/skia';
 import { strings } from '../../i18n';
 import { Chip } from '../../ui/chip';
+import { Text } from '../../ui/text';
 import { IconButton } from '../../ui/icon-button';
 import { colors, spacing } from '../../ui/theme';
 import { useContent } from '../content/content-store';
 import { stampMap } from '../content/lookup';
 import type { Size } from '../photo/geometry';
-import type { DecoLayer, DecoStroke } from '../photo/recipe';
+import type { DecoLayer, DecoStamp, DecoStroke, DecoText } from '../photo/recipe';
 import { ColorPalette, StampPalette, TextComposer, WidthPicker } from './deco-tools';
 import {
   addLayer,
@@ -75,6 +76,12 @@ export function DecoEditor({
   const drawing = tool === 'pen' || tool === 'neon' || tool === 'eraser';
   const shown = useMemo(() => (stroke === null ? layers : [...layers, stroke]), [layers, stroke]);
   const selectedLayer = selected === null ? null : layers[selected];
+  /** Text and shape stamps can take another colour (e.g. the oshi colour, PRI-08). */
+  const recolorable = (layer: DecoLayer | null): layer is DecoText | DecoStamp => {
+    if (layer === null || layer.type === 'stroke') return false;
+    if (layer.type === 'text') return true;
+    return assets.stamps.get(layer.stampId)?.art.type !== 'image';
+  };
 
   const overlay = useMemo(() => {
     const shortEdge = Math.min(photoSize.width, photoSize.height);
@@ -244,6 +251,17 @@ export function DecoEditor({
           </>
         )}
         {tool === 'date' && dateControls}
+        {selected !== null && selectedLayer !== undefined && recolorable(selectedLayer) && (
+          <>
+            <Text style={styles.label}>{strings.deco.layerColor}</Text>
+            <ColorPalette
+              color={selectedLayer.color ?? ''}
+              onChange={(next) => {
+                onChange(replaceLayer(layers, selected, { ...selectedLayer, color: next }));
+              }}
+            />
+          </>
+        )}
         {selected !== null && !drawing && (
           <IconButton
             icon="trash-outline"
@@ -265,4 +283,5 @@ const styles = StyleSheet.create({
   panel: { gap: spacing.sm, padding: spacing.md, backgroundColor: colors.surface },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   remove: { alignSelf: 'flex-end' },
+  label: { color: colors.text, fontSize: 13, fontWeight: '700' },
 });

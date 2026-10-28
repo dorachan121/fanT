@@ -11,6 +11,7 @@ import { decodeImage, encodeJpeg } from '../../engine/photo';
 import type { SkImage } from '../../engine/skia';
 import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
+import { Chip } from '../../ui/chip';
 import { showError } from '../../ui/dialogs';
 import { IconButton } from '../../ui/icon-button';
 import { ScreenHeader } from '../../ui/screen-header';
@@ -21,6 +22,7 @@ import { addPhoto } from '../album/album-db';
 import { useContent } from '../content/content-store';
 import { stampMap } from '../content/lookup';
 import { DecoEditor } from '../deco/deco-editor';
+import { ColorPalette } from '../deco/deco-tools';
 import { saveFileToLibrary } from '../photo/photo-actions';
 import { newPhotoId } from '../photo/photo-service';
 import { isLocked, usePremium } from '../purchases/purchases-store';
@@ -68,6 +70,8 @@ export function FinishScreen() {
   const images = useShotImages(shots);
   const [selected, setSelected] = useState(0);
   const [busy, setBusy] = useState(false);
+  /** The oshi colour for the sheet (PRI-08); `null` keeps the layout's own. */
+  const [oshiColor, setOshiColor] = useState<string | null>(null);
   const assets = useMemo(() => ({ stamps: stampMap(manifest), images: {} }), [manifest]);
 
   if (layout === undefined) return null;
@@ -89,7 +93,9 @@ export function FinishScreen() {
     setBusy(true);
     try {
       const sheet = composeSheet(
-        layout,
+        oshiColor === null
+          ? layout
+          : { ...layout, background: { ...layout.background, color: oshiColor } },
         cells(),
         assets,
         formatDateStamp(calendarDateOf(new Date()), 'yyyy.mm.dd'),
@@ -198,6 +204,21 @@ export function FinishScreen() {
         <ActivityIndicator style={styles.loading} color={colors.accent} />
       )}
       <View style={styles.footer}>
+        <View style={styles.oshi}>
+          <Chip
+            label={strings.puri.sheetColor}
+            selected={oshiColor === null}
+            onPress={() => {
+              setOshiColor(null);
+            }}
+          />
+          <ColorPalette
+            color={oshiColor ?? ''}
+            onChange={(color) => {
+              setOshiColor(color);
+            }}
+          />
+        </View>
         <Button
           label={strings.puri.finish}
           busy={busy}
@@ -230,4 +251,5 @@ const styles = StyleSheet.create({
     borderTopRightRadius: radius.lg,
     backgroundColor: colors.surface,
   },
+  oshi: { gap: spacing.sm, marginBottom: spacing.sm },
 });
