@@ -21,7 +21,7 @@ import { addPhoto } from '../album/album-db';
 import { useContent } from '../content/content-store';
 import { stampMap } from '../content/lookup';
 import { DecoEditor } from '../deco/deco-editor';
-import { saveToLibrary } from '../photo/export';
+import { saveFileToLibrary } from '../photo/photo-actions';
 import { newPhotoId } from '../photo/photo-service';
 import { isLocked, usePremium } from '../purchases/purchases-store';
 import { useSettings } from '../settings/settings-store';
@@ -35,9 +35,16 @@ function useShotImages(shots: readonly (PuriShot | null)[]): (SkImage | null)[] 
     images: [],
   });
   useEffect(() => {
-    const decoded = uris
-      .split('|')
-      .map((uri) => (uri === '' ? null : decodeImage(new File(uri).bytesSync())));
+    const decoded = uris.split('|').map((uri) => {
+      if (uri === '') return null;
+      try {
+        return decodeImage(new File(uri).bytesSync());
+      } catch (error) {
+        // A shot whose file is gone (e.g. the system cleared the cache) can be retaken.
+        reportError(error, 'puri.decode');
+        return null;
+      }
+    });
     void Promise.resolve().then(() => {
       setImages({ key: uris, images: decoded });
     });
@@ -115,20 +122,20 @@ export function FinishScreen() {
   const saveCell = async () => {
     if (shot === null || shot === undefined || image === null) return;
     setBusy(true);
+    const file = new File(shot.uri.replace(/\.jpg$/, '-deco.jpg'));
     try {
       const rendered = renderCell({ image, deco: shot.deco }, assets);
       try {
-        const file = new File(shot.uri.replace(/\.jpg$/, '-deco.jpg'));
         file.writeSync(encodeJpeg(rendered));
-        await saveToLibrary(file, 'full');
-        file.delete();
       } finally {
         rendered.dispose();
       }
+      await saveFileToLibrary(file, 'full');
     } catch (error) {
       reportError(error, 'puri.saveCell');
       showError();
     } finally {
+      if (file.exists) file.delete();
       setBusy(false);
     }
   };
@@ -194,7 +201,8 @@ export function FinishScreen() {
         <Button
           label={strings.puri.finish}
           busy={busy}
-          disabled={shots.some((current) => current === null)}
+          // Every cell needs a shot that could be read (a missing one can be retaken).
+          disabled={images.length !== shots.length || images.some((current) => current === null)}
           onPress={finish}
         />
       </View>

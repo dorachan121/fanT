@@ -6,7 +6,7 @@ import { showError } from '../../ui/dialogs';
 import { reportError, track } from '../analytics/analytics';
 import type { AlbumPhoto } from '../album/album-types';
 import { useSettings } from '../settings/settings-store';
-import { PhotoLibraryPermissionError, saveToLibrary, sharePhoto } from './export';
+import { PhotoLibraryPermissionError, saveToLibrary, sharePhoto, type ExportSize } from './export';
 
 /** Asks for a store review after this many saves (ANL-04): a moment the user is happy. */
 const REVIEW_AFTER_SAVES = 5;
@@ -20,16 +20,13 @@ async function maybeRequestReview(savedCount: number): Promise<void> {
   }
 }
 
-/** Saves to the device library (SHR-01/04); returns whether it worked. */
-export async function savePhoto(photo: AlbumPhoto): Promise<boolean> {
-  const { saveSize, savedCount, update } = useSettings.getState();
+/**
+ * Saves a file to the device library (SHR-01/04), explaining a refused permission
+ * or any other failure to the user; returns whether it worked.
+ */
+export async function saveFileToLibrary(file: File, size: ExportSize): Promise<boolean> {
   try {
-    await saveToLibrary(new File(photo.outputUri), saveSize);
-    track({ name: 'photo_saved', kind: photo.kind });
-    update({ savedCount: savedCount + 1 });
-    void maybeRequestReview(savedCount + 1).catch((error: unknown) => {
-      reportError(error, 'review.request');
-    });
+    await saveToLibrary(file, size);
     return true;
   } catch (error) {
     if (error instanceof PhotoLibraryPermissionError) {
@@ -40,6 +37,18 @@ export async function savePhoto(photo: AlbumPhoto): Promise<boolean> {
     }
     return false;
   }
+}
+
+/** Saves an album photo at the chosen size and counts it towards the review prompt. */
+export async function savePhoto(photo: AlbumPhoto): Promise<boolean> {
+  const { saveSize, savedCount, update } = useSettings.getState();
+  if (!(await saveFileToLibrary(new File(photo.outputUri), saveSize))) return false;
+  track({ name: 'photo_saved', kind: photo.kind });
+  update({ savedCount: savedCount + 1 });
+  void maybeRequestReview(savedCount + 1).catch((error: unknown) => {
+    reportError(error, 'review.request');
+  });
+  return true;
 }
 
 /** Opens the share sheet (SHR-02). */
