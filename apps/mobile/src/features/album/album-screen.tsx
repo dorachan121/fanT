@@ -13,6 +13,7 @@ import { HeroEmoji } from '../../ui/hero-emoji';
 import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { importPhoto } from '../photo/import-photo';
+import { MAX_COLLAGE_PHOTOS, MIN_COLLAGE_PHOTOS } from '../collage/collage-layout';
 import { deletePhotos } from './album-db';
 import { useAlbum } from './use-album';
 import { Text } from '../../ui/text';
@@ -64,6 +65,16 @@ export function AlbumScreen() {
         actions={
           selecting ? (
             <>
+              <IconButton
+                icon="grid-outline"
+                label={strings.collage.make}
+                disabled={selected.size < MIN_COLLAGE_PHOTOS || selected.size > MAX_COLLAGE_PHOTOS}
+                onPress={() => {
+                  router.push({ pathname: '/collage', params: { ids: [...selected].join(',') } });
+                  setSelecting(false);
+                  setSelected(new Set());
+                }}
+              />
               <IconButton
                 icon="trash-outline"
                 label={strings.common.delete}

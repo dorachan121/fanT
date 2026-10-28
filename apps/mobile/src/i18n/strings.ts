@@ -210,6 +210,12 @@ export const strings = {
     removeLayer: 'この飾りを消す',
     layerColor: 'この飾りの色（推し色にも💖）',
   },
+  collage: {
+    title: '🧩 コラージュ',
+    make: 'コラージュにする（2〜6枚）',
+    layouts: { grid: 'きっちり', scatter: 'ばらばら' },
+    gap: 'すきま',
+  },
   album: {
     title: 'アルバム',
     empty: 'まだ写真がないよ〜📷\n撮ったらここに並ぶよ！',
