@@ -70,6 +70,18 @@ describe('builtInManifest', () => {
     expect(parts.some(({ depth }) => depth !== undefined)).toBe(true);
   });
 
+  it('names everything in English too, except stamps that are words (SET-05)', () => {
+    const named = [
+      ...manifest.films,
+      ...manifest.characters,
+      ...manifest.characters.flatMap(({ variants }) => variants),
+      ...manifest.layouts,
+      ...manifest.aiStyles,
+      ...manifest.stamps.filter(({ art }) => art.type !== 'text'),
+    ];
+    for (const { name } of named) expect(name.en, name.ja).toBeDefined();
+  });
+
   it('offers 15+ films, 60+ stamps and 8+ AI styles (CNT-06)', () => {
     expect(manifest.films.length).toBeGreaterThanOrEqual(15);
     expect(manifest.stamps.length).toBeGreaterThanOrEqual(60);

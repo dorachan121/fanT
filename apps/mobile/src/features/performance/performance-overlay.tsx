@@ -1,7 +1,8 @@
 import { Pressable, StyleSheet } from 'react-native';
 
-import type { FrameStatsSummary } from './frame-stats.worklet';
+import { strings } from '../../i18n';
 import { Text } from '../../ui/text';
+import type { FrameStatsSummary } from './frame-stats.worklet';
 
 interface PerformanceOverlayProps {
   readonly stats: FrameStatsSummary | null;
@@ -22,20 +23,26 @@ export function PerformanceOverlay({
   top,
 }: PerformanceOverlayProps) {
   const analysis = analysisEnabled
-    ? `顔検出 ${formatMs(stats?.analysisAvgMs ?? null)}（最大 ${formatMs(stats?.analysisMaxMs ?? null)}）`
-    : '顔検出 オフ';
+    ? strings.performance.faces(
+        formatMs(stats?.analysisAvgMs ?? null),
+        formatMs(stats?.analysisMaxMs ?? null),
+      )
+    : strings.performance.facesOff;
 
   return (
     <Pressable
       accessibilityRole="button"
-      accessibilityLabel="性能の計測値"
-      accessibilityHint="タップすると顔検出のオン/オフを切り替えます"
+      accessibilityLabel={strings.performance.label}
+      accessibilityHint={strings.performance.hint}
       style={[styles.overlay, { top: top + 8 }]}
       onPress={onToggleAnalysis}
     >
       <Text style={styles.line}>{stats === null ? '-- fps' : `${stats.fps.toFixed(1)} fps`}</Text>
       <Text style={styles.line}>
-        描画 {formatMs(stats?.renderAvgMs ?? null)}（最大 {formatMs(stats?.renderMaxMs ?? null)}）
+        {strings.performance.render(
+          formatMs(stats?.renderAvgMs ?? null),
+          formatMs(stats?.renderMaxMs ?? null),
+        )}
       </Text>
       <Text style={styles.line}>{analysis}</Text>
     </Pressable>

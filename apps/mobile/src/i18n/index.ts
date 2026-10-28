@@ -1,15 +1,29 @@
 import type { LocalizedText } from '@fant/content-schema';
 
-/**
- * The app speaks Japanese in the MVP (03 §1). UI strings live in `strings.ts` and
- * content text is per language, so adding English means adding a dictionary and
- * choosing it here.
- */
-const LOCALE = 'ja' as const;
+import { en } from './en';
+import { ja, type Strings } from './ja';
 
-/** Text of a content item in the app's language. */
-export function localized(text: LocalizedText): string {
-  return text[LOCALE];
+export type Language = 'ja' | 'en';
+
+/** Japanese on Japanese devices, English everywhere else (SET-05). */
+export function languageFor(locale: string): Language {
+  return locale.toLowerCase().startsWith('ja') ? 'ja' : 'en';
 }
 
-export { strings } from './strings';
+function deviceLocale(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().locale;
+  } catch {
+    return 'ja';
+  }
+}
+
+/** The app's language, fixed at launch from the device's. */
+export const LANGUAGE: Language = languageFor(deviceLocale());
+
+export const strings: Strings = LANGUAGE === 'ja' ? ja : en;
+
+/** Text of a content item in the app's language; Japanese when it has no English. */
+export function localized(text: LocalizedText): string {
+  return (LANGUAGE === 'en' ? text.en : undefined) ?? text.ja;
+}

@@ -1,0 +1,4 @@
+{
+  "NSCameraUsageDescription": "写真を撮影するためにカメラを使用します。",
+  "NSPhotoLibraryAddUsageDescription": "撮影した写真を保存するために使用します。"
+}

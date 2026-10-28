@@ -1,12 +1,15 @@
 /**
- * Japanese UI strings (03 §1). Grouped by screen; content names come from the
- * content itself (`localized`).
+ * Japanese UI strings (03 §1), the app's main language. Grouped by screen; content
+ * names come from the content itself (`localized`). `en.ts` has the same keys.
  *
  * Tone: friendly and playful, with emoji on visible copy. Accessibility labels and
  * legal or purchase terms stay plain and literal.
  */
-export const strings = {
+export const ja = {
   common: {
+    /** Joins parts of an accessibility label. */
+    list: (parts: readonly string[]) => parts.join('、'),
+    premiumItem: (name: string) => `${name}（プレミアム）`,
     close: '閉じる',
     cancel: 'やめとく',
     done: 'できた！',
@@ -39,6 +42,7 @@ export const strings = {
     exposure: '明るさ',
     beauty: '美肌',
     strength: '強さ',
+    filmStrength: (film: string) => `${film}・強さ`,
     filmChanged: (name: string) => `📷 ${name}`,
     beautyChanged: (level: string) => `✨ 美肌 ${level}`,
     premiumTrial: '👑 プレミアムのフィルムをおためし中',
@@ -50,6 +54,14 @@ export const strings = {
       allow: 'カメラをONにする',
       openSettings: '設定を開く',
     },
+  },
+  date: {
+    fields: { year: '年', month: '月', day: '日' },
+    value: (value: number, field: string) => `${String(value)}${field}`,
+    increase: (field: string) => `${field}を増やす`,
+    decrease: (field: string) => `${field}を減らす`,
+    /** BCP 47 tag for dates shown in the app. */
+    locale: 'ja-JP',
   },
   film: {
     title: 'フィルム',
@@ -370,12 +382,32 @@ export const strings = {
     credits: 'AIクレジット',
     restore: '購入を復元',
     contact: 'お問い合わせ',
+    contactSubject: 'fanT お問い合わせ',
     legal: '規約とポリシー',
     version: 'バージョン',
     developerPremium: 'プレミアムを有効にする（テスト用）',
     performance: '性能の計測を表示',
   },
+  performance: {
+    label: '性能の計測値',
+    hint: 'タップすると顔検出のオン/オフを切り替えます',
+    render: (average: string, max: string) => `描画 ${average}（最大 ${max}）`,
+    faces: (average: string, max: string) => `顔検出 ${average}（最大 ${max}）`,
+    facesOff: '顔検出 オフ',
+  },
   legal: {
     title: '規約とポリシー',
   },
 } as const;
+
+/** Turns literal string types into `string`, so other languages fit the same shape. */
+type Widen<T> = T extends string
+  ? string
+  : T extends (...args: infer A) => infer R
+    ? (...args: A) => Widen<R>
+    : T extends readonly (infer U)[]
+      ? readonly Widen<U>[]
+      : { readonly [K in keyof T]: Widen<T[K]> };
+
+/** The shape every language's strings have. */
+export type Strings = Widen<typeof ja>;

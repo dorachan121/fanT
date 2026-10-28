@@ -62,9 +62,13 @@ const config: ExpoConfig = {
   // Pastel UI on cream; the system UI follows the light style.
   userInterfaceStyle: 'light',
   backgroundColor: '#FFF6FB',
+  // Permission texts per language (SET-05); the defaults below are the Japanese ones.
+  locales: { ja: './locales/ja.json', en: './locales/en.json' },
   ios: {
     bundleIdentifier: appId,
     infoPlist: {
+      // System texts follow the device language too, not only the app's own.
+      CFBundleAllowMixedLocalizations: true,
       NSCameraUsageDescription: CAMERA_USAGE,
       // Lets the app check that Instagram can take a story (SHR-03).
       LSApplicationQueriesSchemes: ['instagram-stories'],

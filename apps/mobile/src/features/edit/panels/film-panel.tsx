@@ -45,7 +45,7 @@ export function FilmPanel({
         }}
       />
       <Slider
-        label={`${localized(film.name)}・${strings.camera.strength}`}
+        label={strings.camera.filmStrength(localized(film.name))}
         value={recipe.film.intensity}
         min={0}
         max={1}

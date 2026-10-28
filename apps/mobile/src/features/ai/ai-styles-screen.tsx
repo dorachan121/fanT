@@ -91,7 +91,10 @@ export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
           key={tool}
           accessibilityRole="button"
           squash={0.96}
-          accessibilityLabel={`${strings.ai.tools[tool].name}、${strings.ai.cost(AI_TOOLS[tool].credits)}`}
+          accessibilityLabel={strings.common.list([
+            strings.ai.tools[tool].name,
+            strings.ai.cost(AI_TOOLS[tool].credits),
+          ])}
           accessibilityHint={strings.ai.tools[tool].description}
           style={[styles.card, styles.tool]}
           onPress={() => {
@@ -134,7 +137,10 @@ export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {
           <Bouncy
             accessibilityRole="button"
             squash={0.96}
-            accessibilityLabel={`${localized(item.name)}、${strings.ai.cost(item.credits)}`}
+            accessibilityLabel={strings.common.list([
+              localized(item.name),
+              strings.ai.cost(item.credits),
+            ])}
             accessibilityHint={localized(item.description)}
             style={styles.card}
             onPress={() => {

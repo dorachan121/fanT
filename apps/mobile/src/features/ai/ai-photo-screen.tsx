@@ -59,7 +59,7 @@ export function AiPhotoScreen() {
         renderItem={({ item }) => (
           <Bouncy
             accessibilityRole="imagebutton"
-            accessibilityLabel={new Date(item.createdAt).toLocaleString('ja-JP')}
+            accessibilityLabel={new Date(item.createdAt).toLocaleString(strings.date.locale)}
             onPress={() => {
               choose(item.outputUri);
             }}

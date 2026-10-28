@@ -128,7 +128,7 @@ export function AlbumScreen() {
             <Bouncy
               accessibilityRole={selecting ? 'checkbox' : 'imagebutton'}
               accessibilityState={selecting ? { checked: isSelected } : undefined}
-              accessibilityLabel={new Date(item.createdAt).toLocaleString('ja-JP')}
+              accessibilityLabel={new Date(item.createdAt).toLocaleString(strings.date.locale)}
               onPress={() => {
                 if (selecting) toggle(item.id);
                 else router.push({ pathname: '/photo/[id]', params: { id: item.id } });

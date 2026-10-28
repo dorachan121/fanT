@@ -49,7 +49,7 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
   return (
     <View style={styles.container}>
       <ScreenHeader
-        title={fromCamera ? '' : new Date(photo.createdAt).toLocaleDateString('ja-JP')}
+        title={fromCamera ? '' : new Date(photo.createdAt).toLocaleDateString(strings.date.locale)}
         actions={
           <PhotoAction
             icon="trash-outline"

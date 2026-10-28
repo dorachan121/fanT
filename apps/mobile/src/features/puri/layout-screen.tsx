@@ -56,7 +56,10 @@ export function LayoutScreen() {
           return (
             <Bouncy
               accessibilityRole="button"
-              accessibilityLabel={`${name}、${strings.puri.shots(item.cells.length)}${locked ? `（${strings.common.premium}）` : ''}`}
+              accessibilityLabel={strings.common.list([
+                locked ? strings.common.premiumItem(name) : name,
+                strings.puri.shots(item.cells.length),
+              ])}
               style={styles.card}
               onPress={() => {
                 usePuriSession.getState().start(item.id, item.cells.length);
