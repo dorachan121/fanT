@@ -1,0 +1,54 @@
+[
+  {
+    "id": "figure",
+    "version": 1,
+    "name": {
+      "ja": "フィギュア風",
+      "en": "Figure"
+    },
+    "description": {
+      "ja": "デスクに飾れる小さなフィギュアに",
+      "en": "A small collectible figure"
+    },
+    "credits": 1
+  },
+  {
+    "id": "illustration",
+    "version": 1,
+    "name": {
+      "ja": "イラスト風",
+      "en": "Illustration"
+    },
+    "description": {
+      "ja": "やさしい手描きイラストに",
+      "en": "A soft hand-drawn illustration"
+    },
+    "credits": 1
+  },
+  {
+    "id": "heisei_puri",
+    "version": 1,
+    "name": {
+      "ja": "平成プリ風",
+      "en": "Heisei Purikura"
+    },
+    "description": {
+      "ja": "2000年代のプリ帳から出てきたような1枚に",
+      "en": "Straight out of a 2000s sticker album"
+    },
+    "credits": 1
+  },
+  {
+    "id": "retro_magazine",
+    "version": 1,
+    "name": {
+      "ja": "レトロ雑誌風",
+      "en": "Retro Magazine"
+    },
+    "description": {
+      "ja": "90年代のファッション誌の表紙に",
+      "en": "A 90s fashion magazine cover"
+    },
+    "credits": 1
+  }
+]

@@ -11,6 +11,7 @@ import {
 import {
   createBitmap,
   loadCanvasKit,
+  maxChannelDifference,
   pixelAt,
   renderEffect,
   uniformNames,
@@ -62,10 +63,6 @@ function render(params: BeautyParams, input: Bitmap, resolution = 1000): Bitmap 
     resolution: [resolution, resolution],
   };
   return renderEffect(ck, effect, uniforms, input);
-}
-
-function maxChannelDifference(a: Bitmap, b: Bitmap): number {
-  return a.pixels.reduce((max, value, i) => Math.max(max, Math.abs(value - (b.pixels[i] ?? 0))), 0);
 }
 
 /** Standard deviation of the green channel over the image interior. */

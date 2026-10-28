@@ -25,7 +25,32 @@ function resolveVariant(value: string | undefined): AppVariant {
   );
 }
 
-const { name, suffix } = VARIANTS[resolveVariant(process.env.APP_VARIANT)];
+/** Optional HTTPS endpoints and keys, set per EAS profile; features without them stay off. */
+function optionalHttpsUrl(name: string): string | null {
+  const value = process.env[name];
+  if (value === undefined || value === '') return null;
+  if (!/^https:\/\/[^\s]+[^/]$/.test(value)) {
+    throw new Error(`${name} must be an https URL without a trailing slash`);
+  }
+  return value;
+}
+
+function optional(name: string): string | null {
+  const value = process.env[name];
+  return value === undefined || value === '' ? null : value;
+}
+
+function optionalDigits(name: string): string | null {
+  const value = optional(name);
+  if (value !== null && !/^\d{5,20}$/.test(value)) throw new Error(`${name} must be digits`);
+  return value;
+}
+
+/** Shown when the camera permission is requested (ONB-02). */
+const CAMERA_USAGE = '写真を撮影するためにカメラを使用します。';
+
+const appVariant = resolveVariant(process.env.APP_VARIANT);
+const { name, suffix } = VARIANTS[appVariant];
 const appId = suffix ? `${BASE_APP_ID}.${suffix}` : BASE_APP_ID;
 
 const config: ExpoConfig = {
@@ -34,11 +59,15 @@ const config: ExpoConfig = {
   scheme: suffix ? `fant-${suffix}` : 'fant',
   version: packageJson.version,
   orientation: 'portrait',
-  userInterfaceStyle: 'automatic',
+  // Pastel UI on cream; the system UI follows the light style.
+  userInterfaceStyle: 'light',
+  backgroundColor: '#FFF6FB',
   ios: {
     bundleIdentifier: appId,
     infoPlist: {
-      NSCameraUsageDescription: '写真を撮影するためにカメラを使用します。',
+      NSCameraUsageDescription: CAMERA_USAGE,
+      // Lets the app check that Instagram can take a story (SHR-03).
+      LSApplicationQueriesSchemes: ['instagram-stories'],
     },
   },
   android: {
@@ -64,6 +93,21 @@ const config: ExpoConfig = {
         },
       },
     ],
+    'expo-sqlite',
+    'expo-sharing',
+    // Keys are stored without biometrics, so no Face ID prompt text is declared.
+    ['expo-secure-store', { faceIDPermission: false }],
+    'expo-image',
+    [
+      'expo-image-picker',
+      {
+        // The system photo picker needs no library permission. `false` for the camera
+        // would block the camera permission for the whole app, so it gets the real text.
+        photosPermission: false,
+        cameraPermission: CAMERA_USAGE,
+        microphonePermission: false,
+      },
+    ],
     [
       'expo-media-library',
       {
@@ -76,6 +120,19 @@ const config: ExpoConfig = {
     ],
   ],
   experiments: { reactCompiler: true },
+  // Read at runtime through expo-constants and validated in src/config.ts.
+  extra: {
+    appVariant,
+    contentBaseUrl: optionalHttpsUrl('CONTENT_BASE_URL'),
+    apiBaseUrl: optionalHttpsUrl('API_BASE_URL'),
+    revenueCatApiKey: {
+      ios: optional('REVENUECAT_IOS_API_KEY'),
+      android: optional('REVENUECAT_ANDROID_API_KEY'),
+    },
+    supportEmail: optional('SUPPORT_EMAIL'),
+    // Instagram Stories sharing needs the app's Facebook App ID (SHR-03); off without it.
+    facebookAppId: optionalDigits('FACEBOOK_APP_ID'),
+  },
 };
 
 export default config;

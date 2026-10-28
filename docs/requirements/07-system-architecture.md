@@ -215,7 +215,7 @@ Skia で描いた加工は、カメラの撮影画像には直接乗りません
 | 型と検証 | TypeScript（strict）、zod |
 | 課金 | RevenueCat（react-native-purchases） |
 | バックエンド | Firebase（匿名認証・Functions・Firestore・Storage・App Check・Remote Config・Crashlytics・Analytics） |
-| 画像生成 AI | 未定（Q-04） |
+| 画像生成 AI | Vertex AI の Gemini 画像モデル（`gemini-2.5-flash-image`、設定で変更可）。判定は Cloud Vision SafeSearch。プロジェクト内の Google Cloud で処理し、学習には使われない。最終決定は Q-04 |
 | Web | Vite + React（スタジオ）、Next.js（宣伝用サイト） |
 | モノレポ | pnpm workspaces + Turborepo |
 | ツールチェーン（雛形で確定） | Node.js 24 LTS、pnpm 12、TypeScript 6.0（Expo SDK 58 の推奨版。typescript-eslint が 7.0 未対応のため）、ESLint 10 ＋ typescript-eslint ＋ eslint-plugin-react-hooks（`eslint-config-expo` はサポートが終了した ESLint 9 に依存するため使わない） |
@@ -249,3 +249,55 @@ Skia で描いた加工は、カメラの撮影画像には直接乗りません
 | P-3 | **合格**（撮影から保存まで 0.8〜1.4秒。Skia のオブジェクトを明示的に破棄する修正の後、メモリのピークは基準内） | 2026-10-25 |
 | P-5 | 修正の後、10分間のプレビューでクラッシュなし。30分の連続操作は未実施 | 2026-10-25 |
 | P-2 / P-4 | 未実施（P-2 は人物の切り抜きを入れるとき） | — |
+
+### 10.2 P-1 の計測方法
+
+開発ビルドとプレビュービルドでは、カメラ画面の左上に**性能オーバーレイ**が出ます（ストア向けのビルドには出ません）。1秒ごとに次の値を更新します。
+
+| 表示 | 内容 |
+|---|---|
+| `fps` | フレーム処理が1秒間に呼ばれた回数。24 を保てていれば合格 |
+| 描画 | 1フレームを美肌・フィルムのシェーダーで描く処理の時間（カメラのスレッドの CPU 時間。GPU の実行時間は含まない）。平均と最大 |
+| 顔検出 | ML Kit の顔検出の時間（2フレームに1回）。平均と最大 |
+
+オーバーレイをタップすると、顔検出のオン/オフが切り替わります（オフの間はウィンク操作も止まる）。美肌の強さは、画面の「美肌」ボタンで「オフ」にできます。
+
+1. 開発ビルドは遅いため、**リリースビルドで測る**。Android は `pnpm --filter @fant/mobile exec expo run:android --variant release`、または EAS の `preview` プロファイル
+2. 次の4通りを、明るい場所と暗い場所、前面と背面のカメラで、それぞれ30秒ほど表示して記録する
+   - 美肌オフ・顔検出オフ（基準。10.1 のフィルムのみと同じ）
+   - 美肌「中」・顔検出オフ（美肌の負荷）
+   - 美肌オフ・顔検出オン（顔検出の負荷）
+   - 美肌「中」・顔検出オン（実際の使い方。P-1 の判定はこれで行う）
+3. 1フレームの持ち時間は約41.7ms（24fps）。描画と顔検出の合計が、この時間に近づいていないかも見る
+
+## 11. 実装との差分（2026-10-27）
+
+実装で上の構成から変えた点です。理由は [06](06-open-issues.md) の決定事項にあります。
+
+| 項目 | 構成案 | 実装 |
+|---|---|---|
+| 状態管理 | Zustand ＋ TanStack Query | Zustand だけ（D-10）。設定とカメラの選択は SQLite のキーバリューに保存し、読み込み時に検証する |
+| 端末内の保存 | SQLite・MMKV | SQLite（アルバムの一覧とレシピ、設定）とファイル（元画像・仕上がり）。MMKV は使わない |
+| 認証 | Firebase 匿名認証 | 端末の秘密鍵による匿名アカウント（D-11） |
+| 分析・クラッシュ | Firebase Analytics / Crashlytics | 自前の API とログ（D-12） |
+| リモート設定 | Remote Config | 使わない。ANL-03 はコンテンツ配信の `config.json`（機能の停止・ペイウォールの文言の A/B テスト） |
+| App Check | 使う | リリース前に追加（[運用手順](../operations/README.md) §5） |
+| ネイティブモジュール | 人物の切り抜き（必要時） | 音量ボタンでの撮影（D-14）、Instagram ストーリーズへの共有（D-17）、人物の切り抜き（PRI-04、D-18） |
+| コンテンツ配信 | Cloud Storage ＋ CDN | 同じ。素材はハッシュ名で無期限キャッシュ（D-15） |
+| 描画パイプライン | §5.1 の順 | 顔の微調整 → 補正 → 美肌 → キャラ → フィルム → 日付 → フレーム → デコ。プリの背景の差し替え（PRI-04）は、この前に撮影したコマに対して行う |
+
+### 11.1 アプリの構成
+
+```
+apps/mobile/
+├── src/app/          … 画面（Expo Router）
+├── src/engine/       … VisionCamera・Skia・顔検出・worklets を使うのはここだけ（lint で強制）
+│                       カメラ、フレームの描画、写真のレンダリング、キャラ・デコ・日付の描画
+├── src/features/     … camera / character / puri / ai / edit / deco / album / photo /
+│                       content / purchases / settings / analytics / legal / onboarding / paywall
+├── src/ui/           … ボタン・スライダー・シートなどの部品
+├── src/i18n/         … 画面の文言
+└── modules/volume-shutter/ … 音量ボタンでの撮影（ローカル Expo モジュール）
+```
+
+写真は「元画像 ＋ レシピ（フィルム・強さ・乱数シード・美肌・補正・日付・キャラ・切り抜き・回転・デコ）」として保存し、表示用の仕上がり画像はレシピから作ります。編集・デコは元画像から作り直すので、何度直しても画質が落ちません。

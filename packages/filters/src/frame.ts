@@ -9,3 +9,11 @@ export function assertFrameSize(width: number, height: number): void {
     throw new RangeError(`Invalid frame size: ${String(width)}x${String(height)}`);
   }
 }
+
+/**
+ * Rendering quality: 1 is full; 0 trims the costliest sampling (beauty's outer
+ * ring, half the bloom taps) when the live preview cannot keep its frame rate
+ * (03 §2). Saved photos always render at full quality.
+ */
+export const FULL_QUALITY = 1;
+export const REDUCED_QUALITY = 0;
