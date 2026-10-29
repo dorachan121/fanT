@@ -77,6 +77,20 @@ jobs:
           # Depending on the Maestro version, screenshots land beside the flow instead.
           find .. -path ../node_modules -prune -o -name '*.png' -path '*e2e*' -print -exec mv {} . \;
           ls -la
+      - name: Collect crash reports and logs
+        if: always()
+        working-directory: apps/mobile/shots
+        run: |
+          mkdir -p debug
+          # Maestro's own screenshots of failing steps and its log.
+          cp -R "$HOME"/.maestro/tests/* debug/ 2>/dev/null || true
+          # Simulator app crashes are reported on the host.
+          find "$HOME/Library/Logs/DiagnosticReports" -name '*.ips' -mmin -90 -exec cp {} debug/ \; || true
+          xcrun simctl spawn "$UDID" log show --last 15m --style compact \
+            --predicate 'processImagePath CONTAINS "fanT"' > debug/app.log 2>&1 || true
+          tail -n 200 debug/app.log || true
+          xcrun simctl io "$UDID" screenshot debug/last-screen.png || true
+          ls -laR debug | head -n 100
       - name: Commit the screenshots to the screenshots branch
         if: always()
         working-directory: apps/mobile/shots
