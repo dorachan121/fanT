@@ -20,7 +20,7 @@ import { IconButton } from '../../ui/icon-button';
 import { haptics } from '../../ui/haptics';
 import { Notice, useNotice } from '../../ui/notice';
 import { Slider } from '../../ui/slider';
-import { colors, radius, softShadow, spacing } from '../../ui/theme';
+import { colors, radius, softShadow, spacing, TOUCH_TARGET } from '../../ui/theme';
 import { track } from '../analytics/analytics';
 import { useContent } from '../content/content-store';
 import { available } from '../content/lookup';
@@ -66,7 +66,7 @@ export function CameraScreen() {
 
 function FilmCamera() {
   const isActive = useCameraActive();
-  const { bottom } = useSafeAreaInsets();
+  const { top, bottom } = useSafeAreaInsets();
   const premium = usePremium();
   const manifest = useContent((state) => state.manifest);
   const mode = useCameraSettings((state) => state.mode);
@@ -358,7 +358,8 @@ function FilmCamera() {
           onToggleAnalysis={() => {
             setAnalysisEnabled((enabled) => !enabled);
           }}
-          top={spacing.xl * 2}
+          // Below the top bar, so it never covers the flash and timer buttons.
+          top={top + spacing.sm * 2 + TOUCH_TARGET}
         />
       )}
 
