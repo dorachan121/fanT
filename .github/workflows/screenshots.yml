@@ -96,6 +96,14 @@ jobs:
           mkdir -p debug
           # Maestro's own screenshots of failing steps and its log.
           cp -R "$HOME"/.maestro/tests/* debug/ 2>/dev/null || true
+          # Newer Maestro versions keep takeScreenshot output with the test run.
+          find debug -path '*takeScreenshot*' -name '*.png' -exec cp {} . \;
+          # The full device log is hundreds of MB: keep only the app's own lines.
+          find debug -name 'device-simulator.log' | while read -r log; do
+            grep -a 'fanTDev\[' "$log" | tail -n 5000 > "${log%.log}-app.log" || true
+            rm -f "$log"
+          done
+          find debug -type f -size +50M -delete
           # Simulator app crashes are reported on the host.
           find "$HOME/Library/Logs/DiagnosticReports" -name '*.ips' -mmin -90 -exec cp {} debug/ \; || true
           xcrun simctl spawn "$UDID" log show --last 15m --style compact \
