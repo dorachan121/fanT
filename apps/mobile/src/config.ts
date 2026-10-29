@@ -1,26 +1,12 @@
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
-import { z } from 'zod';
-
-const nullableString = z.string().min(1).nullable();
-
-const extraSchema = z.object({
-  appVariant: z.enum(['development', 'preview', 'production']),
-  contentBaseUrl: z.url({ protocol: /^https$/ }).nullable(),
-  apiBaseUrl: z.url({ protocol: /^https$/ }).nullable(),
-  revenueCatApiKey: z.object({ ios: nullableString, android: nullableString }),
-  supportEmail: z.email().nullable(),
-  facebookAppId: z
-    .string()
-    .regex(/^\d{5,20}$/)
-    .nullable(),
-});
+import { parseExtra } from './config-schema';
 
 /**
  * Build-time configuration from app.config.ts. Invalid configuration fails at
  * startup, so a broken build is caught on the first launch instead of in a feature.
  */
-const extra = extraSchema.parse(Constants.expoConfig?.extra);
+const extra = parseExtra(Constants.expoConfig?.extra);
 
 export const APP_CONFIG = {
   appVariant: extra.appVariant,
