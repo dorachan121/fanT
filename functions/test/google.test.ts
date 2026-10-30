@@ -1,12 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  GeminiImageGenerator,
-  ImagenUpscaler,
-  metadataTokenSource,
-  SafeSearchModerator,
-  type Fetch,
-} from '../src/adapters/google-cloud';
+import { GeminiImageGenerator } from '../src/adapters/google/gemini-image-generator';
+import { metadataTokenSource, type Fetch } from '../src/adapters/google/http';
+import { ImagenUpscaler } from '../src/adapters/google/imagen-upscaler';
+import { SafeSearchModerator } from '../src/adapters/google/safe-search-moderator';
 import { ContentBlockedError } from '../src/ports';
 
 const IMAGE = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);

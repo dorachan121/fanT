@@ -8,12 +8,10 @@ import { onRequest } from 'firebase-functions/v2/https';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
 
 import { FirestoreStore } from './adapters/firestore-store';
-import {
-  GeminiImageGenerator,
-  ImagenUpscaler,
-  metadataTokenSource,
-  SafeSearchModerator,
-} from './adapters/google-cloud';
+import { GeminiImageGenerator } from './adapters/google/gemini-image-generator';
+import { metadataTokenSource } from './adapters/google/http';
+import { ImagenUpscaler } from './adapters/google/imagen-upscaler';
+import { SafeSearchModerator } from './adapters/google/safe-search-moderator';
 import { allowAllModerator, echoGenerator, echoUpscaler } from './adapters/mock-provider';
 import { StorageImages } from './adapters/storage-images';
 import { handleRequest } from './http/api';
