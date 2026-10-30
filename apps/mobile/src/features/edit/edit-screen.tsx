@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { PhotoCanvas } from '../../engine/photo-canvas';
+import { samplePixels } from '../../engine/sample-pixels';
 import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { Chip } from '../../ui/chip';
@@ -27,6 +28,7 @@ import { addHealSpot } from '../retouch/retouch';
 import { saveEdit } from '../photo/photo-service';
 import type { PhotoRecipe } from '../photo/recipe';
 import { isLocked, usePremium } from '../purchases/purchases-store';
+import { autoAdjust, statsOf } from './auto-adjust';
 import { FramePicker } from './frame-picker';
 import { AdjustPanel } from './panels/adjust-panel';
 import { BackgroundPanel } from './panels/background-panel';
@@ -159,7 +161,23 @@ export function EditScreen({ id }: { readonly id: string }) {
       />
     ),
     background: () => <BackgroundPanel {...props} />,
-    adjust: () => <AdjustPanel {...props} />,
+    adjust: () => (
+      <AdjustPanel
+        {...props}
+        onAuto={() => {
+          try {
+            const auto = autoAdjust(statsOf(samplePixels(source.image)));
+            update({
+              adjust: { ...recipe.adjust, ...auto.adjust },
+              detail: { ...recipe.detail, ...auto.detail },
+            });
+          } catch (error) {
+            reportError(error, 'edit.auto');
+            showError();
+          }
+        }}
+      />
+    ),
     scenery: () => <SceneryPanel {...props} />,
     tone: () => <TonePanel {...props} />,
     hsl: () => <HslPanel {...props} />,
