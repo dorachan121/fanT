@@ -3,12 +3,17 @@ import { Pressable, StyleSheet, View, type LayoutRectangle } from 'react-native'
 import { colors } from '../../ui/theme';
 import type { PhotoPoint } from './panels/panel-props';
 
-/** A marker on the photo: a ring of `radius` (fraction of the photo's short edge). */
+/**
+ * A marker on the photo: a ring of `radius` (fraction of the photo's short edge),
+ * or for a graduated filter a line across the photo.
+ */
 export interface PhotoMarker {
   readonly x: number;
   readonly y: number;
   readonly radius: number;
   readonly selected?: boolean;
+  /** A graduated filter's direction (degrees clockwise from up): drawn as its middle line. */
+  readonly line?: number;
 }
 
 /**
@@ -38,6 +43,26 @@ export function PhotoTapLayer({
       }}
     >
       {markers.map((marker, index) => {
+        if (marker.line !== undefined) {
+          // Long enough to cross the photo at any angle.
+          const length = Math.hypot(rect.width, rect.height) * 2;
+          return (
+            <View
+              key={String(index)}
+              pointerEvents="none"
+              style={[
+                styles.line,
+                marker.selected === true && styles.selected,
+                {
+                  left: marker.x * rect.width - length / 2,
+                  top: marker.y * rect.height,
+                  width: length,
+                  transform: [{ rotate: `${String(marker.line)}deg` }],
+                },
+              ]}
+            />
+          );
+        }
         const size = marker.radius * short * 2;
         return (
           <View
@@ -62,10 +87,18 @@ export function PhotoTapLayer({
 }
 
 const styles = StyleSheet.create({
-  layer: { position: 'absolute' },
+  // Lines of graduated filters reach past the photo; it shows only its own part.
+  layer: { position: 'absolute', overflow: 'hidden' },
   marker: {
     position: 'absolute',
     borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: colors.onPhoto,
+  },
+  line: {
+    position: 'absolute',
+    height: 0,
+    borderTopWidth: 2,
     borderStyle: 'dashed',
     borderColor: colors.onPhoto,
   },

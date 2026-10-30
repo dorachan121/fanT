@@ -156,10 +156,17 @@ export const en: Strings = {
       parts: { Hue: 'Hue', Saturation: 'Saturation', Luminance: 'Brightness' },
     },
     local: {
-      hint: 'Tap the photo to adjust just that spot 👆',
+      shapes: { radial: '⭕ Circle', linear: '🌅 Graduated' },
+      hints: {
+        radial: 'Tap the photo to adjust just that spot 👆',
+        linear:
+          'Tap where the change should fade, e.g. the horizon, to darken a sky from the top 👆',
+      },
       area: (index) => `Spot ${String(index)}`,
       radius: 'Size',
+      width: 'Fade width',
       feather: 'Soft edge',
+      angle: 'Direction',
       brightness: 'Brightness',
       saturation: 'Saturation',
       temperature: 'Temperature',

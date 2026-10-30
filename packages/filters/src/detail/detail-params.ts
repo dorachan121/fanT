@@ -62,14 +62,25 @@ export const DEFAULT_DETAIL_PARAMS: DetailParams = detailParams.defaults;
 
 export const normalizeDetailParams = detailParams.normalize;
 
-/** A circular area adjusted on its own (EDT-10), in photo fractions. */
+/** How a local area is shaped: a circle (EDT-10) or a graduated filter (EDT-17). */
+export const LOCAL_SHAPES = ['radial', 'linear'] as const;
+export type LocalShape = (typeof LOCAL_SHAPES)[number];
+
+/** An area adjusted on its own, in photo fractions. */
 export interface LocalAdjustment {
+  readonly shape: LocalShape;
+  /** The circle's centre, or a point on the graduated filter's middle line. */
   readonly x: number;
   readonly y: number;
-  /** Radius as a fraction of the photo's short edge. */
+  /**
+   * A circle's radius, or half the width of a graduated filter's fade, as a
+   * fraction of the photo's short edge.
+   */
   readonly radius: number;
-  /** Soft edge as a fraction of the radius (0 hard, 1 fully soft). */
+  /** A circle's soft edge as a fraction of the radius (0 hard, 1 fully soft). */
   readonly feather: number;
+  /** Where a graduated filter applies, in degrees clockwise from up (0 = the top). */
+  readonly angle: number;
   readonly brightness: number;
   readonly saturation: number;
   readonly temperature: number;

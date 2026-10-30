@@ -69,6 +69,8 @@ describe(`${DETAIL_SHADER_NAME} shader`, () => {
 
   it('adjusts inside a local area only', () => {
     const area: LocalAdjustment = {
+      shape: 'radial',
+      angle: 0,
       x: 0.25,
       y: 0.5,
       radius: 0.2,
@@ -127,5 +129,30 @@ describe(`${DETAIL_SHADER_NAME} shader`, () => {
     const cooler = pixelAt(render(glow, { sunset: -1 }), 32, 32);
     expect(warmer[0] - warmer[2]).toBeGreaterThan(230 - 90);
     expect(cooler[0] - cooler[2]).toBeLessThan(230 - 90);
+  });
+
+  it('fades a graduated filter in towards the side it points to', () => {
+    const flat = createBitmap(SIZE, SIZE, () => [128, 128, 128, 255]);
+    const top: LocalAdjustment = {
+      shape: 'linear',
+      angle: 0,
+      x: 0.5,
+      y: 0.5,
+      radius: 0.1,
+      feather: 0,
+      brightness: -1,
+      saturation: 0,
+      temperature: 0,
+    };
+    const output = render(flat, {}, [top]);
+    // Darkened at the top, untouched at the bottom, half-way on the line.
+    expect(pixelAt(output, 32, 2)[0]).toBeLessThan(80);
+    expect(pixelAt(output, 32, 61)[0]).toBe(128);
+    expect(pixelAt(output, 32, 32)[0]).toBeGreaterThan(pixelAt(output, 32, 2)[0]);
+    expect(pixelAt(output, 32, 32)[0]).toBeLessThan(128);
+
+    const right = render(flat, {}, [{ ...top, angle: 90 }]);
+    expect(pixelAt(right, 61, 32)[0]).toBeLessThan(80);
+    expect(pixelAt(right, 2, 32)[0]).toBe(128);
   });
 });

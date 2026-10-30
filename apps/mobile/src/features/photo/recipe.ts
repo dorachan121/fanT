@@ -10,6 +10,7 @@ import {
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   DETAIL_PARAM_RANGES,
+  LOCAL_SHAPES,
   MAX_LOCAL_ADJUSTMENTS,
   FACE_SHAPE_PARAM_RANGES,
   type AdjustParams,
@@ -113,6 +114,9 @@ export const FULL_CROP: Crop = { x: 0, y: 0, width: 1, height: 1 };
 const centeredUnit = z.number().min(-1).max(1);
 
 const localAdjustmentSchema = z.strictObject({
+  /** Missing in recipes saved before graduated filters (EDT-17): circles. */
+  shape: z.enum(LOCAL_SHAPES).default('radial'),
+  angle: z.number().min(-180).max(180).default(0),
   x: unit,
   y: unit,
   radius: z.number().min(0.02).max(1),

@@ -1,3 +1,4 @@
+import type { LocalShape } from '@fant/filters';
 import { router } from 'expo-router';
 import { useState, type ReactNode } from 'react';
 import {
@@ -66,6 +67,7 @@ export function EditScreen({ id }: { readonly id: string }) {
   const [saving, setSaving] = useState(false);
   const [photoRect, setPhotoRect] = useState<LayoutRectangle | null>(null);
   const [selectedLocal, setSelectedLocal] = useState(0);
+  const [localShape, setLocalShape] = useState<LocalShape>('radial');
   const [retouchTool, setRetouchTool] = useState<RetouchTool>('heal');
   const [healSize, setHealSize] = useState(0.025);
   const { recipe, source, outputSize } = session;
@@ -87,7 +89,7 @@ export function EditScreen({ id }: { readonly id: string }) {
   /** Tools that place something where the photo is tapped. */
   const tapActions: Partial<Record<Tab, (point: PhotoPoint) => void>> = {
     local: (point) => {
-      const local = addLocalArea(recipe.local, point);
+      const local = addLocalArea(recipe.local, point, localShape);
       if (local === null) {
         showMessage(strings.edit.local.full);
         return;
@@ -108,7 +110,13 @@ export function EditScreen({ id }: { readonly id: string }) {
   /** What is shown on the photo for the tools that place things. */
   const markers = (): PhotoMarker[] => {
     if (tab === 'local') {
-      return recipe.local.map((area, index) => ({ ...area, selected: index === selectedLocal }));
+      return recipe.local.map((area, index) => ({
+        x: area.x,
+        y: area.y,
+        radius: area.radius,
+        selected: index === selectedLocal,
+        line: area.shape === 'linear' ? area.angle : undefined,
+      }));
     }
     if (tab !== 'retouch') return [];
     if (retouchTool === 'heal') return recipe.heal;
@@ -155,7 +163,15 @@ export function EditScreen({ id }: { readonly id: string }) {
     scenery: () => <SceneryPanel {...props} />,
     tone: () => <TonePanel {...props} />,
     hsl: () => <HslPanel {...props} />,
-    local: () => <LocalPanel {...props} selected={selectedLocal} onSelect={setSelectedLocal} />,
+    local: () => (
+      <LocalPanel
+        {...props}
+        selected={selectedLocal}
+        onSelect={setSelectedLocal}
+        shape={localShape}
+        onShape={setLocalShape}
+      />
+    ),
     crop: () => <CropPanel {...props} originalSize={source.originalSize} />,
     frame: () => (
       <FramePicker

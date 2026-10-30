@@ -3,7 +3,7 @@ import { GRADE_SKSL, LUMA_SKSL } from '../sksl';
 /**
  * `detail_v1`: the editor's detailed adjustments, after the basic ones and the
  * skin retouching: sharpening (EDT-07), clarity and dehaze (EDT-15), local areas
- * (EDT-10), the tone curve (EDT-09), highlights and shadows, colour bands (EDT-08),
+ * and graduated filters (EDT-10, EDT-17), the tone curve (EDT-09), highlights and shadows, colour bands (EDT-08),
  * sky and sunset (EDT-15), and vibrance.
  *
  * Uniform names must match `DetailUniforms`; a test checks that they stay in sync.
@@ -31,7 +31,9 @@ uniform float4 saturationB;
 uniform float4 luminanceA;
 uniform float4 luminanceB;
 // Local areas: (x, y, radius, feather) in photo fractions and (brightness,
-// saturation, temperature, 1 if present).
+// saturation, temperature, shape): shape 0 is empty, 1 a circle, 2 a graduated
+// filter whose direction is in 'localAngles'.
+uniform float4 localAngles;
 uniform float4 local0Area;
 uniform float4 local0Adjust;
 uniform float4 local1Area;
@@ -144,12 +146,19 @@ half curveOf(half x) {
   return saturate(x + lift * 0.12);
 }
 
-half3 local(half3 color, float2 uv, float aspect, float4 area, float4 adjust) {
+half3 local(half3 color, float2 uv, float aspect, float4 area, float4 adjust, float angle) {
   if (adjust.w < 0.5) return color;
-  // Distance in short-edge units, so the area is a circle on the photo.
+  // Distances in short-edge units, so a circle is round on the photo.
   float2 d = (uv - area.xy) * (aspect > 1.0 ? float2(aspect, 1.0) : float2(1.0, 1.0 / aspect));
   float r = max(area.z, 1e-4);
-  half weight = half(1.0 - smoothstep(r * (1.0 - area.w), r, length(d)));
+  half weight;
+  if (adjust.w < 1.5) {
+    weight = half(1.0 - smoothstep(r * (1.0 - area.w), r, length(d)));
+  } else {
+    // Graduated: full beyond the line on the side 'angle' points to, fading across 2r.
+    float along = dot(d, float2(sin(angle), -cos(angle)));
+    weight = half(smoothstep(-r, r, along));
+  }
   if (weight <= 0.0) return color;
   half3 adjusted = color * half(exp2(adjust.x));
   adjusted = grade(adjusted, adjust.z, 0.0, adjust.y, 0.0, 0.0);
@@ -189,10 +198,10 @@ half4 main(float2 coord) {
 
   float2 uv = coord / resolution;
   float aspect = resolution.x / resolution.y;
-  color = local(color, uv, aspect, local0Area, local0Adjust);
-  color = local(color, uv, aspect, local1Area, local1Adjust);
-  color = local(color, uv, aspect, local2Area, local2Adjust);
-  color = local(color, uv, aspect, local3Area, local3Adjust);
+  color = local(color, uv, aspect, local0Area, local0Adjust, localAngles.x);
+  color = local(color, uv, aspect, local1Area, local1Adjust, localAngles.y);
+  color = local(color, uv, aspect, local2Area, local2Adjust, localAngles.z);
+  color = local(color, uv, aspect, local3Area, local3Adjust, localAngles.w);
 
   if (any(notEqual(curve, float4(0.0)))) {
     color = half3(curveOf(color.r), curveOf(color.g), curveOf(color.b));

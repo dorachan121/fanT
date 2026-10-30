@@ -27,7 +27,12 @@ export type DetailUniforms = {
   readonly saturationB: Vec4;
   readonly luminanceA: Vec4;
   readonly luminanceB: Vec4;
+  /** Each graduated filter's direction, in radians clockwise from up. */
+  readonly localAngles: Vec4;
 } & { readonly [Slot in LocalSlot as `local${Slot}Area` | `local${Slot}Adjust`]: Vec4 };
+
+/** `adjust.w` of a local slot: which shape it has, or that it is empty. */
+const SHAPE_CODE = { radial: 1, linear: 2 } as const;
 
 const ABSENT = [0, 0, 0, 0] as const;
 
@@ -58,8 +63,9 @@ export function toDetailUniforms(
     const item = local[index];
     return item === undefined || index >= MAX_LOCAL_ADJUSTMENTS
       ? ABSENT
-      : [item.brightness, item.saturation, item.temperature, 1];
+      : [item.brightness, item.saturation, item.temperature, SHAPE_CODE[item.shape]];
   };
+  const angle = (index: number) => ((local[index]?.angle ?? 0) * Math.PI) / 180;
   return {
     resolution: [frame.width, frame.height],
     sharpen: params.sharpen,
@@ -77,6 +83,7 @@ export function toDetailUniforms(
     saturationB: bands(params, 'Saturation', 4),
     luminanceA: bands(params, 'Luminance', 0),
     luminanceB: bands(params, 'Luminance', 4),
+    localAngles: [angle(0), angle(1), angle(2), angle(3)],
     local0Area: area(0),
     local0Adjust: adjust(0),
     local1Area: area(1),

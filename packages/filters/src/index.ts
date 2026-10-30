@@ -51,12 +51,14 @@ export {
   DEFAULT_DETAIL_PARAMS,
   DETAIL_PARAM_RANGES,
   HSL_BANDS,
+  LOCAL_SHAPES,
   MAX_LOCAL_ADJUSTMENTS,
   normalizeDetailParams,
   type DetailParamName,
   type DetailParams,
   type HslBand,
   type LocalAdjustment,
+  type LocalShape,
 } from './detail/detail-params';
 export { DETAIL_SHADER_NAME, DETAIL_SHADER_SOURCE } from './detail/detail-shader';
 export { toDetailUniforms, type DetailUniforms } from './detail/detail-uniforms';

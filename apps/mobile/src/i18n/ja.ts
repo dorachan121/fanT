@@ -163,10 +163,16 @@ export const ja = {
       parts: { Hue: '色味', Saturation: '鮮やかさ', Luminance: '明るさ' },
     },
     local: {
-      hint: '写真をタップすると、そこだけ補正できるよ👆',
+      shapes: { radial: '⭕ 円形', linear: '🌅 段階' },
+      hints: {
+        radial: '写真をタップすると、そこだけ補正できるよ👆',
+        linear: '境目にしたい所をタップしてね。空を暗くするなど、上から段々に補正するよ👆',
+      },
       area: (index: number) => `範囲${String(index)}`,
       radius: '大きさ',
+      width: 'ぼかし幅',
       feather: 'ふちのぼかし',
+      angle: '向き',
       brightness: '明るさ',
       saturation: '彩度',
       temperature: '色温度',
