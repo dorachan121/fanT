@@ -51,7 +51,7 @@ export interface Store {
 export interface ImageStore {
   putInput(id: string, jpeg: Uint8Array): Promise<void>;
   getInput(id: string): Promise<Uint8Array>;
-  /** The erase tool's mask (AI-10), kept and deleted with the upload. */
+  /** A masked tool's mask (AI-10, AI-13), kept and deleted with the upload. */
   putMask(id: string, png: Uint8Array): Promise<void>;
   getMask(id: string): Promise<Uint8Array>;
   putOutput(id: string, image: Uint8Array): Promise<void>;

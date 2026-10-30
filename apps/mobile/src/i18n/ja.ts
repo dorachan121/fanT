@@ -304,7 +304,20 @@ export const ja = {
     aiLabel: 'AIで生成',
     tools: {
       erase: { name: 'けしゴム', description: 'じゃまな人やものを消すよ' },
+      expand: { name: 'ひろげる', description: '写真の外側をAIが描き足すよ' },
       upscale: { name: '高画質に', description: '写真を2倍のきれいさに' },
+    },
+    expand: {
+      title: '🖼️ 写真をひろげる',
+      hint: 'えらんだ形になるように、写真の外側をAIが描き足すよ。ぼやけているところが描き足される範囲だよ。',
+      shapes: {
+        '9:16': 'ストーリーズ',
+        '4:5': '4:5',
+        '1:1': '正方形',
+        '16:9': '横長',
+        wider: 'ひとまわり',
+      },
+      run: 'ひろげる🪄',
     },
     erase: {
       title: '🧽 消したいところをなぞってね',

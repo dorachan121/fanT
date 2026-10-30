@@ -101,10 +101,32 @@ describe('generations', () => {
     expect(Buffer.from(seen[0]?.mask ?? []).toString('base64')).toBe(PNG_BASE64);
   });
 
-  it('needs a PNG mask to erase and no mask otherwise', async () => {
+  it('fills an added margin with the generator, given a PNG mask (AI-13)', async () => {
+    const seen: { prompt: string; mask: Uint8Array | undefined }[] = [];
+    const { deps, accountId } = await setup({
+      generator: {
+        generate: (image, prompt, _signal, mask) => {
+          seen.push({ prompt, mask });
+          return Promise.resolve(image);
+        },
+      },
+    });
+    const queued = await createGeneration(deps, accountId, {
+      styleId: 'expand',
+      image: JPEG_BASE64,
+      mask: PNG_BASE64,
+    });
+    await processGeneration(deps, queued.id);
+    expect(await getGeneration(deps, accountId, queued.id)).toMatchObject({ status: 'succeeded' });
+    expect(seen[0]?.prompt).toContain('margin');
+    expect(Buffer.from(seen[0]?.mask ?? []).toString('base64')).toBe(PNG_BASE64);
+  });
+
+  it('needs a PNG mask to erase or expand, and no mask otherwise', async () => {
     const { deps, accountId, images } = await setup();
     for (const request of [
       { styleId: 'erase', image: JPEG_BASE64 },
+      { styleId: 'expand', image: JPEG_BASE64 },
       { styleId: 'erase', image: JPEG_BASE64, mask: JPEG_BASE64 },
       { styleId: 'figure', image: JPEG_BASE64, mask: PNG_BASE64 },
     ]) {

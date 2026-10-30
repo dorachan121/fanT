@@ -32,20 +32,20 @@ function isPng(bytes: Uint8Array): boolean {
   return bytes.length > PNG_SIGNATURE.length && PNG_SIGNATURE.every((b, i) => bytes[i] === b);
 }
 
-/** The erase tool's mask, which only it takes (AI-10). */
+/** The mask of a masked tool (AI-10, AI-13), which only those take. */
 function maskOf(job: JobDefinition, mask: string | undefined): Buffer | null {
-  if (job.kind !== 'erase') {
-    if (mask !== undefined) throw new ApiFailure('bad_request', 'Only erasing takes a mask');
+  if (job.kind !== 'inpaint') {
+    if (mask !== undefined) throw new ApiFailure('bad_request', 'Only masked tools take a mask');
     return null;
   }
-  if (mask === undefined) throw new ApiFailure('bad_request', 'Erasing needs a mask');
+  if (mask === undefined) throw new ApiFailure('bad_request', 'This tool needs a mask');
   const bytes = Buffer.from(mask, 'base64');
   if (bytes.length > MAX_MASK_BYTES || !isPng(bytes))
     throw new ApiFailure('bad_request', 'Expected a PNG mask');
   return bytes;
 }
 
-/** Does the job's work on a moderated input: a style, erasing or upscaling. */
+/** Does the job's work on a moderated input: a style, a masked repaint or upscaling. */
 async function runJob(
   deps: Dependencies,
   id: string,
@@ -56,7 +56,7 @@ async function runJob(
   switch (job.kind) {
     case 'style':
       return deps.generator.generate(input, `${job.prompt}\n${SAFETY_PROMPT}`, signal);
-    case 'erase':
+    case 'inpaint':
       return deps.generator.generate(
         input,
         `${job.prompt}\n${SAFETY_PROMPT}`,

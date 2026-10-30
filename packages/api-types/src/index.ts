@@ -56,14 +56,19 @@ export const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
 /** Uploads are scaled to this long edge first, so nothing larger leaves the device. */
 export const UPLOAD_LONG_EDGE = 1024;
 
-/** Largest accepted mask: a small PNG of the area to erase. */
+/** Largest accepted mask: a small PNG of the area to change. */
 export const MAX_MASK_BYTES = 512 * 1024;
 
 /**
- * AI tools beside the styles (AI-10, AI-11), with their prices in credits. `erase`
- * takes a mask of what to remove; `upscale` doubles the resolution.
+ * AI tools beside the styles (AI-10, AI-11, AI-13), with their prices in credits.
+ * `erase` takes a mask of what to remove and `expand` a mask of the new margin to
+ * fill in; `upscale` doubles the resolution.
  */
-export const AI_TOOLS = { erase: { credits: 1 }, upscale: { credits: 1 } } as const;
+export const AI_TOOLS = {
+  erase: { credits: 1 },
+  expand: { credits: 1 },
+  upscale: { credits: 1 },
+} as const;
 export type AiTool = keyof typeof AI_TOOLS;
 
 const base64 = (maxBytes: number) =>
@@ -78,7 +83,7 @@ export const createGenerationRequestSchema = z.strictObject({
   styleId: z.string().regex(/^[a-z0-9][a-z0-9_]{0,47}$/),
   /** The photo as base64 JPEG. */
   image: base64(MAX_UPLOAD_BYTES),
-  /** For `erase`: base64 PNG, white where to remove, the photo's size. */
+  /** For `erase` and `expand`: base64 PNG, white where to change, the photo's size. */
   mask: base64(MAX_MASK_BYTES).optional(),
 });
 

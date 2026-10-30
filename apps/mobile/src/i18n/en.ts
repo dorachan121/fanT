@@ -298,7 +298,20 @@ export const en: Strings = {
     aiLabel: 'Made with AI',
     tools: {
       erase: { name: 'Eraser', description: 'Remove people or things' },
+      expand: { name: 'Expand', description: 'AI paints in beyond the edges' },
       upscale: { name: 'Sharper', description: 'Twice the resolution' },
+    },
+    expand: {
+      title: '🖼️ Expand the photo',
+      hint: 'AI paints in around the photo to fill the shape you pick. The blurry part is what gets painted in.',
+      shapes: {
+        '9:16': 'Story',
+        '4:5': '4:5',
+        '1:1': 'Square',
+        '16:9': 'Wide',
+        wider: 'All round',
+      },
+      run: 'Expand 🪄',
     },
     erase: {
       title: '🧽 Paint over what to remove',

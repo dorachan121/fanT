@@ -47,14 +47,19 @@ function ConsentModal({
   );
 }
 
-/** Where each tool goes: erasing first asks what to erase (AI-10/11). */
+/** Where each tool goes: masked tools first ask what to change (AI-10/11/13). */
 function toolDestination(tool: AiTool, uri: string): Href {
-  return tool === 'erase'
-    ? { pathname: '/ai/erase', params: { uri } }
-    : { pathname: '/ai/generate', params: { uri, styleId: tool } };
+  switch (tool) {
+    case 'erase':
+      return { pathname: '/ai/erase', params: { uri } };
+    case 'expand':
+      return { pathname: '/ai/expand', params: { uri } };
+    case 'upscale':
+      return { pathname: '/ai/generate', params: { uri, styleId: tool } };
+  }
 }
 
-const TOOL_ICONS: Record<AiTool, string> = { erase: '🧽', upscale: '🔍' };
+const TOOL_ICONS: Record<AiTool, string> = { erase: '🧽', expand: '🖼️', upscale: '🔍' };
 
 /** Styles and tools, their price and the balance (S-41, AI-02/07/10/11). */
 export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {

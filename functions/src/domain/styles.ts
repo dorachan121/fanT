@@ -10,8 +10,11 @@ export interface StyleDefinition {
   readonly prompt: string;
 }
 
-/** How a job is done: a style prompt, erasing a masked area (AI-10) or upscaling (AI-11). */
-export type JobKind = 'style' | 'erase' | 'upscale';
+/**
+ * How a job is done: a style prompt, repainting a masked area (erasing, AI-10, or
+ * filling an added margin, AI-13) or upscaling (AI-11).
+ */
+export type JobKind = 'style' | 'inpaint' | 'upscale';
 
 export interface JobDefinition {
   readonly kind: JobKind;
@@ -20,9 +23,13 @@ export interface JobDefinition {
   readonly prompt: string;
 }
 
-/** The erase tool's instruction; the mask comes as a second image. */
-export const ERASE_PROMPT =
-  'The second image is a mask. Remove everything under its white area from the first image and fill that area in naturally to match the surroundings. Keep everything else exactly as it is, at the same framing.';
+/** The masked tools' instructions; the mask comes as a second image. */
+const INPAINT_PROMPTS = {
+  erase:
+    'The second image is a mask. Remove everything under its white area from the first image and fill that area in naturally to match the surroundings. Keep everything else exactly as it is, at the same framing.',
+  expand:
+    'The second image is a mask. The white area is a margin added around the original photo, showing only a blurred hint. Extend the scene into it so the photo looks as if it had been taken wider: continue the landscape, sky, ground and background naturally, with the same light and perspective. Do not add people. Keep the area under the black part of the mask exactly as it is.',
+} as const;
 
 export const STYLES: Readonly<Record<string, StyleDefinition>> = {
   figure: {
@@ -99,8 +106,13 @@ export const SAFETY_PROMPT =
 
 /** What a style or tool ID asks for, or `undefined` when it is unknown. */
 export function jobFor(styleId: string): JobDefinition | undefined {
-  if (styleId === 'erase')
-    return { kind: 'erase', credits: AI_TOOLS.erase.credits, prompt: ERASE_PROMPT };
+  if (styleId === 'erase' || styleId === 'expand') {
+    return {
+      kind: 'inpaint',
+      credits: AI_TOOLS[styleId].credits,
+      prompt: INPAINT_PROMPTS[styleId],
+    };
+  }
   if (styleId === 'upscale')
     return { kind: 'upscale', credits: AI_TOOLS.upscale.credits, prompt: '' };
   const style = STYLES[styleId];
