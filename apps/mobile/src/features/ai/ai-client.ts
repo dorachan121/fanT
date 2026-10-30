@@ -3,7 +3,6 @@ import {
   createAccountResponseSchema,
   creditsResponseSchema,
   generationSchema,
-  type ApiErrorCode,
   type Credits,
   type Generation,
   type ReportReason,
@@ -16,21 +15,10 @@ import { APP_CONFIG } from '../../config';
 import { toBase64, toBase64Url } from '../../lib/base64';
 import { fetchWithTimeout } from '../../lib/fetch-with-timeout';
 import { linkPurchasesAccount } from '../purchases/purchases-store';
+import { AiError } from './ai-error';
 
 const ACCOUNT_KEY = 'ai.account';
 const TIMEOUT_MS = 20_000;
-
-/** A failure the screens can explain; `code` comes from the server or the network. */
-export class AiError extends Error {
-  override readonly name = 'AiError';
-
-  constructor(
-    readonly code: ApiErrorCode | 'offline',
-    message: string,
-  ) {
-    super(message);
-  }
-}
 
 interface StoredAccount {
   readonly accountId: string;
