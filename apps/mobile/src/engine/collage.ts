@@ -74,7 +74,7 @@ function drawPrint(canvas: SkCanvas, image: SkImage, width: number, height: numb
 }
 
 /** Draws photos as a collage (DCO-07) on a `size` canvas. */
-export function drawCollage(
+function drawCollage(
   canvas: SkCanvas,
   photos: readonly SkImage[],
   size: Size,

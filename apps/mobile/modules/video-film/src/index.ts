@@ -14,9 +14,6 @@ interface VideoFilmModule {
 /** `null` where the native module is not built in (e.g. tests, web). */
 const native = requireOptionalNativeModule<VideoFilmModule>('VideoFilm');
 
-/** Whether this build can colour videos (CAM-13). */
-export const videoFilmSupported = native !== null;
-
 function required(): VideoFilmModule {
   if (native === null) throw new Error('Video is not supported in this build');
   return native;

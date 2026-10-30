@@ -1,19 +1,11 @@
 import { File } from 'expo-file-system';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { usePuriSession } from './puri-session';
 
 const JPEG = new Uint8Array([0xff, 0xd8]);
 
 describe('usePuriSession', () => {
-  beforeEach(() => {
-    vi.useFakeTimers({ toFake: ['Date'] });
-  });
-
-  afterEach(() => {
-    vi.useRealTimers();
-  });
-
   it('starts with an empty cell for each shot', () => {
     usePuriSession.getState().start('four', 4);
 
@@ -33,7 +25,6 @@ describe('usePuriSession', () => {
       { type: 'stamp', stampId: 'heart', x: 0.5, y: 0.5, size: 0.2, rotation: 0 },
     ]);
 
-    vi.setSystemTime(Date.now() + 5000);
     session.setShot(0, new Uint8Array([1]));
 
     const retaken = usePuriSession.getState().shots[0];

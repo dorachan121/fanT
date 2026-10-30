@@ -14,6 +14,9 @@ export interface PuriShot {
 /** Shots live in the cache until the sheet is finished; they never reach the album alone. */
 const SHOTS_FOLDER = 'puri';
 
+/** Counts takes, so two in the same millisecond still get their own files. */
+let takes = 0;
+
 interface PuriSession {
   readonly layoutId: string | null;
   readonly shots: readonly (PuriShot | null)[];
@@ -44,10 +47,8 @@ export const usePuriSession = create<PuriSession>()((set, get) => ({
   },
   setShot: (index, jpeg) => {
     // A new file name per take, so a retake never shows a cached image.
-    const file = new File(
-      tempDirectory(SHOTS_FOLDER),
-      `${String(index)}-${String(Date.now())}.jpg`,
-    );
+    takes += 1;
+    const file = new File(tempDirectory(SHOTS_FOLDER), `${String(index)}-${String(takes)}.jpg`);
     file.writeSync(jpeg);
     const previous = get().shots[index];
     if (previous !== null && previous !== undefined) {

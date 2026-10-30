@@ -215,4 +215,43 @@ describe('album-db', () => {
 
     expect(listener).toHaveBeenCalledTimes(4);
   });
+
+  it('counts the retention of an adopted original from when it was adopted', () => {
+    const now = Date.now();
+    shoot('old', now - 100 * DAY, 30);
+    purgeExpiredOriginals(now);
+    adoptOutputAsOriginal('old', 30, now - DAY);
+
+    applyOriginalRetention(90);
+
+    expect(getPhoto('old')).toMatchObject({
+      hasOriginal: true,
+      originalExpiresAt: now - DAY + 90 * DAY,
+    });
+  });
+
+  it('upgrades an album saved by the first version', async () => {
+    const shotAt = Date.now() - 10 * DAY;
+    const database = openDatabaseSync('album.db');
+    database.execSync(`
+      DROP TABLE photos;
+      CREATE TABLE photos (
+        id TEXT PRIMARY KEY NOT NULL, kind TEXT NOT NULL, created_at INTEGER NOT NULL,
+        updated_at INTEGER NOT NULL, width INTEGER NOT NULL, height INTEGER NOT NULL,
+        recipe TEXT, has_original INTEGER NOT NULL, original_expires_at INTEGER
+      );
+      INSERT INTO photos VALUES ('v1', 'camera', ${String(shotAt)}, ${String(shotAt)}, 3, 4, NULL, 1, NULL);
+      PRAGMA user_version = 1;
+    `);
+    vi.resetModules();
+    const album = await import('./album-db');
+
+    album.applyOriginalRetention(60);
+
+    // The kept original counts from the shot.
+    expect(album.getPhoto('v1')?.originalExpiresAt).toBe(shotAt + 60 * DAY);
+    expect(database.getFirstSync<{ user_version: number }>('PRAGMA user_version')).toEqual({
+      user_version: 2,
+    });
+  });
 });

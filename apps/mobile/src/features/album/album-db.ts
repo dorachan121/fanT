@@ -8,7 +8,7 @@ import type { AlbumPhoto, PhotoKind } from './album-types';
  * The in-app album (ALB-01): a SQLite table of photos and, per photo, a folder
  * with the rendered output and the original. Everything stays in the app sandbox.
  */
-const SCHEMA_VERSION = 1;
+const SCHEMA_VERSION = 2;
 const ALBUM_ROOT = new Directory(Paths.document, 'album');
 
 interface PhotoRow {
@@ -21,6 +21,8 @@ interface PhotoRow {
   recipe: string | null;
   has_original: number;
   original_expires_at: number | null;
+  /** When the current original was kept: the shot, or adopting the output later. */
+  original_since: number;
 }
 
 let database: SQLiteDatabase | undefined;
@@ -52,8 +54,19 @@ function migrate(target: SQLiteDatabase): void {
         original_expires_at INTEGER
       );
       CREATE INDEX IF NOT EXISTS photos_created_at ON photos (created_at DESC);
-      PRAGMA user_version = ${String(SCHEMA_VERSION)};
+      PRAGMA user_version = 1;
     `);
+  }
+  if (version < 2) {
+    // Retention counts from when an original was kept, which for an adopted output
+    // is not when the photo was taken.
+    target.withTransactionSync(() => {
+      target.execSync(`
+        ALTER TABLE photos ADD COLUMN original_since INTEGER NOT NULL DEFAULT 0;
+        UPDATE photos SET original_since = created_at;
+        PRAGMA user_version = ${String(SCHEMA_VERSION)};
+      `);
+    });
   }
 }
 
@@ -158,7 +171,7 @@ export function addPhoto(photo: NewPhoto, now = Date.now()): AlbumPhoto {
   try {
     outputFile(photo.id).writeSync(photo.output);
     db().runSync(
-      'INSERT INTO photos (id, kind, created_at, updated_at, width, height, recipe, has_original, original_expires_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      'INSERT INTO photos (id, kind, created_at, updated_at, width, height, recipe, has_original, original_expires_at, original_since) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       photo.id,
       photo.kind,
       now,
@@ -168,6 +181,7 @@ export function addPhoto(photo: NewPhoto, now = Date.now()): AlbumPhoto {
       photo.recipe === null ? null : JSON.stringify(photo.recipe),
       photo.hasOriginal ? 1 : 0,
       expiryOf(photo.hasOriginal, photo.originalRetentionDays, now),
+      now,
     );
   } catch (error) {
     discardPhotoFiles(photo.id);
@@ -194,8 +208,9 @@ export function adoptOutputAsOriginal(
 ): string {
   outputFile(id).copySync(originalFile(id));
   db().runSync(
-    'UPDATE photos SET has_original = 1, original_expires_at = ? WHERE id = ?',
+    'UPDATE photos SET has_original = 1, original_expires_at = ?, original_since = ? WHERE id = ?',
     expiryOf(true, retentionDays, now),
+    now,
     id,
   );
   notify();
@@ -279,7 +294,7 @@ export function applyOriginalRetention(retentionDays: number | null): void {
     db().runSync('UPDATE photos SET original_expires_at = NULL WHERE has_original = 1');
   } else {
     db().runSync(
-      'UPDATE photos SET original_expires_at = created_at + ? WHERE has_original = 1',
+      'UPDATE photos SET original_expires_at = original_since + ? WHERE has_original = 1',
       retentionDays * 24 * 60 * 60 * 1000,
     );
   }

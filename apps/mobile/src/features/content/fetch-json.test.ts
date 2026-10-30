@@ -35,6 +35,12 @@ describe('fetchJson', () => {
     await expect(fetchJson('https://example.com/a.json', LIMITS)).rejects.toThrow('too large');
   });
 
+  it('measures the body in bytes, not characters', async () => {
+    // 9 characters (within the limit of 20), but 23 bytes in UTF-8.
+    vi.stubGlobal('fetch', () => Promise.resolve(new Response('"あいうえおかき"')));
+    await expect(fetchJson('https://example.com/a.json', LIMITS)).rejects.toThrow('too large');
+  });
+
   it('gives up on a server that does not answer', async () => {
     vi.stubGlobal(
       'fetch',

@@ -15,6 +15,9 @@ export async function fetchJson(
     if (declared > maxBytes) throw new DownloadError(`Response too large: ${url}`);
     return response.text();
   });
-  if (text.length > maxBytes) throw new DownloadError(`Response too large: ${url}`);
+  // The declared length can be missing or wrong; the body itself is what counts.
+  if (new TextEncoder().encode(text).byteLength > maxBytes) {
+    throw new DownloadError(`Response too large: ${url}`);
+  }
   return JSON.parse(text) as unknown;
 }
