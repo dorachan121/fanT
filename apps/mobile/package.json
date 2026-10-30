@@ -10,7 +10,7 @@
     "lint": "eslint .",
     "start": "expo start",
     "test": "vitest run",
-    "typecheck": "tsc",
+    "typecheck": "tsc && tsc -p test/tsconfig.json",
     "check:native": "expo prebuild --no-install --platform all --clean && node scripts/check-native-config.mjs"
   },
   "dependencies": {
@@ -68,6 +68,7 @@
   },
   "devDependencies": {
     "@fant/config": "workspace:*",
+    "@types/node": "catalog:",
     "@types/react": "~19.3.0",
     "eslint": "catalog:",
     "eslint-plugin-react-hooks": "^7.1.1",

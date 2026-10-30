@@ -374,6 +374,9 @@ importers:
       '@fant/config':
         specifier: workspace:*
         version: link:../../packages/config
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
       '@types/react':
         specifier: ~19.3.0
         version: 19.3.0
