@@ -118,6 +118,7 @@ export const ja = {
       scenery: '風景',
       makeup: 'メイク',
       retouch: 'レタッチ',
+      background: '背景',
       tone: 'トーン',
       hsl: 'カラー',
       local: '部分補正',
@@ -129,6 +130,11 @@ export const ja = {
       highlights: 'ハイライト',
       shadows: 'シャドウ',
       vibrance: '自然な彩度',
+    },
+    background: {
+      hint: '写っている人の後ろを、えらんだ背景に変えるよ。人が写っていない写真は全体が背景になるよ',
+      unsupported: 'この端末では背景を変えられないよ🙏',
+      none: 'そのまま',
     },
     scenery: {
       dehaze: 'かすみ除去',

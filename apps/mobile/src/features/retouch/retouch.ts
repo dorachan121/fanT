@@ -44,12 +44,16 @@ export const HAIR_COLORS = [
   '#4db6ac',
 ] as const;
 
-/** What the person mask is needed for: background blur (EDT-11) or hair colour (EDT-12). */
+/**
+ * What the person mask is needed for: a new backdrop (EDT-16), background blur
+ * (EDT-11) or hair colour (EDT-12).
+ */
 export function needsPersonMask(recipe: {
+  readonly backdrop: string | null;
   readonly backgroundBlur: number;
   readonly hair: Hair;
 }): boolean {
-  return recipe.backgroundBlur > 0 || recipe.hair.amount > 0;
+  return recipe.backdrop !== null || recipe.backgroundBlur > 0 || recipe.hair.amount > 0;
 }
 
 /** Converts `#rrggbb` to linear-ish 0–1 RGB for a shader. */

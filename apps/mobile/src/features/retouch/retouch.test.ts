@@ -7,12 +7,12 @@ describe('retouch', () => {
     expect(rgbOf('#ff8000')).toEqual([1, 128 / 255, 0]);
   });
 
-  it('needs the person mask only for background blur or hair colour', () => {
-    expect(needsPersonMask({ backgroundBlur: 0, hair: NO_HAIR_COLOR })).toBe(false);
-    expect(needsPersonMask({ backgroundBlur: 0.5, hair: NO_HAIR_COLOR })).toBe(true);
-    expect(needsPersonMask({ backgroundBlur: 0, hair: { ...NO_HAIR_COLOR, amount: 1 } })).toBe(
-      true,
-    );
+  it('needs the person mask only for a backdrop, background blur or hair colour', () => {
+    const none = { backdrop: null, backgroundBlur: 0, hair: NO_HAIR_COLOR };
+    expect(needsPersonMask(none)).toBe(false);
+    expect(needsPersonMask({ ...none, backdrop: 'sky' })).toBe(true);
+    expect(needsPersonMask({ ...none, backgroundBlur: 0.5 })).toBe(true);
+    expect(needsPersonMask({ ...none, hair: { ...NO_HAIR_COLOR, amount: 1 } })).toBe(true);
   });
 
   it('adds blemish spots up to the limit', () => {

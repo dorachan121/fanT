@@ -17,6 +17,7 @@ import {
 } from '../features/character/face-geometry.worklet';
 import { hasMakeup } from '../features/makeup/makeup';
 import { needsPersonMask } from '../features/retouch/retouch';
+import { findBackdrop } from '../features/photo/backdrops';
 import { filterSettingsFor } from '../features/photo/filter-settings';
 import { coverPlacement, framedPhotoRect } from '../features/photo/frames';
 import { croppedSize, fitLongEdge, type Size } from '../features/photo/geometry';
@@ -128,6 +129,7 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
   );
   const retouch: RetouchInput = {
     heal: recipe.heal,
+    backdrop: findBackdrop(recipe.backdrop),
     backgroundBlur: recipe.backgroundBlur,
     hair: recipe.hair,
     mask: mask === null || maskMatrix === null ? null : { image: mask, matrix: maskMatrix },

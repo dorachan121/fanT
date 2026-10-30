@@ -8,7 +8,7 @@ import { tempDirectory } from '../../lib/temp-files';
 import { centerCrop } from '../photo/geometry';
 import { renderRecipe } from '../photo/photo-service';
 import { newRecipe } from '../photo/recipe';
-import type { Backdrop } from './backdrops';
+import type { Backdrop } from '../photo/backdrops';
 
 /** Purikura-style correction (PRI-03): bright, white, smooth skin… */
 export const PURI_BEAUTY: BeautyParams = { smoothing: 0.7, brightness: 0.55, rosiness: 0.15 };

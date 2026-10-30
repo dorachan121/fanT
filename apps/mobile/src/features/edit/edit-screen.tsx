@@ -28,6 +28,7 @@ import type { PhotoRecipe } from '../photo/recipe';
 import { isLocked, usePremium } from '../purchases/purchases-store';
 import { FramePicker } from './frame-picker';
 import { AdjustPanel } from './panels/adjust-panel';
+import { BackgroundPanel } from './panels/background-panel';
 import { CropPanel } from './panels/crop-panel';
 import { FilmPanel } from './panels/film-panel';
 import { HslPanel } from './panels/hsl-panel';
@@ -44,6 +45,7 @@ const TABS = [
   'beauty',
   'makeup',
   'retouch',
+  'background',
   'adjust',
   'scenery',
   'tone',
@@ -148,6 +150,7 @@ export function EditScreen({ id }: { readonly id: string }) {
         onHealSize={setHealSize}
       />
     ),
+    background: () => <BackgroundPanel {...props} />,
     adjust: () => <AdjustPanel {...props} />,
     scenery: () => <SceneryPanel {...props} />,
     tone: () => <TonePanel {...props} />,

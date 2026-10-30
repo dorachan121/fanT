@@ -24,7 +24,7 @@ import { usePreviewRenderer } from '../camera/use-preview-renderer';
 import { useContent } from '../content/content-store';
 import { containRect } from '../photo/geometry';
 import { personSegmentationSupported } from '../../../modules/person-segmentation/src';
-import { BACKDROPS } from './backdrops';
+import { BACKDROPS } from '../photo/backdrops';
 import { PURI_BEAUTY, PURI_FILM_ID, renderPuriShot } from './puri-look';
 import { usePuriSession } from './puri-session';
 import { Text } from '../../ui/text';
@@ -259,5 +259,5 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   controls: { gap: spacing.md, paddingHorizontal: spacing.md },
-  row: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm },
+  row: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm },
 });

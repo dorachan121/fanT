@@ -166,6 +166,11 @@ const photoRecipeSchema = z.strictObject({
   heal: z.array(healSpotSchema).max(MAX_HEAL_SPOTS).default([]),
   /** Body reshaping (EDT-13); missing in older recipes. */
   body: paramsSchema(BODY_PARAM_RANGES).default(DEFAULT_BODY_PARAMS),
+  /**
+   * A backdrop put behind the people (EDT-16), by ID; an ID this version does not
+   * know is drawn as none. Missing in older recipes.
+   */
+  backdrop: z.string().max(32).nullable().default(null),
   /** Background blur behind the people (EDT-11); missing in older recipes. */
   backgroundBlur: z.number().min(0).max(1).default(0),
   /** Hair colour (EDT-12); missing in older recipes. */
@@ -211,6 +216,7 @@ export function newRecipe(options: {
     makeup: options.makeup ?? NO_MAKEUP,
     heal: [],
     body: DEFAULT_BODY_PARAMS,
+    backdrop: null,
     backgroundBlur: 0,
     hair: NO_HAIR_COLOR,
     detail: DEFAULT_DETAIL_PARAMS,

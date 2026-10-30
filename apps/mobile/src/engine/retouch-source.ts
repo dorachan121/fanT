@@ -21,8 +21,10 @@ import {
   type SkSurface,
 } from '@shopify/react-native-skia';
 
+import type { Backdrop } from '../features/photo/backdrops';
 import type { Size } from '../features/photo/geometry';
 import { rgbOf, type Hair, type HealSpot } from '../features/retouch/retouch';
+import { drawBackdrop } from './backdrop';
 import { makeSurface } from './surface';
 
 let hairEffect: SkRuntimeEffect | undefined;
@@ -34,6 +36,7 @@ function hair(): SkRuntimeEffect {
 
 export interface RetouchInput {
   readonly heal: readonly HealSpot[];
+  readonly backdrop: Backdrop | null;
   readonly backgroundBlur: number;
   readonly hair: Hair;
   /** The people (alpha = person), with the matrix that maps it onto the output. */
@@ -47,7 +50,9 @@ export function hasRetouch(input: RetouchInput): boolean {
   return (
     input.heal.length > 0 ||
     (input.mask !== null &&
-      (input.backgroundBlur > 0 || (input.hair.amount > 0 && input.heads.length > 0)))
+      (input.backdrop !== null ||
+        input.backgroundBlur > 0 ||
+        (input.hair.amount > 0 && input.heads.length > 0)))
   );
 }
 
@@ -117,8 +122,9 @@ function healSpot(canvas: SkCanvas, image: SkImage, spot: HealSpot, size: Size):
 }
 
 /**
- * Prepares the photo before the filter chain, in output pixels: background blur
- * behind the people (EDT-11), hair colour (EDT-12) and blemish removal (BTY-11).
+ * Prepares the photo before the filter chain, in output pixels: a new backdrop
+ * (EDT-16) and background blur behind the people (EDT-11), hair colour (EDT-12)
+ * and blemish removal (BTY-11).
  * Returns a shader for the chain to draw from; the caller disposes `dispose`.
  */
 export function retouchSource(
@@ -134,6 +140,18 @@ export function retouchSource(
     paint.setShader(source);
     canvas.drawRect(Skia.XYWHRect(0, 0, size.width, size.height), paint);
     const { mask } = input;
+
+    if (mask !== null && input.backdrop !== null) {
+      // The film then runs over the backdrop too, so it sits in the same light.
+      const photo = snapshot(surface);
+      images.push(photo);
+      canvas.clear(Skia.Color('transparent'));
+      drawBackdrop(canvas, input.backdrop, size.width, size.height);
+      canvas.saveLayer();
+      drawImage(canvas, photo, 0);
+      keepPeople(canvas, mask);
+      canvas.restore();
+    }
 
     if (mask !== null && input.backgroundBlur > 0) {
       const sharp = snapshot(surface);

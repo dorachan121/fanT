@@ -2,7 +2,7 @@ import { File } from 'expo-file-system';
 import { create } from 'zustand';
 
 import type { DecoLayer } from '../photo/recipe';
-import type { Backdrop } from './backdrops';
+import type { Backdrop } from '../photo/backdrops';
 import { tempDirectory } from '../../lib/temp-files';
 
 /** One purikura shot, already cropped to its cell and rendered with the puri look. */

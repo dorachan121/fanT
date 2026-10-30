@@ -111,6 +111,7 @@ export const en: Strings = {
       scenery: 'Scenery',
       makeup: 'Makeup',
       retouch: 'Retouch',
+      background: 'Background',
       tone: 'Tone',
       hsl: 'Colour',
       local: 'Spot fix',
@@ -122,6 +123,11 @@ export const en: Strings = {
       highlights: 'Highlights',
       shadows: 'Shadows',
       vibrance: 'Vibrance',
+    },
+    background: {
+      hint: 'Puts the people in front of the background you pick. Photos without people become all background.',
+      unsupported: "This device can't change backgrounds 🙏",
+      none: 'As is',
     },
     scenery: {
       dehaze: 'Dehaze',
