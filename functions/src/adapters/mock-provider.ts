@@ -1,4 +1,4 @@
-import type { ImageGenerator, ImageUpscaler, Moderator } from '../ports';
+import type { ImageGenerator, ImageUpscaler, Moderator, VideoGenerator } from '../ports';
 
 /**
  * Stand-ins until the image generation provider is chosen (Q-04): the "generated"
@@ -11,6 +11,11 @@ export const echoGenerator: ImageGenerator = {
 
 export const echoUpscaler: ImageUpscaler = {
   upscale: (image) => Promise.resolve(image),
+};
+
+/** There is no stand-in video: the job fails and its credits are refunded. */
+export const noVideoGenerator: VideoGenerator = {
+  animate: () => Promise.reject(new Error('Videos need AI_PROVIDER=google')),
 };
 
 export const allowAllModerator: Moderator = {

@@ -60,16 +60,23 @@ export const UPLOAD_LONG_EDGE = 1024;
 export const MAX_MASK_BYTES = 512 * 1024;
 
 /**
- * AI tools beside the styles (AI-10, AI-11, AI-13), with their prices in credits.
- * `erase` takes a mask of what to remove and `expand` a mask of the new margin to
- * fill in; `upscale` doubles the resolution.
+ * AI tools beside the styles (AI-10, AI-11, AI-13, AI-14), with their prices in
+ * credits. `erase` takes a mask of what to remove and `expand` a mask of the new
+ * margin to fill in; `upscale` doubles the resolution; `animate` makes a short
+ * video, which costs the provider far more than an image.
  */
 export const AI_TOOLS = {
   erase: { credits: 1 },
   expand: { credits: 1 },
   upscale: { credits: 1 },
+  animate: { credits: 5 },
 } as const;
 export type AiTool = keyof typeof AI_TOOLS;
+
+/** Tools whose result is an MP4 video rather than an image. */
+export function isVideoTool(styleId: string): boolean {
+  return styleId === 'animate';
+}
 
 const base64 = (maxBytes: number) =>
   z
@@ -99,7 +106,7 @@ export type GenerationStatus = (typeof GENERATION_STATUSES)[number];
 export const generationSchema = z.object({
   id: z.string().min(1),
   status: z.enum(GENERATION_STATUSES),
-  /** A short-lived download link once succeeded. */
+  /** A short-lived download link once succeeded: an image, or an MP4 for video tools. */
   imageUrl: z.url({ protocol: /^https$/ }).nullable(),
   /** Why it failed (credits are refunded for every failure). */
   error: z.enum(API_ERROR_CODES).nullable(),

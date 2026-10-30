@@ -12,6 +12,7 @@ import {
   RETENTION_MS,
 } from '../src/services/generations';
 import { handleRevenueCatEvent } from '../src/services/webhooks';
+import { ContentBlockedError, type Dependencies } from '../src/ports';
 import { JPEG_BASE64, PNG_BASE64, SECRET, testDependencies } from './fakes';
 
 const ADDRESS = '203.0.113.7';
@@ -26,6 +27,14 @@ async function setup(overrides: Parameters<typeof testDependencies>[0] = {}) {
   const context = testDependencies(overrides);
   const { accountId } = await createAccount(context.deps, SECRET, ADDRESS);
   return { ...context, accountId, authorization: `Bearer ${accountId}.${SECRET}` };
+}
+
+/** Tops an account up to `purchased` credits, as a credit pack would. */
+async function giveCredits(deps: Dependencies, accountId: string, purchased: number) {
+  await deps.store.transaction(async (tx) => {
+    const account = await tx.getAccount(accountId);
+    if (account !== null) tx.setAccount(accountId, { ...account, purchased });
+  });
 }
 
 describe('accounts', () => {
@@ -120,6 +129,57 @@ describe('generations', () => {
     expect(await getGeneration(deps, accountId, queued.id)).toMatchObject({ status: 'succeeded' });
     expect(seen[0]?.prompt).toContain('margin');
     expect(Buffer.from(seen[0]?.mask ?? []).toString('base64')).toBe(PNG_BASE64);
+  });
+
+  it('animates a photo with the video generator, shaped like the photo (AI-14)', async () => {
+    const shapes: string[] = [];
+    const moderated: Uint8Array[] = [];
+    const video = new Uint8Array([0, 0, 0, 0, 0x66, 0x74, 0x79, 0x70]);
+    const { deps, accountId, images } = await setup({
+      videoGenerator: {
+        animate: (_image, prompt, shape) => {
+          shapes.push(`${shape}:${prompt.includes('still') ? 'still' : ''}`);
+          return Promise.resolve(video);
+        },
+      },
+      moderator: {
+        isAllowed: (image) => {
+          moderated.push(image);
+          return Promise.resolve(true);
+        },
+      },
+    });
+    await giveCredits(deps, accountId, 10);
+    const queued = await createGeneration(deps, accountId, {
+      styleId: 'animate',
+      image: JPEG_BASE64,
+    });
+    await processGeneration(deps, queued.id);
+    expect(await getGeneration(deps, accountId, queued.id)).toMatchObject({
+      status: 'succeeded',
+      credits: { total: 5 },
+    });
+    expect(images.outputs.get(queued.id)).toEqual(video);
+    // Only the upload is moderated: image moderation cannot judge the video.
+    expect(moderated).toHaveLength(1);
+    expect(shapes).toEqual(['landscape:still']);
+  });
+
+  it('refunds a video the provider blocks', async () => {
+    const { deps, accountId } = await setup({
+      videoGenerator: { animate: () => Promise.reject(new ContentBlockedError('filtered')) },
+    });
+    await giveCredits(deps, accountId, 10);
+    const queued = await createGeneration(deps, accountId, {
+      styleId: 'animate',
+      image: JPEG_BASE64,
+    });
+    await processGeneration(deps, queued.id);
+    expect(await getGeneration(deps, accountId, queued.id)).toMatchObject({
+      status: 'failed',
+      error: 'moderation_blocked',
+      credits: { total: 10 },
+    });
   });
 
   it('needs a PNG mask to erase or expand, and no mask otherwise', async () => {

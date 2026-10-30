@@ -12,11 +12,23 @@ import { GeminiImageGenerator } from './adapters/google/gemini-image-generator';
 import { metadataTokenSource } from './adapters/google/http';
 import { ImagenUpscaler } from './adapters/google/imagen-upscaler';
 import { SafeSearchModerator } from './adapters/google/safe-search-moderator';
-import { allowAllModerator, echoGenerator, echoUpscaler } from './adapters/mock-provider';
+import { VeoVideoGenerator } from './adapters/google/veo-video-generator';
+import {
+  allowAllModerator,
+  echoGenerator,
+  echoUpscaler,
+  noVideoGenerator,
+} from './adapters/mock-provider';
 import { StorageImages } from './adapters/storage-images';
 import { handleRequest } from './http/api';
 import { clientAddress } from './http/client-address';
-import type { Dependencies, ImageGenerator, ImageUpscaler, Moderator } from './ports';
+import type {
+  Dependencies,
+  ImageGenerator,
+  ImageUpscaler,
+  Moderator,
+  VideoGenerator,
+} from './ports';
 import { deleteExpiredGenerations, processGeneration } from './services/generations';
 
 initializeApp();
@@ -31,12 +43,17 @@ const AI_PROVIDER = defineString('AI_PROVIDER', { default: 'mock' });
 const AI_MODEL = defineString('AI_MODEL', { default: 'gemini-2.5-flash-image' });
 /** The Vertex AI upscaling model for `google` (AI-11). */
 const AI_UPSCALE_MODEL = defineString('AI_UPSCALE_MODEL', { default: 'imagegeneration@002' });
+/** The Vertex AI image-to-video model for `google` (AI-14). */
+const AI_VIDEO_MODEL = defineString('AI_VIDEO_MODEL', { default: 'veo-3.0-fast-generate-001' });
+/** How long a video generation may take; Veo takes one to three minutes. */
+const VIDEO_TIMEOUT_MS = 240_000;
 const MONTHLY_CREDITS = defineInt('MONTHLY_CREDITS', { default: 10 });
 const REVENUECAT_WEBHOOK_SECRET = defineSecret('REVENUECAT_WEBHOOK_SECRET');
 
 function provider(): {
   generator: ImageGenerator;
   upscaler: ImageUpscaler;
+  videoGenerator: VideoGenerator;
   moderator: Moderator;
 } {
   const name = AI_PROVIDER.value();
@@ -45,7 +62,12 @@ function provider(): {
     if (process.env.GCLOUD_PROJECT?.endsWith('-prod') === true) {
       throw new Error('AI_PROVIDER=mock is not allowed in production');
     }
-    return { generator: echoGenerator, upscaler: echoUpscaler, moderator: allowAllModerator };
+    return {
+      generator: echoGenerator,
+      upscaler: echoUpscaler,
+      videoGenerator: noVideoGenerator,
+      moderator: allowAllModerator,
+    };
   }
   if (name === 'google') {
     const project = process.env.GCLOUD_PROJECT;
@@ -54,6 +76,7 @@ function provider(): {
     return {
       generator: new GeminiImageGenerator({ project, model: AI_MODEL.value(), token }),
       upscaler: new ImagenUpscaler({ project, model: AI_UPSCALE_MODEL.value(), token }),
+      videoGenerator: new VeoVideoGenerator({ project, model: AI_VIDEO_MODEL.value(), token }),
       moderator: new SafeSearchModerator({ token }),
     };
   }
@@ -85,6 +108,7 @@ function deps(): Dependencies {
       accountsPerAddressPerDay: 5,
       eventBatchesPerAddressPerHour: 1000,
       generationTimeoutMs: 60_000,
+      videoTimeoutMs: VIDEO_TIMEOUT_MS,
     },
     now: () => Date.now(),
   };
@@ -120,12 +144,12 @@ export const api = onRequest(
   },
 );
 
-/** Runs each generation when it is queued, with time for a 60 s provider call. */
+/** Runs each generation when it is queued, with time for the longest (video) provider call. */
 export const runGeneration = onDocumentCreated(
   {
     document: 'generations/{id}',
     region: REGION,
-    timeoutSeconds: 120,
+    timeoutSeconds: VIDEO_TIMEOUT_MS / 1000 + 60,
     memory: '1GiB',
     retry: false,
   },

@@ -38,6 +38,8 @@ eas env:create --environment production --name API_BASE_URL --value https://…
    AI_PROVIDER=google      # 画像生成の提供元（Q-04）。google = Vertex AI の Gemini 画像モデル + Cloud Vision の SafeSearch。
                            # mock は開発用（アップロードした写真をそのまま返す）で、プロジェクト ID が -prod で終わる環境では起動しない
    AI_MODEL=gemini-2.5-flash-image   # google のときの Vertex AI のモデル
+   AI_UPSCALE_MODEL=imagegeneration@002     # 高画質化（AI-11）のモデル
+   AI_VIDEO_MODEL=veo-3.0-fast-generate-001 # 動く写真（AI-14）のモデル。費用が画像より大きいので、クレジット（5）と合わせて見直す
    MONTHLY_CREDITS=10      # 年額会員への毎月の付与数（Q-05）
    ```
    `google` のときは、Vertex AI API と Cloud Vision API を有効にし、Functions のサービスアカウントに「Vertex AI ユーザー」（`roles/aiplatform.user`）を付ける。認証は Functions 自身のサービスアカウントで行うので、API キーは不要

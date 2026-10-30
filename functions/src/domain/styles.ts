@@ -12,9 +12,13 @@ export interface StyleDefinition {
 
 /**
  * How a job is done: a style prompt, repainting a masked area (erasing, AI-10, or
- * filling an added margin, AI-13) or upscaling (AI-11).
+ * filling an added margin, AI-13), upscaling (AI-11) or a short video (AI-14).
  */
-export type JobKind = 'style' | 'inpaint' | 'upscale';
+export type JobKind = 'style' | 'inpaint' | 'upscale' | 'video';
+
+/** The moving-photo tool's instruction (AI-14): the scene comes alive, the frame stays. */
+const ANIMATE_PROMPT =
+  'Bring this photo to life as a short, seamless clip: gentle natural motion such as drifting clouds, flowing water, swaying leaves, rippling light or softly moving hair. The camera stays still and the framing, people and objects stay as they are. No text, no cuts.';
 
 export interface JobDefinition {
   readonly kind: JobKind;
@@ -113,6 +117,8 @@ export function jobFor(styleId: string): JobDefinition | undefined {
       prompt: INPAINT_PROMPTS[styleId],
     };
   }
+  if (styleId === 'animate')
+    return { kind: 'video', credits: AI_TOOLS.animate.credits, prompt: ANIMATE_PROMPT };
   if (styleId === 'upscale')
     return { kind: 'upscale', credits: AI_TOOLS.upscale.credits, prompt: '' };
   const style = STYLES[styleId];

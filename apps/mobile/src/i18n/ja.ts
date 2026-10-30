@@ -286,6 +286,7 @@ export const ja = {
     cost: (count: number) => `💎 ${String(count)}`,
     generate: '変身する🪄',
     generating: '魔法をかけてるよ…🪄 ちょっと待ってね',
+    generatingVideo: '動画を作ってるよ…🎞️ 1〜3分かかるから、このまま待っててね',
     cancel: 'やめる',
     result: 'かわいく変身できたよ！💖',
     regenerate: '別のスタイルで',
@@ -305,6 +306,7 @@ export const ja = {
     tools: {
       erase: { name: 'けしゴム', description: 'じゃまな人やものを消すよ' },
       expand: { name: 'ひろげる', description: '写真の外側をAIが描き足すよ' },
+      animate: { name: '動く写真', description: '雲や水が動く、数秒の動画に' },
       upscale: { name: '高画質に', description: '写真を2倍のきれいさに' },
     },
     expand: {

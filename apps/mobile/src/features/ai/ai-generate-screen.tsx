@@ -1,4 +1,4 @@
-import { REPORT_REASONS } from '@fant/api-types';
+import { isVideoTool, REPORT_REASONS } from '@fant/api-types';
 import { File } from 'expo-file-system';
 import { Image } from 'expo-image';
 import { router } from 'expo-router';
@@ -16,6 +16,8 @@ import { colors, radius, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { addPhoto } from '../album/album-db';
 import { newPhotoId } from '../photo/photo-service';
+import { LoopingVideo } from '../video/looping-video';
+import { saveAiVideo } from '../video/video-service';
 import { useSettings } from '../settings/settings-store';
 import { reportGeneration } from './ai-client';
 import { useGeneration } from './use-generation';
@@ -29,15 +31,33 @@ export function AiGenerateScreen({
 }: {
   readonly sourceUri: string;
   readonly styleId: string;
-  /** The erase tool's mask (AI-10). */
+  /** A masked tool's mask (AI-10, AI-13). */
   readonly maskUri: string | null;
 }) {
   const { state, cancel } = useGeneration(sourceUri, styleId, maskUri);
   const { bottom } = useSafeAreaInsets();
   const [saving, setSaving] = useState(false);
+  const video = isVideoTool(styleId);
+
+  const saveVideo = async (resultUri: string) => {
+    setSaving(true);
+    try {
+      const photo = await saveAiVideo(resultUri);
+      router.replace({ pathname: '/photo/[id]', params: { id: photo.id } });
+    } catch (error) {
+      reportError(error, 'ai.saveVideo');
+      showError();
+    } finally {
+      setSaving(false);
+    }
+  };
 
   const save = () => {
     if (state.phase !== 'done') return;
+    if (video) {
+      void saveVideo(state.resultUri);
+      return;
+    }
     setSaving(true);
     try {
       const marked = markAiGenerated(new File(state.resultUri).bytesSync());
@@ -89,13 +109,16 @@ export function AiGenerateScreen({
             <HeroEmoji emoji="🪄" tint={colors.lavenderSoft} />
             <ActivityIndicator size="large" color={colors.accent} />
             <Text accessibilityLiveRegion="polite" style={styles.message}>
-              {strings.ai.generating}
+              {video ? strings.ai.generatingVideo : strings.ai.generating}
             </Text>
           </>
         )}
-        {state.phase === 'done' && (
-          <Image source={{ uri: state.resultUri }} style={styles.result} contentFit="contain" />
-        )}
+        {state.phase === 'done' &&
+          (video ? (
+            <LoopingVideo uri={state.resultUri} style={styles.result} />
+          ) : (
+            <Image source={{ uri: state.resultUri }} style={styles.result} contentFit="contain" />
+          ))}
         {state.phase === 'failed' && <HeroEmoji emoji="🥺" />}
         {state.phase === 'failed' && (
           <Text style={styles.message}>

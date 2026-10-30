@@ -280,6 +280,7 @@ export const en: Strings = {
     cost: (count) => `💎 ${String(count)}`,
     generate: 'Transform 🪄',
     generating: 'Working some magic… 🪄 Just a moment',
+    generatingVideo: 'Making your video… 🎞️ This takes 1–3 minutes, so stay on this screen',
     cancel: 'Stop',
     result: 'All done! 💖',
     regenerate: 'Try another style',
@@ -299,6 +300,7 @@ export const en: Strings = {
     tools: {
       erase: { name: 'Eraser', description: 'Remove people or things' },
       expand: { name: 'Expand', description: 'AI paints in beyond the edges' },
+      animate: { name: 'Moving photo', description: 'A few seconds of drifting clouds and water' },
       upscale: { name: 'Sharper', description: 'Twice the resolution' },
     },
     expand: {

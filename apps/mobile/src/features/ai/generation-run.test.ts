@@ -44,6 +44,7 @@ function setup(overrides: Partial<GenerationDeps> = {}) {
       return Promise.resolve();
     }),
     now: () => clock,
+    giveUpMs: 120_000,
     ...overrides,
   } satisfies GenerationDeps;
   const states: GenerationState[] = [];

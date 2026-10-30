@@ -4,8 +4,6 @@ import { DownloadError } from '../../lib/download-file';
 import { AiError } from './ai-error';
 
 const POLL_MS = 2000;
-/** The server times out at 60 s and refunds; the app stops waiting a little later. */
-const GIVE_UP_MS = 120_000;
 
 export type GenerationState =
   | { readonly phase: 'running'; readonly id: string | null }
@@ -25,6 +23,8 @@ export interface GenerationDeps {
   readonly reportError: (error: unknown, context: string) => void;
   readonly sleep: (ms: number) => Promise<void>;
   readonly now: () => number;
+  /** When to stop waiting: a little after the server's own time limit, which refunds. */
+  readonly giveUpMs: number;
 }
 
 /** What to tell the user about an error that ended a generation. */
@@ -96,7 +96,7 @@ export class GenerationRun {
       const startedAt = deps.now();
       while (generation.status === 'queued' || generation.status === 'processing') {
         if (this.stopped) return;
-        if (deps.now() - startedAt > GIVE_UP_MS) throw new AiError('timeout', 'Gave up waiting');
+        if (deps.now() - startedAt > deps.giveUpMs) throw new AiError('timeout', 'Gave up waiting');
         await deps.sleep(POLL_MS);
         generation = await this.pollOnce(generation);
       }

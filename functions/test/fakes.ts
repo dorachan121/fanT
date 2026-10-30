@@ -10,6 +10,7 @@ import type {
   Settings,
   Store,
   Transaction,
+  VideoGenerator,
 } from '../src/ports';
 
 /** An in-memory store: transactions run one at a time and commit on success only. */
@@ -129,12 +130,14 @@ export const TEST_SETTINGS: Settings = {
   accountsPerAddressPerDay: 2,
   eventBatchesPerAddressPerHour: 2,
   generationTimeoutMs: 50,
+  videoTimeoutMs: 50,
 };
 
 export function testDependencies(
   overrides: {
     generator?: ImageGenerator;
     upscaler?: ImageUpscaler;
+    videoGenerator?: VideoGenerator;
     moderator?: Moderator;
     now?: () => number;
   } = {},
@@ -147,6 +150,9 @@ export function testDependencies(
     images,
     generator: overrides.generator ?? { generate: (image) => Promise.resolve(image) },
     upscaler: overrides.upscaler ?? { upscale: (image) => Promise.resolve(image) },
+    videoGenerator: overrides.videoGenerator ?? {
+      animate: () => Promise.reject(new Error('no video in this test')),
+    },
     moderator: overrides.moderator ?? { isAllowed: () => Promise.resolve(true) },
     logger: {
       info: (message, fields) => logs.push({ level: 'info', message, fields }),

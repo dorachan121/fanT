@@ -54,7 +54,8 @@ export interface ImageStore {
   /** A masked tool's mask (AI-10, AI-13), kept and deleted with the upload. */
   putMask(id: string, png: Uint8Array): Promise<void>;
   getMask(id: string): Promise<Uint8Array>;
-  putOutput(id: string, image: Uint8Array): Promise<void>;
+  /** The result: an image, or an MP4 for video tools (AI-14). */
+  putOutput(id: string, result: Uint8Array): Promise<void>;
   /** A short-lived HTTPS link to the result. */
   outputUrl(id: string): Promise<string>;
   deleteImages(id: string): Promise<void>;
@@ -76,6 +77,23 @@ export interface ImageGenerator {
     prompt: string,
     signal: AbortSignal,
     mask?: Uint8Array,
+  ): Promise<Uint8Array>;
+}
+
+/** Which way up a generated video is. */
+export type VideoShape = 'portrait' | 'landscape';
+
+/**
+ * Turns a photo into a short MP4 (AI-14). Throws `ContentBlockedError` when the
+ * provider's safety filters refuse, which is also how its result is moderated:
+ * image moderation cannot judge a video.
+ */
+export interface VideoGenerator {
+  animate(
+    image: Uint8Array,
+    prompt: string,
+    shape: VideoShape,
+    signal: AbortSignal,
   ): Promise<Uint8Array>;
 }
 
@@ -107,6 +125,8 @@ export interface Settings {
   readonly eventBatchesPerAddressPerHour: number;
   /** Provider time limit (03 §2: time out at 60 s and refund). */
   readonly generationTimeoutMs: number;
+  /** The same for videos (AI-14), which take minutes. */
+  readonly videoTimeoutMs: number;
 }
 
 export interface Dependencies {
@@ -114,6 +134,7 @@ export interface Dependencies {
   readonly images: ImageStore;
   readonly generator: ImageGenerator;
   readonly upscaler: ImageUpscaler;
+  readonly videoGenerator: VideoGenerator;
   readonly moderator: Moderator;
   readonly logger: Logger;
   readonly settings: Settings;

@@ -18,21 +18,17 @@ function fileUri(path: string): string {
 }
 
 /**
- * Turns a raw recording into an album video (CAM-13): colours it with the film at
- * `intensity`, keeps its first frame for the grid, and deletes the raw file.
+ * Adds a video to the album: `write` puts the file in place, then its first frame
+ * becomes the grid thumbnail. On failure nothing is left behind.
  */
-export async function saveVideo(input: {
-  readonly recording: string;
-  readonly film: Film;
-  readonly intensity: number;
-}): Promise<AlbumPhoto> {
-  const raw = new File(fileUri(input.recording));
+async function addVideo(
+  write: (target: string) => Promise<void>,
+): Promise<{ readonly photo: AlbumPhoto; readonly durationMs: number }> {
   const id = newPhotoId();
   const thumbnail = new File(tempDirectory('video'), `${id}.jpg`);
   try {
-    const lut = await bakeFilmLut(input.film, input.intensity);
     const video = prepareVideoFile(id);
-    await applyLut(raw.uri, video, lut);
+    await write(video);
     const info = await videoThumbnail(video, thumbnail.uri);
     const photo = addPhoto({
       id,
@@ -44,17 +40,44 @@ export async function saveVideo(input: {
       recipe: null,
       originalRetentionDays: useSettings.getState().originalRetentionDays,
     });
-    track({
-      name: 'video_recorded',
-      filmId: input.film.id,
-      seconds: Math.round(info.durationMs / 1000),
-    });
-    return photo;
+    return { photo, durationMs: info.durationMs };
   } catch (error) {
     discardPhotoFiles(id);
     throw error;
   } finally {
-    if (raw.exists) raw.delete();
     if (thumbnail.exists) thumbnail.delete();
   }
+}
+
+/**
+ * Turns a raw recording into an album video (CAM-13): colours it with the film at
+ * `intensity`, keeps its first frame for the grid, and deletes the raw file.
+ */
+export async function saveVideo(input: {
+  readonly recording: string;
+  readonly film: Film;
+  readonly intensity: number;
+}): Promise<AlbumPhoto> {
+  const raw = new File(fileUri(input.recording));
+  try {
+    const lut = await bakeFilmLut(input.film, input.intensity);
+    const { photo, durationMs } = await addVideo((target) => applyLut(raw.uri, target, lut));
+    track({
+      name: 'video_recorded',
+      filmId: input.film.id,
+      seconds: Math.round(durationMs / 1000),
+    });
+    return photo;
+  } finally {
+    if (raw.exists) raw.delete();
+  }
+}
+
+/** Adds a generated moving photo (AI-14) to the album as it is. */
+export async function saveAiVideo(uri: string): Promise<AlbumPhoto> {
+  const { photo } = await addVideo((target) => {
+    new File(uri).copySync(new File(target));
+    return Promise.resolve();
+  });
+  return photo;
 }

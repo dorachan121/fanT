@@ -1,4 +1,4 @@
-import { UPLOAD_LONG_EDGE } from '@fant/api-types';
+import { isVideoTool, UPLOAD_LONG_EDGE } from '@fant/api-types';
 import { File } from 'expo-file-system';
 import { useEffect, useRef, useState } from 'react';
 
@@ -13,9 +13,12 @@ import { GenerationRun, type GenerationState } from './generation-run';
 
 export type { GenerationState } from './generation-run';
 
-const DOWNLOAD_TIMEOUT_MS = 30_000;
-/** Results are a single JPEG of a few megabytes at most. */
-const MAX_RESULT_BYTES = 15 * 1024 * 1024;
+/** How results are fetched: an image of a few megabytes, or a video of a few seconds (AI-14). */
+const RESULTS = {
+  image: { extension: 'jpg', maxBytes: 15 * 1024 * 1024, downloadMs: 30_000, giveUpMs: 120_000 },
+  // The server allows a video four minutes and refunds after that.
+  video: { extension: 'mp4', maxBytes: 60 * 1024 * 1024, downloadMs: 90_000, giveUpMs: 300_000 },
+} as const;
 
 /**
  * Runs one generation (S-43): uploads a downscaled copy (nothing larger leaves the
@@ -37,6 +40,7 @@ export function useGeneration(sourceUri: string, styleId: string, maskUri: strin
         run.detach();
       };
     }
+    const result = RESULTS[isVideoTool(styleId) ? 'video' : 'image'];
     const run = new GenerationRun(
       {
         start: () => {
@@ -46,11 +50,11 @@ export function useGeneration(sourceUri: string, styleId: string, maskUri: strin
         },
         get: getGeneration,
         cancel: cancelGeneration,
-        download: async (id, imageUrl) => {
-          const file = new File(tempDirectory('ai'), `${id}.jpg`);
-          await downloadFile(imageUrl, file, {
-            timeoutMs: DOWNLOAD_TIMEOUT_MS,
-            maxBytes: MAX_RESULT_BYTES,
+        download: async (id, url) => {
+          const file = new File(tempDirectory('ai'), `${id}.${result.extension}`);
+          await downloadFile(url, file, {
+            timeoutMs: result.downloadMs,
+            maxBytes: result.maxBytes,
           });
           return file.uri;
         },
@@ -63,6 +67,7 @@ export function useGeneration(sourceUri: string, styleId: string, maskUri: strin
         reportError,
         sleep,
         now: Date.now,
+        giveUpMs: result.giveUpMs,
       },
       setState,
     );

@@ -55,11 +55,17 @@ function toolDestination(tool: AiTool, uri: string): Href {
     case 'expand':
       return { pathname: '/ai/expand', params: { uri } };
     case 'upscale':
+    case 'animate':
       return { pathname: '/ai/generate', params: { uri, styleId: tool } };
   }
 }
 
-const TOOL_ICONS: Record<AiTool, string> = { erase: '🧽', expand: '🖼️', upscale: '🔍' };
+const TOOL_ICONS: Record<AiTool, string> = {
+  erase: '🧽',
+  expand: '🖼️',
+  upscale: '🔍',
+  animate: '🎞️',
+};
 
 /** Styles and tools, their price and the balance (S-41, AI-02/07/10/11). */
 export function AiStylesScreen({ sourceUri }: { readonly sourceUri: string }) {

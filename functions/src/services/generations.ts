@@ -7,6 +7,7 @@ import {
 } from '@fant/api-types';
 
 import { creditsOf, debit, InsufficientCreditsError, refund } from '../domain/credits';
+import { jpegSize } from '../domain/jpeg-size';
 import { takeRate } from '../domain/rate-limit';
 import { newId } from '../domain/secrets';
 import { jobFor, SAFETY_PROMPT, type JobDefinition } from '../domain/styles';
@@ -45,7 +46,7 @@ function maskOf(job: JobDefinition, mask: string | undefined): Buffer | null {
   return bytes;
 }
 
-/** Does the job's work on a moderated input: a style, a masked repaint or upscaling. */
+/** Does the job's work on a moderated input: a style, a masked repaint, upscaling or a video. */
 async function runJob(
   deps: Dependencies,
   id: string,
@@ -65,6 +66,11 @@ async function runJob(
       );
     case 'upscale':
       return deps.upscaler.upscale(input, signal);
+    case 'video': {
+      const size = jpegSize(input);
+      const shape = size !== null && size.height > size.width ? 'portrait' : 'landscape';
+      return deps.videoGenerator.animate(input, `${job.prompt}\n${SAFETY_PROMPT}`, shape, signal);
+    }
   }
 }
 
@@ -200,10 +206,13 @@ export async function processGeneration(deps: Dependencies, id: string): Promise
       return;
     }
     const input = await deps.images.getInput(id);
-    const timeoutMs = deps.settings.generationTimeoutMs;
+    const isVideo = job.kind === 'video';
+    const timeoutMs = isVideo ? deps.settings.videoTimeoutMs : deps.settings.generationTimeoutMs;
     const output = await withTimeout(async (signal) => {
       if (!(await deps.moderator.isAllowed(input, signal))) return 'blocked' as const;
       const generated = await runJob(deps, id, job, input, signal);
+      // Image moderation cannot judge a video: the provider's filters do (see VideoGenerator).
+      if (isVideo) return generated;
       return (await deps.moderator.isAllowed(generated, signal)) ? generated : ('blocked' as const);
     }, timeoutMs).catch((error: unknown) => {
       if (error instanceof Error && error.name === 'AbortError') return 'timeout' as const;
