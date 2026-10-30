@@ -159,6 +159,10 @@ const photoRecipeSchema = z.strictObject({
     mirror: z.boolean(),
     /** Degrees clockwise to level a horizon; missing in older recipes. */
     straighten: z.number().min(-MAX_STRAIGHTEN).max(MAX_STRAIGHTEN).default(0),
+    /** Keystone correction (EDT-18); missing in older recipes. */
+    perspective: z
+      .strictObject({ vertical: centeredUnit, horizontal: centeredUnit })
+      .default({ vertical: 0, horizontal: 0 }),
     crop: cropSchema,
   }),
   deco: z.array(decoLayerSchema).max(MAX_DECO_LAYERS),
@@ -213,7 +217,13 @@ export function newRecipe(options: {
     adjust: options.adjust ?? DEFAULT_ADJUST_PARAMS,
     dateStamp: options.dateStamp,
     character: options.character,
-    transform: { rotation: 0, mirror: options.mirror, straighten: 0, crop: options.crop },
+    transform: {
+      rotation: 0,
+      mirror: options.mirror,
+      straighten: 0,
+      perspective: { vertical: 0, horizontal: 0 },
+      crop: options.crop,
+    },
     deco: [],
     frame: null,
     faceShape: options.faceShape ?? DEFAULT_FACE_SHAPE_PARAMS,

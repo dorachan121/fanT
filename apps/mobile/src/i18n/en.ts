@@ -179,6 +179,7 @@ export const en: Strings = {
     temperature: 'Temperature',
     rotate: 'Rotate',
     straighten: 'Straighten',
+    perspective: { vertical: 'Vertical perspective', horizontal: 'Horizontal perspective' },
     flip: 'Flip',
     original: 'Original ratio',
     undo: 'Undo',

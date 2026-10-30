@@ -22,8 +22,9 @@ import { filterSettingsFor } from '../features/photo/filter-settings';
 import { coverPlacement, framedPhotoRect } from '../features/photo/frames';
 import { croppedSize, fitLongEdge, type Size } from '../features/photo/geometry';
 import type { PhotoRecipe } from '../features/photo/recipe';
+import { affineAt, composeProjective, fromAffine } from '../features/photo/projective';
 import { recipeTransform } from '../features/photo/transform';
-import { compose, scale, toMatrix3 } from './affine.worklet';
+import { scale } from './affine.worklet';
 import type { CharacterDrawing } from './draw-character';
 import { drawDeco, type DecoAssets } from './draw-deco';
 import { drawFiltered } from './draw-filtered';
@@ -89,8 +90,8 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
   const lut = await loadFilmLut(film);
   const full = croppedSize(imageSize(image), recipe.transform.rotation, recipe.transform.crop);
   const size = input.maxLongEdge === undefined ? full : fitLongEdge(full, input.maxLongEdge);
-  const transform = compose(
-    scale(size.width / full.width, size.height / full.height),
+  const transform = composeProjective(
+    fromAffine(scale(size.width / full.width, size.height / full.height)),
     recipeTransform(imageSize(image), recipe.transform),
   );
 
@@ -100,7 +101,12 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
   const faces =
     needsFaces && input.originalUri !== null
       ? primaryFaces(
-          detectFacesInImage(input.originalUri).map((face) => toFaceGeometry(face, transform)),
+          detectFacesInImage(input.originalUri).map((face) => {
+            const { x, y, width, height } = face.bounds;
+            // A face is small: the transform around its centre is as good as affine.
+            const around = affineAt(transform, { x: x + width / 2, y: y + height / 2 });
+            return toFaceGeometry(face, around);
+          }),
         )
       : [];
   const { character } = input;
@@ -112,14 +118,15 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
   const maskMatrix =
     mask === null
       ? null
-      : Skia.Matrix(
-          toMatrix3(
-            compose(transform, scale(image.width() / mask.width(), image.height() / mask.height())),
+      : Skia.Matrix([
+          ...composeProjective(
+            transform,
+            fromAffine(scale(image.width() / mask.width(), image.height() / mask.height())),
           ),
-        );
+        ]);
 
   const surface = makeSurface(size.width, size.height);
-  const matrix = Skia.Matrix(toMatrix3(transform));
+  const matrix = Skia.Matrix([...transform]);
   const source = image.makeShaderOptions(
     TileMode.Clamp,
     TileMode.Clamp,

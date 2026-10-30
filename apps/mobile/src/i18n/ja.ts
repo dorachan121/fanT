@@ -185,6 +185,7 @@ export const ja = {
     temperature: '色温度',
     rotate: '回転',
     straighten: '傾き',
+    perspective: { vertical: '縦の遠近', horizontal: '横の遠近' },
     flip: '反転',
     original: '元の比率',
     undo: '元に戻す',
