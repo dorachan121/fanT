@@ -1,5 +1,7 @@
 import type { AdjustParams, DetailParams } from '@fant/filters';
 
+import type { PhotoRecipe } from '../photo/recipe';
+
 /** What auto adjustment looks at, all in 0–1. */
 export interface ImageStats {
   /** Luma below which 1%, 50% and 99% of the pixels lie. */
@@ -84,5 +86,17 @@ export function autoAdjust(stats: ImageStats): {
       shadows: stats.low < 0.03 && median < 0.35 ? 0.3 : 0,
       vibrance: stats.saturation < 0.2 ? 0.25 : 0.1,
     },
+  };
+}
+
+/** The recipe change auto adjustment makes from a sample of the original's pixels. */
+export function autoAdjusted(
+  recipe: PhotoRecipe,
+  pixels: Uint8Array,
+): Pick<PhotoRecipe, 'adjust' | 'detail'> {
+  const auto = autoAdjust(statsOf(pixels));
+  return {
+    adjust: { ...recipe.adjust, ...auto.adjust },
+    detail: { ...recipe.detail, ...auto.detail },
   };
 }

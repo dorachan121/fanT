@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { autoAdjust, statsOf, type ImageStats } from './auto-adjust';
+import { neutralRecipe } from '../photo/recipe';
+import { autoAdjust, autoAdjusted, statsOf, type ImageStats } from './auto-adjust';
 
 /** RGBA pixels of the given colours, repeated in order. */
 function pixels(colors: readonly (readonly [number, number, number])[], count = 100) {
@@ -82,5 +83,22 @@ describe('autoAdjust', () => {
 
   it('gives dull colours more vibrance', () => {
     expect(autoAdjust({ ...BALANCED, saturation: 0.05 }).detail.vibrance).toBe(0.25);
+  });
+});
+
+describe('autoAdjusted', () => {
+  it('changes only the auto-adjusted values of the recipe', () => {
+    const recipe = {
+      ...neutralRecipe(0.5),
+      adjust: { ...neutralRecipe(0.5).adjust, saturation: 0.4 },
+      detail: { ...neutralRecipe(0.5).detail, sky: 0.7 },
+    };
+    const dark = pixels([[30, 30, 30]]);
+
+    const { adjust, detail } = autoAdjusted(recipe, dark);
+
+    expect(adjust.brightness).toBeGreaterThan(0);
+    expect(adjust.saturation).toBe(0.4);
+    expect(detail.sky).toBe(0.7);
   });
 });
