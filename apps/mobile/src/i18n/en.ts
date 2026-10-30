@@ -158,6 +158,7 @@ export const en: Strings = {
     saturation: 'Saturation',
     temperature: 'Temperature',
     rotate: 'Rotate',
+    straighten: 'Straighten',
     flip: 'Flip',
     original: 'Original ratio',
     undo: 'Undo',

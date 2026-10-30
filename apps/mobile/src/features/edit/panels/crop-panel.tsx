@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { strings } from '../../../i18n';
 import { Chip } from '../../../ui/chip';
 import { IconButton } from '../../../ui/icon-button';
+import { Slider } from '../../../ui/slider';
 import { spacing } from '../../../ui/theme';
 import {
   ASPECT_VALUES,
@@ -14,7 +15,9 @@ import {
 import { ASPECT_RATIOS, FULL_CROP, type AspectRatio } from '../../photo/recipe';
 import type { PanelProps } from './panel-props';
 
-/** Crop to an aspect ratio, rotate and flip (EDT-03). */
+/** The slider covers a tilted horizon; finer than the recipe's limit, for precision. */
+const STRAIGHTEN_RANGE = 15;
+/** Crop to an aspect ratio, rotate, straighten and flip (EDT-03). */
 export function CropPanel({
   recipe,
   update,
@@ -50,6 +53,19 @@ export function CropPanel({
           />
         ))}
       </View>
+      <Slider
+        label={strings.edit.straighten}
+        value={recipe.transform.straighten}
+        min={-STRAIGHTEN_RANGE}
+        max={STRAIGHTEN_RANGE}
+        centered
+        formatValue={(degrees) => `${degrees > 0 ? '+' : ''}${degrees.toFixed(1)}°`}
+        onChange={(degrees) => {
+          // Snaps to level near zero, where a steady hand cannot stop exactly.
+          const straighten = Math.abs(degrees) < 0.25 ? 0 : degrees;
+          update({ transform: { ...recipe.transform, straighten } }, 'straighten');
+        }}
+      />
       <View style={styles.row}>
         <IconButton
           icon="refresh"

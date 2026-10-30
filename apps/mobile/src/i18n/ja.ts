@@ -165,6 +165,7 @@ export const ja = {
     saturation: '彩度',
     temperature: '色温度',
     rotate: '回転',
+    straighten: '傾き',
     flip: '反転',
     original: '元の比率',
     undo: '元に戻す',

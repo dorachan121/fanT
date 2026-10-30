@@ -27,6 +27,8 @@ import { DECO_FONTS } from '../deco/deco-fonts';
 /** Limits that keep a recipe small; the editor stops adding past them (DCO-*). */
 export const MAX_STROKE_POINTS = 2000;
 export const MAX_DECO_LAYERS = 500;
+/** Furthest a photo can be straightened, in degrees either way. */
+export const MAX_STRAIGHTEN = 45;
 
 /**
  * Numbers within each parameter's range, e.g. the beauty or adjust parameters. A
@@ -147,10 +149,12 @@ const photoRecipeSchema = z.strictObject({
   adjust: paramsSchema(ADJUST_PARAM_RANGES),
   dateStamp: dateStampSchema.nullable(),
   character: z.strictObject({ id: contentIdSchema, variantId: contentIdSchema }).nullable(),
-  /** Applied to the original first: quarter turns, mirroring, then the crop. */
+  /** Applied to the original first: mirroring, quarter turns, straightening, then the crop. */
   transform: z.strictObject({
     rotation: z.union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)]),
     mirror: z.boolean(),
+    /** Degrees clockwise to level a horizon; missing in older recipes. */
+    straighten: z.number().min(-MAX_STRAIGHTEN).max(MAX_STRAIGHTEN).default(0),
     crop: cropSchema,
   }),
   deco: z.array(decoLayerSchema).max(MAX_DECO_LAYERS),
@@ -200,7 +204,7 @@ export function newRecipe(options: {
     adjust: options.adjust ?? DEFAULT_ADJUST_PARAMS,
     dateStamp: options.dateStamp,
     character: options.character,
-    transform: { rotation: 0, mirror: options.mirror, crop: options.crop },
+    transform: { rotation: 0, mirror: options.mirror, straighten: 0, crop: options.crop },
     deco: [],
     frame: null,
     faceShape: options.faceShape ?? DEFAULT_FACE_SHAPE_PARAMS,
