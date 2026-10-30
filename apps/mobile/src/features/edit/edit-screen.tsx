@@ -34,6 +34,7 @@ import { HslPanel } from './panels/hsl-panel';
 import { addLocalArea, LocalPanel } from './panels/local-panel';
 import type { PanelProps, PhotoPoint } from './panels/panel-props';
 import { RetouchPanel, type RetouchTool } from './panels/retouch-panel';
+import { SceneryPanel } from './panels/scenery-panel';
 import { TonePanel } from './panels/tone-panel';
 import { PhotoTapLayer, type PhotoMarker } from './photo-tap-layer';
 import { usePhotoSession } from './use-photo-session';
@@ -44,6 +45,7 @@ const TABS = [
   'makeup',
   'retouch',
   'adjust',
+  'scenery',
   'tone',
   'hsl',
   'local',
@@ -147,6 +149,7 @@ export function EditScreen({ id }: { readonly id: string }) {
       />
     ),
     adjust: () => <AdjustPanel {...props} />,
+    scenery: () => <SceneryPanel {...props} />,
     tone: () => <TonePanel {...props} />,
     hsl: () => <HslPanel {...props} />,
     local: () => <LocalPanel {...props} selected={selectedLocal} onSelect={setSelectedLocal} />,

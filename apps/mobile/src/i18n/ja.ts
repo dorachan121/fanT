@@ -115,6 +115,7 @@ export const ja = {
       film: 'フィルム',
       beauty: '美肌',
       adjust: '補正',
+      scenery: '風景',
       makeup: 'メイク',
       retouch: 'レタッチ',
       tone: 'トーン',
@@ -128,6 +129,12 @@ export const ja = {
       highlights: 'ハイライト',
       shadows: 'シャドウ',
       vibrance: '自然な彩度',
+    },
+    scenery: {
+      dehaze: 'かすみ除去',
+      clarity: 'くっきり',
+      sky: '空の青さ',
+      sunset: '夕焼け',
     },
     curve: {
       title: 'トーンカーブ',

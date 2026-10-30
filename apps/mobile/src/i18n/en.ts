@@ -108,6 +108,7 @@ export const en: Strings = {
       film: 'Film',
       beauty: 'Skin',
       adjust: 'Adjust',
+      scenery: 'Scenery',
       makeup: 'Makeup',
       retouch: 'Retouch',
       tone: 'Tone',
@@ -121,6 +122,12 @@ export const en: Strings = {
       highlights: 'Highlights',
       shadows: 'Shadows',
       vibrance: 'Vibrance',
+    },
+    scenery: {
+      dehaze: 'Dehaze',
+      clarity: 'Clarity',
+      sky: 'Blue sky',
+      sunset: 'Sunset',
     },
     curve: {
       title: 'Tone curve',

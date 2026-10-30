@@ -2,8 +2,9 @@ import { GRADE_SKSL, LUMA_SKSL } from '../sksl';
 
 /**
  * `detail_v1`: the editor's detailed adjustments, after the basic ones and the
- * skin retouching: local areas (EDT-10), the tone curve (EDT-09), highlights and
- * shadows, colour bands (EDT-08), vibrance and sharpening (EDT-07).
+ * skin retouching: sharpening (EDT-07), clarity and dehaze (EDT-15), local areas
+ * (EDT-10), the tone curve (EDT-09), highlights and shadows, colour bands (EDT-08),
+ * sky and sunset (EDT-15), and vibrance.
  *
  * Uniform names must match `DetailUniforms`; a test checks that they stay in sync.
  */
@@ -16,6 +17,10 @@ uniform float sharpen;
 uniform float highlights;
 uniform float shadows;
 uniform float vibrance;
+uniform float dehaze;
+uniform float clarity;
+uniform float sky;
+uniform float sunset;
 // Tone curve: shadows, darks, lights, highlights.
 uniform float4 curve;
 // Colour bands red, orange, yellow, green (A) and aqua, blue, purple, magenta (B).
@@ -39,6 +44,10 @@ ${LUMA_SKSL}
 ${GRADE_SKSL}
 // Sharpening radius as a fraction of the short edge, the same in preview and photo.
 const float SHARPEN_RADIUS = 0.0012;
+// Clarity and dehaze compare a pixel with its surroundings at this radius.
+const float SURROUND_RADIUS = 0.012;
+// The colour mist fades towards when dehaze is negative.
+const half3 MIST = half3(0.86, 0.89, 0.93);
 
 half3 rgbToHsv(half3 c) {
   half4 k = half4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
@@ -86,6 +95,43 @@ half3 colourBands(half3 color) {
   return hsvToRgb(hsv);
 }
 
+// The average colour on a ring of radius 'r' around 'coord'.
+half3 surroundOf(float2 coord, float r) {
+  float d = r * 0.7071;
+  half3 sum = unpremul(image.eval(coord + float2(r, 0.0))).rgb
+    + unpremul(image.eval(coord - float2(r, 0.0))).rgb
+    + unpremul(image.eval(coord + float2(0.0, r))).rgb
+    + unpremul(image.eval(coord - float2(0.0, r))).rgb
+    + unpremul(image.eval(coord + float2(d, d))).rgb
+    + unpremul(image.eval(coord - float2(d, d))).rgb
+    + unpremul(image.eval(coord + float2(d, -d))).rgb
+    + unpremul(image.eval(coord - float2(d, -d))).rgb;
+  return sum * 0.125;
+}
+
+// Blue skies get deeper (positive) or paler (negative); clouds and blue clothes
+// low in the frame are mostly left alone.
+half3 skyTone(half3 color, float2 uv) {
+  half3 hsv = rgbToHsv(saturate(color));
+  half weight = bandWeight(hsv.x, 0.58, 0.11) * smoothstep(0.08, 0.25, hsv.y)
+    * smoothstep(0.2, 0.45, hsv.z) * half(mix(0.5, 1.0, 1.0 - uv.y));
+  if (weight <= 0.0) return color;
+  hsv.y = saturate(hsv.y * (1.0 + half(sky) * 0.8 * weight));
+  hsv.z = saturate(hsv.z * (1.0 - half(sky) * 0.15 * weight));
+  return hsvToRgb(hsv);
+}
+
+// Warm colours richer and a golden glow in the highlights (positive), or cooler.
+half3 sunsetTone(half3 color) {
+  half3 hsv = rgbToHsv(saturate(color));
+  half warm = max(bandWeight(hsv.x, 0.06, 0.12), bandWeight(hsv.x, 0.97, 0.05))
+    * smoothstep(0.05, 0.2, hsv.y);
+  hsv.y = saturate(hsv.y * (1.0 + half(sunset) * 0.6 * warm));
+  half3 rich = hsvToRgb(hsv);
+  half luma = dot(rich, LUMA);
+  return rich + half3(1.0, 0.45, -0.7) * half(sunset) * 0.09 * luma * luma;
+}
+
 // A smooth bump of width 1/4 centred at 'centre'.
 half bump(half x, half centre) {
   half t = saturate(1.0 - abs(x - centre) * 4.0);
@@ -124,6 +170,23 @@ half4 main(float2 coord) {
     color += (color - blur) * half(sharpen * 1.5);
   }
 
+  if (clarity != 0.0 || dehaze != 0.0) {
+    half3 surround = surroundOf(coord, max(2.0, SURROUND_RADIUS * shortEdge));
+    if (clarity != 0.0) {
+      // Midtones only, so skies and deep shadows do not band or clip.
+      half midtones = 1.0 - abs(dot(saturate(color), LUMA) * 2.0 - 1.0);
+      color += (color - surround) * half(clarity) * midtones * 1.2;
+    }
+    if (dehaze > 0.0) {
+      // Haze lifts the darkest channel of a whole area (the dark-channel prior with
+      // white air light): take that veil off and stretch back what is left.
+      half veil = half(dehaze) * 0.6 * min(min(surround.r, surround.g), surround.b);
+      color = (color - veil) / max(1.0 - veil, 0.3);
+    } else if (dehaze < 0.0) {
+      color = mix(color, MIST, half(-dehaze) * 0.4);
+    }
+  }
+
   float2 uv = coord / resolution;
   float aspect = resolution.x / resolution.y;
   color = local(color, uv, aspect, local0Area, local0Adjust);
@@ -146,6 +209,9 @@ half4 main(float2 coord) {
       || any(notEqual(luminanceA, float4(0.0))) || any(notEqual(luminanceB, float4(0.0)))) {
     color = colourBands(color);
   }
+
+  if (sky != 0.0) color = skyTone(color, uv);
+  if (sunset != 0.0) color = sunsetTone(color);
 
   if (vibrance != 0.0) {
     half grey = dot(color, LUMA);

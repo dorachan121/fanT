@@ -16,6 +16,10 @@ export type DetailUniforms = {
   readonly highlights: number;
   readonly shadows: number;
   readonly vibrance: number;
+  readonly dehaze: number;
+  readonly clarity: number;
+  readonly sky: number;
+  readonly sunset: number;
   readonly curve: Vec4;
   readonly hueA: Vec4;
   readonly hueB: Vec4;
@@ -62,6 +66,10 @@ export function toDetailUniforms(
     highlights: params.highlights,
     shadows: params.shadows,
     vibrance: params.vibrance,
+    dehaze: params.dehaze,
+    clarity: params.clarity,
+    sky: params.sky,
+    sunset: params.sunset,
     curve: [params.curveShadows, params.curveDarks, params.curveLights, params.curveHighlights],
     hueA: bands(params, 'Hue', 0),
     hueB: bands(params, 'Hue', 4),

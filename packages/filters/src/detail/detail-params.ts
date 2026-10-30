@@ -25,7 +25,8 @@ const hslRanges = Object.fromEntries(
 
 /**
  * Detailed adjustments in the editor: sharpening and tone (EDT-07), colour bands
- * (EDT-08) and a four-point tone curve (EDT-09). Zero leaves the photo unchanged.
+ * (EDT-08), a four-point tone curve (EDT-09) and scenery tools (EDT-15). Zero leaves
+ * the photo unchanged.
  */
 export const DETAIL_PARAM_RANGES = {
   sharpen: { min: 0, max: 1, defaultValue: 0 },
@@ -41,6 +42,14 @@ export const DETAIL_PARAM_RANGES = {
   curveLights: centered,
   curveHighlights: centered,
   ...hslRanges,
+  /** Positive clears haze from distant scenery, negative adds a soft mist. */
+  dehaze: centered,
+  /** Contrast between neighbouring areas in the midtones: crisper or softer detail. */
+  clarity: centered,
+  /** Positive deepens blue skies, negative pales them. */
+  sky: centered,
+  /** Positive glows warmer in reds, oranges and highlights, negative cools them. */
+  sunset: centered,
 } as const satisfies Record<string, ParamRange>;
 
 export type DetailParamName = keyof typeof DETAIL_PARAM_RANGES;

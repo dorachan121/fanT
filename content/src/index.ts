@@ -11,12 +11,16 @@ import mono from '../builtin/films/mono.json';
 import natural from '../builtin/films/natural.json';
 import nightFlash from '../builtin/films/night_flash.json';
 import pastel from '../builtin/films/pastel.json';
+import kiri from '../builtin/films/kiri.json';
 import puri from '../builtin/films/puri.json';
 import sakura from '../builtin/films/sakura.json';
 import sepia from '../builtin/films/sepia.json';
+import shinryoku from '../builtin/films/shinryoku.json';
 import summer from '../builtin/films/summer.json';
 import toy from '../builtin/films/toy.json';
 import vhs from '../builtin/films/vhs.json';
+import yakei from '../builtin/films/yakei.json';
+import yuyake from '../builtin/films/yuyake.json';
 import layouts from '../builtin/layouts.json';
 import phrases from '../builtin/phrases.json';
 import stamps from '../builtin/stamps.json';
@@ -41,6 +45,8 @@ export function builtInManifest(): Manifest {
       pastel,
       summer,
       sakura,
+      shinryoku,
+      yuyake,
       keitai,
       mono,
       vhs,
@@ -48,6 +54,8 @@ export function builtInManifest(): Manifest {
       sepia,
       cinema,
       toy,
+      kiri,
+      yakei,
     ],
     characters,
     layouts,

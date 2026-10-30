@@ -42,6 +42,10 @@ const splitTone = (c: Rgb, shadow: Rgb, highlight: Rgb, amount: number): Rgb => 
   ];
 };
 const saturate = (c: Rgb, amount: number): Rgb => mix([luma(c), luma(c), luma(c)], c, 1 + amount);
+/** How green a colour is (0–1): foliage, lawns, fields. */
+const greenness = ([r, g, b]: Rgb) => smoothstep(0.02, 0.15, g - Math.max(r, b));
+/** How warm a colour is (0–1): skin, sunsets, lamps. */
+const warmness = ([r, g, b]: Rgb) => smoothstep(0.05, 0.3, r - b) * smoothstep(-0.1, 0.1, r - g);
 
 /** Colour looks; the rest of each film (grain, bloom, …) lives in its JSON. */
 const LOOKS: Record<string, (c: Rgb) => Rgb> = {
@@ -60,6 +64,31 @@ const LOOKS: Record<string, (c: Rgb) => Rgb> = {
     saturate(splitTone(mix(c, [1, 1, 1], 0.08), [0.55, 0.45, 0.58], [0.64, 0.5, 0.58], 0.35), 0.05),
   // Night flash: deep shadows, cold background, bright flash-lit faces.
   night_flash: (c) => curveRgb(splitTone(c, [0.4, 0.45, 0.65], [0.6, 0.55, 0.5], 0.4), 0.6),
+  // Fresh greenery (EDT-15 scenery films): leaves richer and a touch yellow, clean skies.
+  shinryoku: (c) => {
+    const leaf = greenness(c);
+    const fresh = mix(c, saturate([c[0] + 0.03, c[1] + 0.02, c[2] - 0.04], 0.45), leaf);
+    return curveRgb(splitTone(fresh, [0.45, 0.52, 0.55], [0.55, 0.55, 0.48], 0.25), 0.2);
+  },
+  // Sunset: golden highlights, rose-violet shadows, warm colours glowing.
+  yuyake: (c) => {
+    const glow = mix(c, saturate(c, 0.4), warmness(c));
+    return curveRgb(splitTone(glow, [0.52, 0.4, 0.6], [0.72, 0.55, 0.36], 0.45), 0.25);
+  },
+  // Misty morning: lifted, cool and quiet, colours held back.
+  kiri: (c) =>
+    saturate(
+      curveRgb(
+        splitTone(mix(c, [0.82, 0.86, 0.9], 0.18), [0.45, 0.5, 0.6], [0.52, 0.54, 0.58], 0.3),
+        -0.3,
+      ),
+      -0.3,
+    ),
+  // Night city: teal shadows, orange lights, deep contrast.
+  yakei: (c) => {
+    const lights = mix(c, saturate(c, 0.5), warmness(c));
+    return curveRgb(splitTone(lights, [0.3, 0.55, 0.62], [0.7, 0.52, 0.35], 0.5), 0.45);
+  },
 };
 
 const directory = join(import.meta.dirname, '..', 'builtin', 'luts');
