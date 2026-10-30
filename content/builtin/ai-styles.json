@@ -102,5 +102,70 @@
       "en": "Colourful pop art"
     },
     "credits": 1
+  },
+  {
+    "id": "sky_blue",
+    "version": 1,
+    "name": {
+      "ja": "青空に",
+      "en": "Blue sky"
+    },
+    "description": {
+      "ja": "空を、雲の浮かぶ青空に",
+      "en": "Turns the sky into a bright blue sky with clouds"
+    },
+    "credits": 1
+  },
+  {
+    "id": "sky_sunset",
+    "version": 1,
+    "name": {
+      "ja": "夕焼け空に",
+      "en": "Sunset sky"
+    },
+    "description": {
+      "ja": "空を夕焼けにして、全体を夕日の色に",
+      "en": "Turns the sky into a sunset and bathes the scene in its glow"
+    },
+    "credits": 1
+  },
+  {
+    "id": "sky_starry",
+    "version": 1,
+    "name": {
+      "ja": "星空に",
+      "en": "Starry night"
+    },
+    "description": {
+      "ja": "空を満天の星空にして、夜の風景に",
+      "en": "Turns the sky into a starry night"
+    },
+    "credits": 1
+  },
+  {
+    "id": "snow_scene",
+    "version": 1,
+    "name": {
+      "ja": "雪景色に",
+      "en": "Snowy scene"
+    },
+    "description": {
+      "ja": "風景をしんしんと雪の積もる冬景色に",
+      "en": "Covers the scene in fresh winter snow"
+    },
+    "credits": 1
+  },
+  {
+    "id": "night_lights",
+    "version": 1,
+    "name": {
+      "ja": "夜景に",
+      "en": "City lights"
+    },
+    "description": {
+      "ja": "街や風景を、明かりのきらめく夜景に",
+      "en": "Turns the scene into a glittering night view"
+    },
+    "credits": 1
   }
 ]

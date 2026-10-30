@@ -65,6 +65,32 @@ export const STYLES: Readonly<Record<string, StyleDefinition>> = {
     prompt:
       'Turn the photo into colorful pop art with bold outlines, halftone dots and flat vivid colors, not copying any specific artist. Keep the person recognizable.',
   },
+  // Scenery (AI-12): the sky or the season of a landscape, people left as they are.
+  sky_blue: {
+    credits: 1,
+    prompt:
+      'Replace only the sky in the photo with a clear bright blue sky with a few soft white clouds, lit to match the scene. Keep everything that is not sky (buildings, trees, landscape, people) exactly as it is, at the same framing. If there is no visible sky, return the photo unchanged.',
+  },
+  sky_sunset: {
+    credits: 1,
+    prompt:
+      'Replace only the sky in the photo with a vivid orange and pink sunset sky, and add warm golden-hour light to the rest of the scene to match it. Keep the buildings, landscape and people in place and recognizable, at the same framing.',
+  },
+  sky_starry: {
+    credits: 1,
+    prompt:
+      'Turn the photo into a night scene: replace the sky with a deep blue night sky full of stars and a faint Milky Way, and darken the rest of the scene to moonlight. Keep the buildings, landscape and people in place and recognizable, at the same framing.',
+  },
+  snow_scene: {
+    credits: 1,
+    prompt:
+      'Turn the scene into a winter day: soft fresh snow on the ground, roofs and branches, a few falling snowflakes and cool soft light. Keep the buildings, landscape and people in place and recognizable, at the same framing.',
+  },
+  night_lights: {
+    credits: 1,
+    prompt:
+      'Turn the photo into a night view: dark blue evening sky, warm glowing windows, street lights and soft reflections, as if taken just after sunset. Keep the buildings, landscape and people in place and recognizable, at the same framing.',
+  },
 };
 
 /** Common instructions for every style: safety and consent (AI-05). */
