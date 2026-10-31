@@ -5,6 +5,7 @@ import {
   DEFAULT_BODY_PARAMS,
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
+  DEFAULT_LENS_PARAMS,
   IDENTITY_LUT,
   toDateStampGlyphs,
   type BeautyParams,
@@ -129,6 +130,7 @@ export class StudioRenderer {
         const chain = chainFilters(
           this.effects,
           {
+            lens: DEFAULT_LENS_PARAMS,
             faceShape: DEFAULT_FACE_SHAPE_PARAMS,
             body: DEFAULT_BODY_PARAMS,
             adjust: DEFAULT_ADJUST_PARAMS,

@@ -4,7 +4,7 @@ import { GRADE_SKSL, LUMA_SKSL } from '../sksl';
  * `detail_v1`: the editor's detailed adjustments, after the basic ones and the
  * skin retouching: sharpening (EDT-07), clarity and dehaze (EDT-15), local areas
  * and graduated filters (EDT-10, EDT-17), the tone curve (EDT-09), highlights and shadows, colour bands (EDT-08),
- * sky and sunset (EDT-15), and vibrance.
+ * colour grading (EDT-21), sky and sunset (EDT-15), and vibrance.
  *
  * Uniform names must match `DetailUniforms`; a test checks that they stay in sync.
  */
@@ -21,6 +21,8 @@ uniform float dehaze;
 uniform float clarity;
 uniform float sky;
 uniform float sunset;
+uniform float4 gradeHues;
+uniform float4 gradeAmounts;
 // Tone curve: shadows, darks, lights, highlights.
 uniform float4 curve;
 // Colour bands red, orange, yellow, green (A) and aqua, blue, purple, magenta (B).
@@ -134,6 +136,24 @@ half3 sunsetTone(half3 color) {
   return rich + half3(1.0, 0.45, -0.7) * half(sunset) * 0.09 * luma * luma;
 }
 
+// The colour of a hue in degrees, without its brightness: what a grade adds.
+half3 tintOf(float degrees) {
+  half3 rgb = hsvToRgb(half3(half(fract(degrees / 360.0)), 1.0, 1.0));
+  return rgb - dot(rgb, LUMA);
+}
+
+// Colour grading: shadows, midtones and highlights each pulled towards their hue.
+half3 grading(half3 color) {
+  half luma = dot(saturate(color), LUMA);
+  half shadows = (1.0 - luma) * (1.0 - luma);
+  half highlights = luma * luma;
+  half midtones = saturate(1.0 - shadows - highlights);
+  return color
+    + tintOf(gradeHues.x) * half(gradeAmounts.x) * shadows * 0.35
+    + tintOf(gradeHues.y) * half(gradeAmounts.y) * midtones * 0.35
+    + tintOf(gradeHues.z) * half(gradeAmounts.z) * highlights * 0.35;
+}
+
 // A smooth bump of width 1/4 centred at 'centre'.
 half bump(half x, half centre) {
   half t = saturate(1.0 - abs(x - centre) * 4.0);
@@ -219,6 +239,7 @@ half4 main(float2 coord) {
     color = colourBands(color);
   }
 
+  if (any(notEqual(gradeAmounts, float4(0.0)))) color = grading(color);
   if (sky != 0.0) color = skyTone(color, uv);
   if (sunset != 0.0) color = sunsetTone(color);
 

@@ -115,6 +115,7 @@ export const en: Strings = {
       tone: 'Tone',
       hsl: 'Colour',
       local: 'Spot fix',
+      lens: 'Lens',
       crop: 'Crop',
       frame: 'Frame',
     },
@@ -128,6 +129,18 @@ export const en: Strings = {
       hint: 'Puts the people in front of the background you pick. Photos without people become all background.',
       unsupported: "This device can't change backgrounds 🙏",
       none: 'As is',
+    },
+    lens: {
+      distortion: 'Distortion',
+      vignette: 'Corner brightness',
+      noise: 'Noise reduction',
+      colorNoise: 'Colour noise',
+    },
+    grading: {
+      title: 'Colour grading',
+      ranges: { Shadows: 'Shadows', Midtones: 'Midtones', Highlights: 'Highlights' },
+      hue: 'Hue',
+      amount: 'Strength',
     },
     scenery: {
       dehaze: 'Dehaze',

@@ -20,6 +20,9 @@ export type DetailUniforms = {
   readonly clarity: number;
   readonly sky: number;
   readonly sunset: number;
+  /** Shadows, midtones and highlights: hues in degrees, then how strongly each tints. */
+  readonly gradeHues: Vec4;
+  readonly gradeAmounts: Vec4;
   readonly curve: Vec4;
   readonly hueA: Vec4;
   readonly hueB: Vec4;
@@ -76,6 +79,13 @@ export function toDetailUniforms(
     clarity: params.clarity,
     sky: params.sky,
     sunset: params.sunset,
+    gradeHues: [params.gradeShadowsHue, params.gradeMidtonesHue, params.gradeHighlightsHue, 0],
+    gradeAmounts: [
+      params.gradeShadowsAmount,
+      params.gradeMidtonesAmount,
+      params.gradeHighlightsAmount,
+      0,
+    ],
     curve: [params.curveShadows, params.curveDarks, params.curveLights, params.curveHighlights],
     hueA: bands(params, 'Hue', 0),
     hueB: bands(params, 'Hue', 4),

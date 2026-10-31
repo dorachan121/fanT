@@ -122,6 +122,7 @@ export const ja = {
       tone: 'トーン',
       hsl: 'カラー',
       local: '部分補正',
+      lens: 'レンズ',
       crop: 'トリミング',
       frame: 'フレーム',
     },
@@ -135,6 +136,18 @@ export const ja = {
       hint: '写っている人の後ろを、えらんだ背景に変えるよ。人が写っていない写真は全体が背景になるよ',
       unsupported: 'この端末では背景を変えられないよ🙏',
       none: 'そのまま',
+    },
+    lens: {
+      distortion: 'ゆがみ補正',
+      vignette: '周辺の明るさ',
+      noise: 'ノイズ除去',
+      colorNoise: '色ノイズ除去',
+    },
+    grading: {
+      title: 'カラーグレーディング',
+      ranges: { Shadows: 'シャドウ', Midtones: '中間', Highlights: 'ハイライト' },
+      hue: '色',
+      amount: '強さ',
     },
     scenery: {
       dehaze: 'かすみ除去',

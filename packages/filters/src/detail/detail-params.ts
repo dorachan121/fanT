@@ -1,6 +1,12 @@
 import { defineParams, type ParamRange, type ParamValues } from '../params';
 
 const centered = { min: -1, max: 1, defaultValue: 0 } as const;
+const hue = { min: 0, max: 360, defaultValue: 0 } as const;
+const amount = { min: 0, max: 1, defaultValue: 0 } as const;
+
+/** The tonal ranges colour grading tints separately (EDT-21). */
+export const GRADE_RANGES = ['Shadows', 'Midtones', 'Highlights'] as const;
+export type GradeRange = (typeof GRADE_RANGES)[number];
 
 /** The eight colour bands of the HSL tool (EDT-08), in hue order. */
 export const HSL_BANDS = [
@@ -50,6 +56,14 @@ export const DETAIL_PARAM_RANGES = {
   sky: centered,
   /** Positive glows warmer in reds, oranges and highlights, negative cools them. */
   sunset: centered,
+  // Colour grading (EDT-21): a tint for the shadows, the midtones and the highlights,
+  // each a hue in degrees and how strongly it tints.
+  gradeShadowsHue: hue,
+  gradeShadowsAmount: amount,
+  gradeMidtonesHue: hue,
+  gradeMidtonesAmount: amount,
+  gradeHighlightsHue: hue,
+  gradeHighlightsAmount: amount,
 } as const satisfies Record<string, ParamRange>;
 
 export type DetailParamName = keyof typeof DETAIL_PARAM_RANGES;

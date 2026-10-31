@@ -8,6 +8,7 @@ import {
   DEFAULT_BODY_PARAMS,
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
+  DEFAULT_LENS_PARAMS,
   IDENTITY_LUT,
   normalizeBeautyParams,
   normalizeFilmParams,
@@ -28,6 +29,7 @@ const effects = compileFilterEffects(ck.RuntimeEffect);
 const INPUT = createBitmap(32, 32, (x, y) => [x * 8, y * 8, 120, 255]);
 
 const NEUTRAL: FilterSettings = {
+  lens: DEFAULT_LENS_PARAMS,
   faceShape: DEFAULT_FACE_SHAPE_PARAMS,
   body: DEFAULT_BODY_PARAMS,
   adjust: DEFAULT_ADJUST_PARAMS,
@@ -74,6 +76,7 @@ describe('chainFilters', () => {
       'detail',
       'faceShape',
       'film',
+      'lens',
     ]);
   });
 

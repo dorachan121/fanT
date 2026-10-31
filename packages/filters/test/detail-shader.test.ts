@@ -155,4 +155,18 @@ describe(`${DETAIL_SHADER_NAME} shader`, () => {
     expect(pixelAt(right, 61, 32)[0]).toBeLessThan(80);
     expect(pixelAt(right, 2, 32)[0]).toBe(128);
   });
+
+  it('tints the shadows and the highlights separately', () => {
+    const graded = render(RAMP, {
+      gradeShadowsHue: 210,
+      gradeShadowsAmount: 1,
+      gradeHighlightsHue: 30,
+      gradeHighlightsAmount: 1,
+    });
+    const [dr, , db] = pixelAt(graded, 6, 0);
+    const [hr, , hb] = pixelAt(graded, 58, 0);
+    // Blue-ish shadows, orange-ish highlights, from a grey ramp.
+    expect(db).toBeGreaterThan(dr);
+    expect(hr).toBeGreaterThan(hb);
+  });
 });

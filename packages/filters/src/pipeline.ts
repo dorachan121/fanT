@@ -20,6 +20,7 @@ import { toFaceShapeUniforms, type ShapedFace } from './face-shape/face-shape-un
 import type { FilmParams } from './film/film-params';
 import { FILM_SHADER_NAME, FILM_SHADER_SOURCE } from './film/film-shader';
 import { toFilmUniforms } from './film/film-uniforms';
+import { LENS_SHADER_NAME, LENS_SHADER_SOURCE, toLensUniforms, type LensParams } from './lens/lens';
 import { compileRuntimeEffect, type RuntimeEffectFactory } from './runtime-effect';
 import { packUniforms, type UniformLayout } from './uniforms';
 
@@ -32,6 +33,7 @@ export interface ShaderEffect<TShader> extends UniformLayout {
 }
 
 export interface FilterEffects<TShader> {
+  readonly lens: ShaderEffect<TShader>;
   readonly faceShape: ShaderEffect<TShader>;
   readonly body: ShaderEffect<TShader>;
   readonly adjust: ShaderEffect<TShader>;
@@ -43,6 +45,8 @@ export interface FilterEffects<TShader> {
 
 /** Everything that decides how a photo looks; recorded with each shot. */
 export interface FilterSettings {
+  /** Lens and noise corrections (EDT-20), first of all. */
+  readonly lens: LensParams;
   readonly faceShape: FaceShapeParams;
   /** Body reshaping (EDT-13). */
   readonly body: BodyParams;
@@ -90,8 +94,8 @@ function isNeutral(params: Readonly<Record<string, number>>): boolean {
 }
 
 /**
- * Face fine-tuning, body reshaping, corrections, skin retouching and detailed
- * adjustments (face shape → body → adjust → beauty → detail).
+ * Lens corrections, face fine-tuning, body reshaping, corrections, skin retouching
+ * and detailed adjustments (lens → face shape → body → adjust → beauty → detail).
  * Runs before anything drawn over the face (characters), so stickers are not
  * smoothed or reshaped.
  * Marked as a worklet so it can run on the camera frame thread.
@@ -105,6 +109,13 @@ export function chainRetouch<TShader>(
   'worklet';
   const created: TShader[] = [];
   let shader = source;
+  if (!isNeutral(settings.lens)) {
+    shader = effects.lens.makeShaderWithChildren(
+      packUniforms(effects.lens, toLensUniforms(settings.lens, frame)),
+      [shader],
+    );
+    created.push(shader);
+  }
   const faces = frame.faces ?? [];
   if (faces.length > 0 && !isNeutral(settings.faceShape)) {
     shader = effects.faceShape.makeShaderWithChildren(
@@ -194,6 +205,7 @@ export function compileFilterEffects<TEffect>(
   factory: RuntimeEffectFactory<TEffect>,
 ): Readonly<Record<keyof FilterEffects<unknown>, TEffect>> {
   return {
+    lens: compileRuntimeEffect(factory, LENS_SHADER_NAME, LENS_SHADER_SOURCE),
     faceShape: compileRuntimeEffect(factory, FACE_SHAPE_SHADER_NAME, FACE_SHAPE_SHADER_SOURCE),
     body: compileRuntimeEffect(factory, BODY_SHADER_NAME, BODY_SHADER_SOURCE),
     adjust: compileRuntimeEffect(factory, ADJUST_SHADER_NAME, ADJUST_SHADER_SOURCE),

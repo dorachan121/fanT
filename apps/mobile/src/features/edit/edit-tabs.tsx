@@ -13,7 +13,9 @@ import { AdjustPanel } from './panels/adjust-panel';
 import { BackgroundPanel } from './panels/background-panel';
 import { CropPanel } from './panels/crop-panel';
 import { FilmPanel } from './panels/film-panel';
+import { GradingControls } from './panels/grading-controls';
 import { HslPanel } from './panels/hsl-panel';
+import { LensPanel } from './panels/lens-panel';
 import { LocalPanel } from './panels/local-panel';
 import type { PanelProps } from './panels/panel-props';
 import { RetouchPanel } from './panels/retouch-panel';
@@ -34,6 +36,7 @@ export const EDIT_TABS = [
   'tone',
   'hsl',
   'local',
+  'lens',
   'crop',
   'frame',
 ] as const;
@@ -107,7 +110,12 @@ export function EditTabPanel({
     ),
     scenery: () => <SceneryPanel {...props} />,
     tone: () => <TonePanel {...props} />,
-    hsl: () => <HslPanel {...props} />,
+    hsl: () => (
+      <>
+        <HslPanel {...props} />
+        <GradingControls {...props} />
+      </>
+    ),
     local: () => (
       <LocalPanel
         {...props}
@@ -117,6 +125,7 @@ export function EditTabPanel({
         onShape={local.onShape}
       />
     ),
+    lens: () => <LensPanel {...props} />,
     crop: () => <CropPanel {...props} originalSize={context.original.size} />,
     frame: () => (
       <FramePicker

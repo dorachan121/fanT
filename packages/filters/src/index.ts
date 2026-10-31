@@ -50,12 +50,14 @@ export {
 export {
   DEFAULT_DETAIL_PARAMS,
   DETAIL_PARAM_RANGES,
+  GRADE_RANGES,
   HSL_BANDS,
   LOCAL_SHAPES,
   MAX_LOCAL_ADJUSTMENTS,
   normalizeDetailParams,
   type DetailParamName,
   type DetailParams,
+  type GradeRange,
   type HslBand,
   type LocalAdjustment,
   type LocalShape,
@@ -115,3 +117,14 @@ export {
   type RuntimeEffectFactory,
 } from './runtime-effect';
 export { packUniforms, type UniformLayout, type UniformValues } from './uniforms';
+export {
+  DEFAULT_LENS_PARAMS,
+  LENS_PARAM_RANGES,
+  LENS_SHADER_NAME,
+  LENS_SHADER_SOURCE,
+  normalizeLensParams,
+  toLensUniforms,
+  type LensParamName,
+  type LensParams,
+  type LensUniforms,
+} from './lens/lens';
