@@ -338,6 +338,8 @@ export const ja = {
     gap: 'すきま',
   },
   album: {
+    importRaw: 'RAW（DNG）を読み込む',
+    rawFailed: 'このRAWファイルは読み込めなかったよ🙏 DNG形式のファイルでためしてね',
     pasted: (changed: number, total: number) =>
       changed === total
         ? `${String(changed)}枚に貼り付けたよ✨`

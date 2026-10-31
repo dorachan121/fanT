@@ -327,6 +327,8 @@ export const en: Strings = {
     gap: 'Spacing',
   },
   album: {
+    importRaw: 'Import a RAW (DNG) file',
+    rawFailed: "Couldn't read this RAW file 🙏 Try a DNG file",
     pasted: (changed, total) =>
       changed === total
         ? `Pasted on ${String(changed)} photos ✨`

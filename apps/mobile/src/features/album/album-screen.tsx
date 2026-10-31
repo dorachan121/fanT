@@ -12,11 +12,12 @@ import { ScreenHeader } from '../../ui/screen-header';
 import { HeroEmoji } from '../../ui/hero-emoji';
 import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
-import { importPhoto } from '../photo/import-photo';
+import { importPhoto, importRaw, RawNotSupportedError } from '../photo/import-photo';
 import { MAX_COLLAGE_PHOTOS, MIN_COLLAGE_PHOTOS } from '../collage/collage-layout';
 import { useLookClipboard } from '../looks/look-clipboard';
 import { pasteLook } from '../looks/paste-look';
 import { canMerge, type MergeMode } from '../merge/merge-modes';
+import { rawDevelopSupported } from '../../../modules/raw-develop/src';
 import { deletePhotos } from './album-db';
 import { useAlbum } from './use-album';
 import { Text } from '../../ui/text';
@@ -67,12 +68,16 @@ export function AlbumScreen() {
     }
   };
 
-  const runImport = async () => {
+  const runImport = async (source: typeof importPhoto) => {
     setImporting(true);
     try {
-      const photo = await importPhoto();
+      const photo = await source();
       if (photo !== null) router.push({ pathname: '/edit/[id]', params: { id: photo.id } });
     } catch (error) {
+      if (error instanceof RawNotSupportedError) {
+        showMessage(strings.album.rawFailed);
+        return;
+      }
       reportError(error, 'album.import');
       showError();
     } finally {
@@ -140,7 +145,13 @@ export function AlbumScreen() {
                 icon="add"
                 label={strings.album.import}
                 disabled={importing}
-                onPress={() => void runImport()}
+                onPress={() => void runImport(importPhoto)}
+              />
+              <IconButton
+                icon="aperture-outline"
+                label={strings.album.importRaw}
+                disabled={importing || !rawDevelopSupported}
+                onPress={() => void runImport(importRaw)}
               />
               <IconButton
                 icon="checkmark-circle-outline"
