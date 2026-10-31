@@ -1,7 +1,8 @@
 import type { PhotoRecipe } from '../photo/recipe';
 
 /** How a photo entered the album. */
-export type PhotoKind = 'camera' | 'import' | 'puri' | 'ai' | 'collage' | 'video';
+export type PhotoKind =
+  'camera' | 'import' | 'puri' | 'ai' | 'collage' | 'video' | 'hdr' | 'panorama';
 
 export interface AlbumPhoto {
   readonly id: string;

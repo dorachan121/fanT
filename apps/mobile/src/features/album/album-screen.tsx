@@ -14,6 +14,7 @@ import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { importPhoto } from '../photo/import-photo';
 import { MAX_COLLAGE_PHOTOS, MIN_COLLAGE_PHOTOS } from '../collage/collage-layout';
+import { canMerge, type MergeMode } from '../merge/merge-modes';
 import { deletePhotos } from './album-db';
 import { useAlbum } from './use-album';
 import { Text } from '../../ui/text';
@@ -75,6 +76,22 @@ export function AlbumScreen() {
                   setSelected(new Set());
                 }}
               />
+              {(['hdr', 'panorama'] as const satisfies readonly MergeMode[]).map((mode) => (
+                <IconButton
+                  key={mode}
+                  icon={mode === 'hdr' ? 'contrast-outline' : 'resize-outline'}
+                  label={strings.merge[mode].title}
+                  disabled={!canMerge(mode, selected.size)}
+                  onPress={() => {
+                    router.push({
+                      pathname: '/merge',
+                      params: { mode, ids: [...selected].join(',') },
+                    });
+                    setSelecting(false);
+                    setSelected(new Set());
+                  }}
+                />
+              ))}
               <IconButton
                 icon="trash-outline"
                 label={strings.common.delete}

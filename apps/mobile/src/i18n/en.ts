@@ -312,6 +312,17 @@ export const en: Strings = {
     sheetColor: 'Sheet as is',
     backdropNone: 'Background as is',
   },
+  merge: {
+    hdr: {
+      title: 'HDR merge',
+      hint: 'Merges 2–3 shots taken at different brightness into one where both bright and dark parts show. Pick shots taken from the same spot.',
+    },
+    panorama: {
+      title: 'Panorama',
+      hint: 'Joins shots taken left to right, each overlapping the last, into one wide photo. Pick them in the order you took them.',
+    },
+    failed: "Couldn't join these 🥺 Try shots of the same scene that overlap",
+  },
   ai: {
     title: '✨ AI magic',
     choosePhoto: 'Pick a photo',

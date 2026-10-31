@@ -3,9 +3,10 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { decodeScaled, recordCollage, renderCollage } from '../../engine/collage';
+import { recordCollage, renderCollage } from '../../engine/collage';
 import { encodeJpeg, imageSize } from '../../engine/photo';
 import { PhotoCanvas } from '../../engine/photo-canvas';
+import { decodeScaled } from '../../engine/scaled-image';
 import type { SkImage, SkPicture } from '../../engine/skia';
 import { strings } from '../../i18n';
 import { Button } from '../../ui/button';

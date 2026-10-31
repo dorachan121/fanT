@@ -1,8 +1,5 @@
 import {
   BlurStyle,
-  ClipOp,
-  FilterMode,
-  MipmapMode,
   Skia,
   type SkCanvas,
   type SkImage,
@@ -10,9 +7,8 @@ import {
 } from '@shopify/react-native-skia';
 
 import { collageCells, type CollageLayout } from '../features/collage/collage-layout';
-import { coverPlacement } from '../features/photo/frames';
 import type { Size } from '../features/photo/geometry';
-import { decodeImageFile } from './images';
+import { decodeScaled, drawCovering } from './scaled-image';
 import { makeSurface } from './surface';
 
 export interface CollageOptions {
@@ -24,33 +20,6 @@ export interface CollageOptions {
 
 /** The white border of a scattered print, as a fraction of its short edge. */
 const PRINT_BORDER = 0.04;
-
-function drawCovering(canvas: SkCanvas, image: SkImage, width: number, height: number) {
-  const size = { width: image.width(), height: image.height() };
-  const placement = coverPlacement(size, { x: 0, y: 0, width, height });
-  const paint = Skia.Paint();
-  try {
-    paint.setAntiAlias(true);
-    canvas.save();
-    canvas.clipRect(Skia.XYWHRect(0, 0, width, height), ClipOp.Intersect, true);
-    canvas.drawImageRectOptions(
-      image,
-      Skia.XYWHRect(0, 0, size.width, size.height),
-      Skia.XYWHRect(
-        placement.x,
-        placement.y,
-        size.width * placement.scale,
-        size.height * placement.scale,
-      ),
-      FilterMode.Linear,
-      MipmapMode.Linear,
-      paint,
-    );
-    canvas.restore();
-  } finally {
-    paint.dispose();
-  }
-}
 
 /** Draws a print with a white border and a soft shadow, centred at the origin. */
 function drawPrint(canvas: SkCanvas, image: SkImage, width: number, height: number) {
@@ -115,27 +84,6 @@ export function recordCollage(
     return recorder.finishRecordingAsPicture();
   } finally {
     recorder.dispose();
-  }
-}
-
-/** A smaller copy of a photo file, for drawing it small; the full image is freed at once. */
-export async function decodeScaled(uri: string, maxLongEdge: number): Promise<SkImage> {
-  const image = await decodeImageFile(uri);
-  const scale = maxLongEdge / Math.max(image.width(), image.height());
-  if (scale >= 1) return image;
-  try {
-    const width = Math.max(1, Math.round(image.width() * scale));
-    const height = Math.max(1, Math.round(image.height() * scale));
-    const surface = makeSurface(width, height);
-    try {
-      drawCovering(surface.getCanvas(), image, width, height);
-      surface.flush();
-      return surface.makeImageSnapshot();
-    } finally {
-      surface.dispose();
-    }
-  } finally {
-    image.dispose();
   }
 }
 

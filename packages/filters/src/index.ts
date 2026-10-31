@@ -141,3 +141,8 @@ export {
   type LightParams,
   type LightUniforms,
 } from './light/light';
+export {
+  EXPOSURE_FUSION_SHADER_NAME,
+  EXPOSURE_FUSION_SHADER_SOURCE,
+  type ExposureFusionUniforms,
+} from './merge/exposure-fusion';
