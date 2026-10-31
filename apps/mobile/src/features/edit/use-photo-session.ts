@@ -11,6 +11,7 @@ import { croppedSize, type Size } from '../photo/geometry';
 import { editableSource, renderRecipe } from '../photo/photo-service';
 import type { PhotoRecipe } from '../photo/recipe';
 import { commit, redo, replace, startHistory, undo, type History } from './history';
+import { EDITED_VIEW, previewRecipeOf, type PreviewView } from './preview-view';
 
 /** Long edge of the live preview while editing; the saved photo is full resolution. */
 const PREVIEW_LONG_EDGE = 1080;
@@ -63,10 +64,11 @@ export function usePhotoSession(
   useEffect(() => () => source?.image.dispose(), [source]);
 
   const recipe = history?.present ?? null;
+  const [view, setView] = useState<Omit<PreviewView, 'withoutDeco'>>(EDITED_VIEW);
+  const withoutDeco = options.previewWithoutDeco === true;
   const previewRecipe = useMemo(
-    () =>
-      recipe !== null && options.previewWithoutDeco === true ? { ...recipe, deco: [] } : recipe,
-    [recipe, options.previewWithoutDeco],
+    () => (recipe === null ? null : previewRecipeOf(recipe, { ...view, withoutDeco })),
+    [recipe, view, withoutDeco],
   );
 
   // Re-render the preview when the recipe changes; the latest render wins.
@@ -109,9 +111,9 @@ export function usePhotoSession(
     [],
   );
 
-  const outputSize =
-    source !== null && recipe !== null
-      ? croppedSize(source.originalSize, recipe.transform.rotation, recipe.transform.crop)
+  const sizeOf = (shown: PhotoRecipe | null) =>
+    source !== null && shown !== null
+      ? croppedSize(source.originalSize, shown.transform.rotation, shown.transform.crop)
       : null;
 
   return {
@@ -119,7 +121,12 @@ export function usePhotoSession(
     source,
     recipe,
     preview,
-    outputSize,
+    /** The size of the edited photo. */
+    outputSize: sizeOf(recipe),
+    /** The size of what the preview shows (the whole photo while cropping). */
+    previewSize: sizeOf(previewRecipe),
+    /** Shows the photo before its look (EDT-28) or uncropped (EDT-29). */
+    setView,
     canUndo: (history?.past.length ?? 0) > 0,
     canRedo: (history?.future.length ?? 0) > 0,
     /**

@@ -221,6 +221,8 @@ export const en: Strings = {
     rotate: 'Rotate',
     straighten: 'Straighten',
     auto: '✨ Auto',
+    compare: 'Hold to see the photo before editing',
+    histogram: 'Brightness spread',
     perspective: { vertical: 'Vertical perspective', horizontal: 'Horizontal perspective' },
     flip: 'Flip',
     original: 'Original ratio',

@@ -9,6 +9,7 @@ import { MakeupControls } from '../makeup/makeup-controls';
 import type { Size } from '../photo/geometry';
 import { autoAdjusted } from './auto-adjust';
 import { FramePicker } from './frame-picker';
+import { HistogramView } from './histogram-view';
 import { AdjustPanel } from './panels/adjust-panel';
 import { BackgroundPanel } from './panels/background-panel';
 import { BlurPanel } from './panels/blur-panel';
@@ -49,6 +50,8 @@ export const EDIT_TABS = [
 export type EditTab = (typeof EDIT_TABS)[number];
 
 export interface EditTabContext extends PanelProps {
+  /** The preview as shown, for the histogram. */
+  readonly preview: SkImage | null;
   readonly original: { readonly image: SkImage; readonly size: Size };
   readonly takenAt: number | null;
   readonly local: ReturnType<typeof useLocalTool>;
@@ -103,22 +106,30 @@ export function EditTabPanel({
     background: () => <BackgroundPanel {...props} />,
     blur: () => <BlurPanel {...props} />,
     adjust: () => (
-      <AdjustPanel
-        {...props}
-        onAuto={() => {
-          try {
-            update(autoAdjusted(recipe, samplePixels(context.original.image).pixels));
-          } catch (error) {
-            reportError(error, 'edit.auto');
-            showError();
-          }
-        }}
-      />
+      <>
+        <HistogramView image={context.preview} />
+        <AdjustPanel
+          {...props}
+          onAuto={() => {
+            try {
+              update(autoAdjusted(recipe, samplePixels(context.original.image).pixels));
+            } catch (error) {
+              reportError(error, 'edit.auto');
+              showError();
+            }
+          }}
+        />
+      </>
     ),
     scenery: () => <SceneryPanel {...props} />,
     sky: () => <SkyPanel {...props} original={context.original.image} />,
     light: () => <LightPanel {...props} />,
-    tone: () => <TonePanel {...props} />,
+    tone: () => (
+      <>
+        <HistogramView image={context.preview} />
+        <TonePanel {...props} />
+      </>
+    ),
     hsl: () => (
       <>
         <HslPanel {...props} />

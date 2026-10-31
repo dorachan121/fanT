@@ -227,6 +227,8 @@ export const ja = {
     rotate: '回転',
     straighten: '傾き',
     auto: '✨ 自動補正',
+    compare: '押している間、加工前を見る',
+    histogram: '明るさの分布',
     perspective: { vertical: '縦の遠近', horizontal: '横の遠近' },
     flip: '反転',
     original: '元の比率',

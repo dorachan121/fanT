@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
@@ -65,6 +65,12 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
   const [tab, setTab] = useState<EditTab>('film');
   const [saving, setSaving] = useState(false);
   const [photoRect, setPhotoRect] = useState<LayoutRectangle | null>(null);
+  const [comparing, setComparing] = useState(false);
+  const { setView } = session;
+  // Hold to compare with the photo before editing (EDT-28); crop over the whole photo (EDT-29).
+  useEffect(() => {
+    setView({ before: comparing, uncropped: tab === 'crop' });
+  }, [setView, comparing, tab]);
 
   const update = (next: Partial<PhotoRecipe>, key?: string) => {
     session.change({ ...recipe, ...next }, key);
@@ -106,6 +112,18 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
         actions={
           <>
             <IconButton
+              icon="eye-outline"
+              label={strings.edit.compare}
+              active={comparing}
+              onPress={() => undefined}
+              onPressIn={() => {
+                setComparing(true);
+              }}
+              onPressOut={() => {
+                setComparing(false);
+              }}
+            />
+            <IconButton
               icon="arrow-undo"
               label={strings.edit.undo}
               disabled={!session.canUndo}
@@ -120,7 +138,11 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
           </>
         }
       />
-      <PhotoCanvas image={session.preview} photoSize={outputSize} onPhotoRect={setPhotoRect}>
+      <PhotoCanvas
+        image={session.preview}
+        photoSize={session.previewSize ?? outputSize}
+        onPhotoRect={setPhotoRect}
+      >
         <PhotoTapLayer rect={photoRect} markers={tool?.markers ?? []} onTap={tool?.onTap ?? null} />
       </PhotoCanvas>
       <View style={[styles.panel, { paddingBottom: bottom + spacing.md }]}>
@@ -147,6 +169,7 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
             context={{
               recipe,
               update,
+              preview: session.preview,
               original: { image: source.image, size: source.originalSize },
               takenAt: session.photo?.createdAt ?? null,
               local,

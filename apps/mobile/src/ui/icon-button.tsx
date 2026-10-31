@@ -12,6 +12,9 @@ interface IconButtonProps {
   readonly icon: IconName;
   readonly label: string;
   readonly onPress: () => void;
+  /** For press-and-hold buttons, such as comparing with the photo before editing. */
+  readonly onPressIn?: () => void;
+  readonly onPressOut?: () => void;
   /** A small tag on the corner, e.g. "3s". */
   readonly badge?: string;
   readonly active?: boolean;
@@ -27,6 +30,8 @@ export function IconButton({
   icon,
   label,
   onPress,
+  onPressIn,
+  onPressOut,
   badge,
   active,
   disabled,
@@ -50,6 +55,8 @@ export function IconButton({
         style,
       ]}
       onPress={onPress}
+      onPressIn={onPressIn}
+      onPressOut={onPressOut}
     >
       <View>
         <Ionicons
