@@ -23,6 +23,7 @@ import { findFilm } from '../content/lookup';
 import { saveEdit } from '../photo/photo-service';
 import type { PhotoRecipe } from '../photo/recipe';
 import { isLocked, usePremium } from '../purchases/purchases-store';
+import { CropFrame } from './crop-frame';
 import { EDIT_TABS, EditTabPanel, type EditTab } from './edit-tabs';
 import { PhotoTapLayer } from './photo-tap-layer';
 import type { PhotoTool } from './tools/photo-tool';
@@ -144,6 +145,15 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
         onPhotoRect={setPhotoRect}
       >
         <PhotoTapLayer rect={photoRect} markers={tool?.markers ?? []} onTap={tool?.onTap ?? null} />
+        {tab === 'crop' && (
+          <CropFrame
+            rect={photoRect}
+            crop={recipe.transform.crop}
+            onChange={(crop) => {
+              update({ transform: { ...recipe.transform, crop } }, 'crop');
+            }}
+          />
+        )}
       </PhotoCanvas>
       <View style={[styles.panel, { paddingBottom: bottom + spacing.md }]}>
         <ScrollView

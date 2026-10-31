@@ -5,7 +5,8 @@ import { Chip } from '../../../ui/chip';
 import { IconButton } from '../../../ui/icon-button';
 import { signedPercent } from '../../../ui/param-sliders';
 import { Slider } from '../../../ui/slider';
-import { spacing } from '../../../ui/theme';
+import { Text } from '../../../ui/text';
+import { colors, spacing } from '../../../ui/theme';
 import {
   ASPECT_VALUES,
   centerCrop,
@@ -35,6 +36,7 @@ export function CropPanel({
   };
   return (
     <>
+      <Text style={styles.hint}>{strings.edit.cropHint}</Text>
       <View style={styles.row}>
         <Chip
           label={strings.edit.original}
@@ -110,4 +112,5 @@ export function CropPanel({
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  hint: { color: colors.textMuted, fontSize: 13 },
 });
