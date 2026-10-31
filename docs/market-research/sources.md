@@ -4,6 +4,7 @@
 ※ 多くは二次情報（報道、プレスリリース、集計サイト）です。アプリ事業者自身が発表した調査や、ベンダーのブログを含みます。
 
 ## 市場規模
+
 - S-01 [Technavio – Photo Editing Software Market (2025-2030)](https://technavio.com/report/photo-editing-software-market-industry-share-analysis)
 - S-02 [Technavio – Photo Editing Software Market Size](https://www.technavio.com/report/photo-editing-software-market-size-industry-analysis)
 - S-03 [GII Research – Photo Editing Software Market](https://www.giiresearch.com/report/coh2055067-photo-editing-software-market-by-type-prosumer.html)
@@ -16,6 +17,7 @@
 - S-10 [THE BRIDGE（日本の写真アプリ利用率）](https://thebridge.jp/en/tag/fx-camera)
 
 ## 企業業績
+
 - S-11 [Meitu 2025 Annual Results (The Sun)](https://thesun.my/corporate-news/meitu-2025-annual-results-adjusted-net-profit-surges-64-7-yoy-to-a-record-rmb-965-million-driven-by-ai-transformation/)
 - S-12 [Meitu 2025 Annual Results (Vietnam News)](https://bizhub.vietnamnews.vn/meitu-2025-annual-results-adjusted-net-profit-surges-647-yoy-to-a-record-rmb-965-million-driven-by-ai-transformation-post400948.html)
 - S-13 [Meitu 100M overseas MAU (Fortune)](https://fortune.com/press-releases/meitu-2025-globalisation-milestone-100m-overseas-mau-ai-transformation-2026-03-27/)
@@ -23,6 +25,7 @@
 - S-15 NAVER IR 資料（SNOW の四半期売上）: [資料1](https://www.navercorp.com/api/article/download/197f039a-83a5-4cdd-be24-02f61a5c003c) / [資料2](https://www.navercorp.com/api/article/download/3798fa32-1dca-46b8-b39a-61eec26ab5f6)
 
 ## 競合・ランキング
+
 - S-16 [AppTweak – Most downloaded Photo & Video apps 2025](https://www.apptweak.com/en/reports/most-downloaded-photo-video-apps)
 - S-17 [Sensor Tower – 2025 Q4 US Photo & Video Revenue](https://sensortower.com/blog/2025-q4-unified-top-5-photo-and-video-revenue-us-615c8a30ad269d38a8b6acd0)
 - S-18 [Sensor Tower – 2025 Q2 US Photography Revenue](https://sensortower.com/blog/2025-q2-unified-top-5-photography%20apps-revenue-us-600a8192241bc16eb890d396)
@@ -46,12 +49,14 @@
 - S-36 [Unstar – Worst Photo & Video Apps in Japan](https://unstar.app/worst-apps/photo-video/in/japan)
 
 ## プリ機・平成レトロ
+
 - S-37 [フリュー – Z世代の自撮りとプリ（2023年, PDF）](https://www.puri.furyu.jp/wp-content/uploads/2023/05/e70430ed28e2878c84ebe36cecd600d3.pdf)
 - S-38 [フリュー – 平成プリ ガシャポン（PDF）](https://www.puri.furyu.jp/wp-content/uploads/2026/01/20260120_heiseipuri_gasyapon_2.pdf)
 - S-39 [フリュー – プリ30周年（PDF）](https://www.puri.furyu.jp/wp-content/uploads/2026/02/20260225_puri30th.pdf)
 - S-40 [コマースピック – フリュー「プリ流行調査2025」](https://www.commercepick.com/archives/97507)
 
 ## ユーザー属性・SNS
+
 - S-41 [iPhone Mania – MMD研究所 年代別 iPhone 利用率](https://iphone-mania.jp/news-508128/)
 - S-42 [Web担当者Forum – 10〜20代の約7割が iPhone（モバ研）](https://webtan.impress.co.jp/n/2022/12/06/43832)
 - S-43 [Web担当者Forum – Z世代の SNS 利用最新動向2025（SHIBUYA109 lab.）](https://webtan.impress.co.jp/n/2025/09/16/50020)
@@ -60,6 +65,7 @@
 - S-46 BELLOWL「Z世代 2026年上半期トレンド調査」（検索結果の要約から引用。一次 URL は未確認）
 
 ## 加工トレンド
+
 - S-47 [Smartlog – 平成・レトロ系カメラアプリ](https://smartlog.jp/340182)
 - S-48 [CyberLink – レトロ写真アプリ](https://jp.cyberlink.com/blog/photoeditor-app/1561/best-photo-apps-to-make-a-retro-photo)
 - S-49 [my-best – フィルムカメラアプリ](https://my-best.com/14373)
@@ -71,6 +77,7 @@
 - S-55 S-53 と同じ
 
 ## AI トレンド
+
 - S-56 [Decrypt – AI 画像トレンド](https://decrypt.co/?p=338994)
 - S-57 [Perfect Corp – AI action figure](https://www.perfectcorp.com/consumer/blog/generative-AI/ai-action-figure)
 - S-58 [CO/AI – Nano Banana gains 10M users](https://getcoai.com/news/googles-nano-banana-gains-10m-users-with-viral-photo-prompts-here-are-some-to-try/)
@@ -80,6 +87,7 @@
 - S-62 [TechEnclave – Nano Banana trends in India](https://techenclave.com/t/all-google-gemini-nano-banana-trends-that-have-made-indians-go-bananas-check-them-out/397301)
 
 ## マネタイズ
+
 - S-63 [RevenueCat – State of Subscription Apps 2026](https://www.revenuecat.com/state-of-subscription-apps)
 - S-64 [PPC Land – AI apps earn 41% more but churn 30% faster](https://ppc.land/ai-apps-earn-41-more-per-user-but-churn-30-faster-revenuecat-finds/)
 - S-65 [GIGAZINE – RevenueCat 2024 stats](https://gigazine.net/gsc_news/en/20240313-apps-subscription-stats)
@@ -88,12 +96,14 @@
 - S-68 [Unstar – Photo editing app reviews: what creators hate most 2026](https://unstar.app/th/blog/photo-editing-app-reviews-what-creators-hate-most-2026)
 
 ## 規制
+
 - S-69 [Adyen – スマホ新法解説](https://www.adyen.com/ja_JP/knowledge-hub/smartphone-new-law-explained-2025)
 - S-70 [Business Insider Japan – スマホ新法と Apple/Google](https://www.businessinsider.jp/article/2512-japan-smartphone-act-apple-google/)
 - S-71 [GIGAZINE – MSCA 施行](https://gigazine.net/news/20251218-msca-apple-google)
 - S-72 [ビジネスジャーナル – スマホ新法の新手数料](https://biz-journal.jp/company/post_392828.html)
 
 ## 技術
+
 - S-73 [Banuba – We tested best AR beauty SDKs 2026](https://www.banuba.com/blog/we-tested-best-ar-beauty-sdks-2026-banuba-perfect-corp-deepar)
 - S-74 [Banuba – Face AR SDK vs DeepAR](https://www.banuba.com/blog/banuba-face-ar-sdk-vs-deepar-tested-feature-comparison)
 - S-75 [Flutter – Performance updates (Metal)](https://flutter.dev/blog/flutter-performance-updates-in-the-first-half-of-2020)

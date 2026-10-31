@@ -22,6 +22,7 @@ import { LocalPanel } from './panels/local-panel';
 import type { PanelProps } from './panels/panel-props';
 import { RetouchPanel } from './panels/retouch-panel';
 import { SceneryPanel } from './panels/scenery-panel';
+import { SkyPanel } from './panels/sky-panel';
 import { TonePanel } from './panels/tone-panel';
 import type { useLocalTool } from './tools/use-local-tool';
 import type { useRetouchTool } from './tools/use-retouch-tool';
@@ -36,6 +37,7 @@ export const EDIT_TABS = [
   'blur',
   'adjust',
   'scenery',
+  'sky',
   'light',
   'tone',
   'hsl',
@@ -105,7 +107,7 @@ export function EditTabPanel({
         {...props}
         onAuto={() => {
           try {
-            update(autoAdjusted(recipe, samplePixels(context.original.image)));
+            update(autoAdjusted(recipe, samplePixels(context.original.image).pixels));
           } catch (error) {
             reportError(error, 'edit.auto');
             showError();
@@ -114,6 +116,7 @@ export function EditTabPanel({
       />
     ),
     scenery: () => <SceneryPanel {...props} />,
+    sky: () => <SkyPanel {...props} original={context.original.image} />,
     light: () => <LightPanel {...props} />,
     tone: () => <TonePanel {...props} />,
     hsl: () => (

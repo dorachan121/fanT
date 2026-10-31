@@ -17,6 +17,7 @@ import {
 } from '../features/character/face-geometry.worklet';
 import { hasMakeup } from '../features/makeup/makeup';
 import { needsPersonMask } from '../features/retouch/retouch';
+import { editsSky } from '../features/sky/sky-edit';
 import { findBackdrop } from '../features/photo/backdrops';
 import { filterSettingsFor } from '../features/photo/filter-settings';
 import { coverPlacement, framedPhotoRect } from '../features/photo/frames';
@@ -31,7 +32,8 @@ import { drawFiltered } from './draw-filtered';
 import { drawFrameBackground, drawFrameOverlay } from './draw-frame';
 import { faceOverlay } from './face-overlay';
 import { personMask } from './person-mask';
-import { hasRetouch, retouchSource, type RetouchInput } from './retouch-source';
+import { hasRetouch, retouchSource, type PlacedMask, type RetouchInput } from './retouch-source';
+import { skyMaskImage } from './sky-mask-image';
 import { drawStyledText } from './draw-text';
 import { filterEffects } from './filter-effects';
 import { loadFilmLut } from './lut';
@@ -110,20 +112,26 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
         )
       : [];
   const { character } = input;
-  const mask =
+  // A mask is at its own size over the original: scale it there, then like the photo.
+  const placed: PlacedMask[] = [];
+  const place = (mask: SkImage | null): PlacedMask | null => {
+    if (mask === null) return null;
+    const matrix = Skia.Matrix([
+      ...composeProjective(
+        transform,
+        fromAffine(scale(image.width() / mask.width(), image.height() / mask.height())),
+      ),
+    ]);
+    const result = { image: mask, matrix };
+    placed.push(result);
+    return result;
+  };
+  const people = place(
     needsPersonMask(recipe) && input.originalUri !== null
       ? await personMask(input.originalUri)
-      : null;
-  // The mask is at its own size over the original: scale it there, then like the photo.
-  const maskMatrix =
-    mask === null
-      ? null
-      : Skia.Matrix([
-          ...composeProjective(
-            transform,
-            fromAffine(scale(image.width() / mask.width(), image.height() / mask.height())),
-          ),
-        ]);
+      : null,
+  );
+  const sky = place(editsSky(recipe.sky) ? skyMaskImage(image) : null);
 
   const surface = makeSurface(size.width, size.height);
   const matrix = Skia.Matrix([...transform]);
@@ -140,7 +148,8 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
     focusBlur: recipe.focusBlur,
     backgroundBlur: recipe.backgroundBlur,
     hair: recipe.hair,
-    mask: mask === null || maskMatrix === null ? null : { image: mask, matrix: maskMatrix },
+    mask: people,
+    sky: { mask: sky, edit: recipe.sky, backdrop: findBackdrop(recipe.sky.backdrop) },
     heads: faces.map((face) => ({ center: [face.center.x, face.center.y], width: face.width })),
   };
   let prepared: ReturnType<typeof retouchSource> | null = null;
@@ -189,7 +198,7 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
     return surface.makeImageSnapshot();
   } finally {
     prepared?.dispose();
-    maskMatrix?.dispose();
+    for (const mask of placed) mask.matrix.dispose();
     source.dispose();
     matrix.dispose();
     surface.dispose();

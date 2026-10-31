@@ -109,6 +109,7 @@ export const en: Strings = {
       beauty: 'Skin',
       adjust: 'Adjust',
       scenery: 'Scenery',
+      sky: 'Sky',
       light: 'Light & weather',
       makeup: 'Makeup',
       retouch: 'Retouch',
@@ -131,6 +132,14 @@ export const en: Strings = {
       hint: 'Puts the people in front of the background you pick. Photos without people become all background.',
       unsupported: "This device can't change backgrounds 🙏",
       none: 'As is',
+    },
+    sky: {
+      hint: 'Finds the sky at the top of the photo and changes only the sky.',
+      none: "Couldn't find a sky in this photo 🙏 Try one with the sky at the top",
+      keep: 'As is',
+      brightness: 'Sky brightness',
+      saturation: 'Sky colour',
+      warmth: 'Sky warmth',
     },
     light: {
       hint: 'Tap where the light (the sun) should come from ☀️',

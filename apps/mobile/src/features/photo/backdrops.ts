@@ -61,6 +61,9 @@ export const BACKDROPS: readonly Backdrop[] = [
   },
 ];
 
+/** Backdrops that make a believable sky (EDT-25). */
+export const SKY_BACKDROP_IDS = ['sky', 'sunset', 'starry'] as const;
+
 /** A backdrop by its ID, or `null` for none or one this version does not have. */
 export function findBackdrop(id: string | null): Backdrop | null {
   return BACKDROPS.find((backdrop) => backdrop.id === id) ?? null;

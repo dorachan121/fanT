@@ -9,11 +9,18 @@ import {
 
 import { makeSurface } from './surface';
 
+/** A small copy of an image as unpremultiplied RGBA8. */
+export interface PixelSample {
+  readonly width: number;
+  readonly height: number;
+  readonly pixels: Uint8Array;
+}
+
 /**
- * The image shrunk to fit `maxEdge` as unpremultiplied RGBA8, for statistics such
- * as auto adjustment (EDT-19). Small on purpose: reading pixels back is slow.
+ * The image shrunk to fit `maxEdge`, for statistics such as auto adjustment
+ * (EDT-19) and finding the sky (EDT-25). Small on purpose: reading back is slow.
  */
-export function samplePixels(image: SkImage, maxEdge = 64): Uint8Array {
+export function samplePixels(image: SkImage, maxEdge = 64): PixelSample {
   const scale = Math.min(1, maxEdge / Math.max(image.width(), image.height()));
   const width = Math.max(1, Math.round(image.width() * scale));
   const height = Math.max(1, Math.round(image.height() * scale));
@@ -40,7 +47,7 @@ export function samplePixels(image: SkImage, maxEdge = 64): Uint8Array {
         alphaType: AlphaType.Unpremul,
       });
       if (!(pixels instanceof Uint8Array)) throw new Error('Failed to read the image');
-      return pixels;
+      return { width, height, pixels };
     } finally {
       snapshot.dispose();
     }

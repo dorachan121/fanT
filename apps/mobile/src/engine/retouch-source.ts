@@ -22,6 +22,7 @@ import {
 } from '@shopify/react-native-skia';
 
 import type { Backdrop } from '../features/photo/backdrops';
+import { editsSky, skyColorMatrix, type SkyEdit } from '../features/sky/sky-edit';
 import type { Size } from '../features/photo/geometry';
 import { focusBlurSigma, focusGradient, type FocusBlur } from '../features/retouch/focus-blur';
 import { rgbOf, type Hair, type HealSpot } from '../features/retouch/retouch';
@@ -35,13 +36,25 @@ function hair(): SkRuntimeEffect {
   return hairEffect;
 }
 
+/** A mask image (alpha = keep) with the matrix that maps it onto the output. */
+export interface PlacedMask {
+  readonly image: SkImage;
+  readonly matrix: SkMatrix;
+}
+
 export interface RetouchInput {
   readonly heal: readonly HealSpot[];
   readonly backdrop: Backdrop | null;
   readonly backgroundBlur: number;
   readonly hair: Hair;
-  /** The people (alpha = person), with the matrix that maps it onto the output. */
-  readonly mask: { readonly image: SkImage; readonly matrix: SkMatrix } | null;
+  /** The people (alpha = person). */
+  readonly mask: PlacedMask | null;
+  /** The sky (EDT-25): where it is, what changes, and the backdrop for a new sky. */
+  readonly sky: {
+    readonly mask: PlacedMask | null;
+    readonly edit: SkyEdit;
+    readonly backdrop: Backdrop | null;
+  };
   /** Heads in output pixels, for hair colour. */
   readonly heads: readonly HairHead[];
   /** Tilt-shift (EDT-23): blur beyond the focus; needs no mask. */
@@ -51,6 +64,7 @@ export interface RetouchInput {
 /** Whether there is anything to do before the filter chain. */
 export function hasRetouch(input: RetouchInput): boolean {
   return (
+    (input.sky.mask !== null && editsSky(input.sky.edit)) ||
     input.heal.length > 0 ||
     input.focusBlur.amount > 0 ||
     (input.mask !== null &&
@@ -78,8 +92,8 @@ function drawImage(canvas: SkCanvas, image: SkImage, blurSigma: number): void {
   }
 }
 
-/** The person mask over the whole output (destination-in keeps only the people). */
-function keepPeople(canvas: SkCanvas, mask: NonNullable<RetouchInput['mask']>): void {
+/** Keeps only what is under a mask (destination-in), e.g. the people or the sky. */
+function keepMasked(canvas: SkCanvas, mask: PlacedMask): void {
   const paint = Skia.Paint();
   const shader = mask.image.makeShaderOptions(
     TileMode.Clamp,
@@ -149,8 +163,8 @@ function focusShader(focus: FocusBlur, size: Size): SkShader {
 }
 
 /**
- * Prepares the photo before the filter chain, in output pixels: a new backdrop
- * (EDT-16) and background blur behind the people (EDT-11), hair colour (EDT-12),
+ * Prepares the photo before the filter chain, in output pixels: the sky (EDT-25),
+ * a new backdrop (EDT-16) and background blur behind the people (EDT-11), hair colour (EDT-12),
  * blemish removal (BTY-11) and tilt-shift (EDT-23).
  * Returns a shader for the chain to draw from; the caller disposes `dispose`.
  */
@@ -168,6 +182,26 @@ export function retouchSource(
     canvas.drawRect(Skia.XYWHRect(0, 0, size.width, size.height), paint);
     const { mask } = input;
 
+    const sky = input.sky.mask;
+    if (sky !== null && editsSky(input.sky.edit)) {
+      // The new or recoloured sky, in a layer cut to the sky.
+      const photo = snapshot(surface);
+      images.push(photo);
+      const layer = Skia.Paint();
+      const colors = Skia.ColorFilter.MakeMatrix(skyColorMatrix(input.sky.edit));
+      try {
+        layer.setColorFilter(colors);
+        canvas.saveLayer(layer);
+        if (input.sky.backdrop === null) drawImage(canvas, photo, 0);
+        else drawBackdrop(canvas, input.sky.backdrop, size.width, size.height);
+        keepMasked(canvas, sky);
+        canvas.restore();
+      } finally {
+        colors.dispose();
+        layer.dispose();
+      }
+    }
+
     if (mask !== null && input.backdrop !== null) {
       // The film then runs over the backdrop too, so it sits in the same light.
       const photo = snapshot(surface);
@@ -176,7 +210,7 @@ export function retouchSource(
       drawBackdrop(canvas, input.backdrop, size.width, size.height);
       canvas.saveLayer();
       drawImage(canvas, photo, 0);
-      keepPeople(canvas, mask);
+      keepMasked(canvas, mask);
       canvas.restore();
     }
 
@@ -188,7 +222,7 @@ export function retouchSource(
       drawImage(canvas, sharp, sigma);
       canvas.saveLayer();
       drawImage(canvas, sharp, 0);
-      keepPeople(canvas, mask);
+      keepMasked(canvas, mask);
       canvas.restore();
     }
 

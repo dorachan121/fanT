@@ -116,6 +116,7 @@ export const ja = {
       beauty: '美肌',
       adjust: '補正',
       scenery: '風景',
+      sky: '空',
       light: '光と天気',
       makeup: 'メイク',
       retouch: 'レタッチ',
@@ -138,6 +139,14 @@ export const ja = {
       hint: '写っている人の後ろを、えらんだ背景に変えるよ。人が写っていない写真は全体が背景になるよ',
       unsupported: 'この端末では背景を変えられないよ🙏',
       none: 'そのまま',
+    },
+    sky: {
+      hint: '写真の上の方の空を見つけて、空だけを変えるよ。',
+      none: 'この写真では空が見つからなかったよ🙏 空が上の方に写っている写真でためしてね',
+      keep: 'そのまま',
+      brightness: '空の明るさ',
+      saturation: '空の鮮やかさ',
+      warmth: '空の色温度',
     },
     light: {
       hint: '光の出どころ（太陽）にしたい所をタップしてね☀️',

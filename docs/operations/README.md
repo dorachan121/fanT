@@ -2,24 +2,24 @@
 
 アプリを外部サービスにつなぎ、配信・リリースするための手順です。どのサービスも未設定のままで開発できます（その機能だけがオフになります）。
 
-| 設定がないとき | 動き |
-|---|---|
-| コンテンツ配信（`CONTENT_BASE_URL`） | 内蔵コンテンツだけを使う（CNT-05） |
-| API（`API_BASE_URL`） | AI モードを出さない。分析イベントは端末にためるだけ |
+| 設定がないとき                       | 動き                                                                                                                     |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------ |
+| コンテンツ配信（`CONTENT_BASE_URL`） | 内蔵コンテンツだけを使う（CNT-05）                                                                                       |
+| API（`API_BASE_URL`）                | AI モードを出さない。分析イベントは端末にためるだけ                                                                      |
 | RevenueCat（`REVENUECAT_*_API_KEY`） | 購入できない（プレミアムの項目はお試しのみ）。開発ビルドでは設定画面の「プレミアムを有効にする（テスト用）」で確認できる |
 
 ## 1. アプリの環境変数（EAS）
 
 `app.config.ts` がビルド時に読み、`src/config.ts` が起動時に検証します。EAS の環境変数（プロファイルごと）に設定します。
 
-| 変数 | 内容 | 例 |
-|---|---|---|
-| `APP_VARIANT` | `development` / `preview` / `production`（`eas.json` が設定） | |
-| `CONTENT_BASE_URL` | コンテンツ配信の URL（https、末尾の `/` なし） | `https://content.example.com` |
-| `API_BASE_URL` | Cloud Functions の `api` の URL（https、末尾の `/` なし） | `https://asia-northeast1-<project>.cloudfunctions.net/api` |
-| `REVENUECAT_IOS_API_KEY` / `REVENUECAT_ANDROID_API_KEY` | RevenueCat の公開 SDK キー（秘密ではない） | `appl_…` / `goog_…` |
-| `SUPPORT_EMAIL` | お問い合わせ先（SET-03）。未設定なら項目を出さない | |
-| `FACEBOOK_APP_ID` | Instagram ストーリーズへの共有（SHR-03）に使う Facebook のアプリ ID。Meta for Developers でアプリを作って取得する。未設定なら項目を出さない | `1234567890` |
+| 変数                                                    | 内容                                                                                                                                        | 例                                                         |
+| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `APP_VARIANT`                                           | `development` / `preview` / `production`（`eas.json` が設定）                                                                               |                                                            |
+| `CONTENT_BASE_URL`                                      | コンテンツ配信の URL（https、末尾の `/` なし）                                                                                              | `https://content.example.com`                              |
+| `API_BASE_URL`                                          | Cloud Functions の `api` の URL（https、末尾の `/` なし）                                                                                   | `https://asia-northeast1-<project>.cloudfunctions.net/api` |
+| `REVENUECAT_IOS_API_KEY` / `REVENUECAT_ANDROID_API_KEY` | RevenueCat の公開 SDK キー（秘密ではない）                                                                                                  | `appl_…` / `goog_…`                                        |
+| `SUPPORT_EMAIL`                                         | お問い合わせ先（SET-03）。未設定なら項目を出さない                                                                                          |                                                            |
+| `FACEBOOK_APP_ID`                                       | Instagram ストーリーズへの共有（SHR-03）に使う Facebook のアプリ ID。Meta for Developers でアプリを作って取得する。未設定なら項目を出さない | `1234567890`                                               |
 
 ```sh
 eas env:create --environment production --name API_BASE_URL --value https://…
@@ -55,12 +55,12 @@ eas env:create --environment production --name API_BASE_URL --value https://…
 
 ## 3. RevenueCat（課金）
 
-| 設定 | 値 |
-|---|---|
-| エンタイトルメント | `premium`（年額と買い切りの両方に付ける） |
-| 現在のオファリング | Annual パッケージ（商品 ID に `annual` を含める。7日間の無料トライアル）と Lifetime パッケージ |
-| オファリング `credits` | 消耗型の商品 `credits_10` / `credits_30` / `credits_100`（サーバーはこの3つ以外の数を付与しない） |
-| Webhook | URL: `${API_BASE_URL}/v1/webhooks/revenuecat`、Authorization ヘッダー: `Bearer <REVENUECAT_WEBHOOK_SECRET>` |
+| 設定                   | 値                                                                                                          |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------- |
+| エンタイトルメント     | `premium`（年額と買い切りの両方に付ける）                                                                   |
+| 現在のオファリング     | Annual パッケージ（商品 ID に `annual` を含める。7日間の無料トライアル）と Lifetime パッケージ              |
+| オファリング `credits` | 消耗型の商品 `credits_10` / `credits_30` / `credits_100`（サーバーはこの3つ以外の数を付与しない）           |
+| Webhook                | URL: `${API_BASE_URL}/v1/webhooks/revenuecat`、Authorization ヘッダー: `Bearer <REVENUECAT_WEBHOOK_SECRET>` |
 
 アプリは AI 用のアカウントを作ると RevenueCat にログインするので、クレジットの購入はそのアカウントに付与されます。年額プランの毎月のクレジットは、Webhook で届く有効期限までサーバーが付与します。ストアで返金されると、RevenueCat の `CANCELLATION` イベントでクレジットパックの分を差し引き（0 未満にはしない）、年額プランは返金時点で毎月の付与を止めます。
 
