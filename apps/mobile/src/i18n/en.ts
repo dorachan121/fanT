@@ -142,6 +142,7 @@ export const en: Strings = {
       hue: 'Hue',
       amount: 'Strength',
     },
+    looks: { hdr: '✨ HDR', drama: '🌩️ Drama', vivid: '🌈 Vivid', soft: '☁️ Soft' },
     scenery: {
       dehaze: 'Dehaze',
       clarity: 'Clarity',

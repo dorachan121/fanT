@@ -149,6 +149,7 @@ export const ja = {
       hue: '色',
       amount: '強さ',
     },
+    looks: { hdr: '✨ HDR風', drama: '🌩️ ドラマ', vivid: '🌈 くっきり鮮やか', soft: '☁️ ふんわり' },
     scenery: {
       dehaze: 'かすみ除去',
       clarity: 'くっきり',
