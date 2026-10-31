@@ -128,3 +128,16 @@ export {
   type LensParams,
   type LensUniforms,
 } from './lens/lens';
+export {
+  addsLight,
+  DEFAULT_LIGHT_PARAMS,
+  LIGHT_EFFECTS,
+  LIGHT_PARAM_RANGES,
+  LIGHT_SHADER_NAME,
+  LIGHT_SHADER_SOURCE,
+  normalizeLightParams,
+  toLightUniforms,
+  type LightParamName,
+  type LightParams,
+  type LightUniforms,
+} from './light/light';

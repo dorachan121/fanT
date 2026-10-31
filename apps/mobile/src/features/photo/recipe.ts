@@ -10,11 +10,13 @@ import {
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   DEFAULT_LENS_PARAMS,
+  DEFAULT_LIGHT_PARAMS,
   DETAIL_PARAM_RANGES,
   LOCAL_SHAPES,
   MAX_LOCAL_ADJUSTMENTS,
   FACE_SHAPE_PARAM_RANGES,
   LENS_PARAM_RANGES,
+  LIGHT_PARAM_RANGES,
   type AdjustParams,
   type FaceShapeParams,
   type BeautyParams,
@@ -173,6 +175,8 @@ const photoRecipeSchema = z.strictObject({
   detail: paramsSchema(DETAIL_PARAM_RANGES).default(DEFAULT_DETAIL_PARAMS),
   /** Lens and noise corrections (EDT-20); missing in older recipes. */
   lens: paramsSchema(LENS_PARAM_RANGES).default(DEFAULT_LENS_PARAMS),
+  /** Light and weather (EDT-24); missing in older recipes. */
+  light: paramsSchema(LIGHT_PARAM_RANGES).default(DEFAULT_LIGHT_PARAMS),
   /** Local areas (EDT-10); missing in older recipes. */
   local: z.array(localAdjustmentSchema).max(MAX_LOCAL_ADJUSTMENTS).default([]),
   /** Blemishes smoothed away (BTY-11); missing in older recipes. */
@@ -243,6 +247,7 @@ export function newRecipe(options: {
     hair: NO_HAIR_COLOR,
     detail: DEFAULT_DETAIL_PARAMS,
     lens: DEFAULT_LENS_PARAMS,
+    light: DEFAULT_LIGHT_PARAMS,
     local: [],
   };
 }

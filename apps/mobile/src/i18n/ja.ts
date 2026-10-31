@@ -116,6 +116,7 @@ export const ja = {
       beauty: '美肌',
       adjust: '補正',
       scenery: '風景',
+      light: '光と天気',
       makeup: 'メイク',
       retouch: 'レタッチ',
       background: '背景',
@@ -137,6 +138,14 @@ export const ja = {
       hint: '写っている人の後ろを、えらんだ背景に変えるよ。人が写っていない写真は全体が背景になるよ',
       unsupported: 'この端末では背景を変えられないよ🙏',
       none: 'そのまま',
+    },
+    light: {
+      hint: '光の出どころ（太陽）にしたい所をタップしてね☀️',
+      rays: '光芒',
+      flare: 'レンズフレア',
+      fog: '霧',
+      rain: '雨',
+      snow: '雪',
     },
     blur: {
       hint: 'ピントを合わせたい所をタップしてね。そこから離れるほどぼけて、ミニチュアのようになるよ👆',

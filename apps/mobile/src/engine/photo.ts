@@ -171,6 +171,7 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
         faceShape: recipe.faceShape,
         detail: recipe.detail,
         lens: recipe.lens,
+        light: recipe.light,
         local: recipe.local,
         body: recipe.body,
       }),

@@ -17,6 +17,7 @@ import { FilmPanel } from './panels/film-panel';
 import { GradingControls } from './panels/grading-controls';
 import { HslPanel } from './panels/hsl-panel';
 import { LensPanel } from './panels/lens-panel';
+import { LightPanel } from './panels/light-panel';
 import { LocalPanel } from './panels/local-panel';
 import type { PanelProps } from './panels/panel-props';
 import { RetouchPanel } from './panels/retouch-panel';
@@ -35,6 +36,7 @@ export const EDIT_TABS = [
   'blur',
   'adjust',
   'scenery',
+  'light',
   'tone',
   'hsl',
   'local',
@@ -112,6 +114,7 @@ export function EditTabPanel({
       />
     ),
     scenery: () => <SceneryPanel {...props} />,
+    light: () => <LightPanel {...props} />,
     tone: () => <TonePanel {...props} />,
     hsl: () => (
       <>

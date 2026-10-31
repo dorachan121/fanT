@@ -21,6 +21,13 @@ import type { FilmParams } from './film/film-params';
 import { FILM_SHADER_NAME, FILM_SHADER_SOURCE } from './film/film-shader';
 import { toFilmUniforms } from './film/film-uniforms';
 import { LENS_SHADER_NAME, LENS_SHADER_SOURCE, toLensUniforms, type LensParams } from './lens/lens';
+import {
+  addsLight,
+  LIGHT_SHADER_NAME,
+  LIGHT_SHADER_SOURCE,
+  toLightUniforms,
+  type LightParams,
+} from './light/light';
 import { compileRuntimeEffect, type RuntimeEffectFactory } from './runtime-effect';
 import { packUniforms, type UniformLayout } from './uniforms';
 
@@ -39,6 +46,7 @@ export interface FilterEffects<TShader> {
   readonly adjust: ShaderEffect<TShader>;
   readonly beauty: ShaderEffect<TShader>;
   readonly detail: ShaderEffect<TShader>;
+  readonly light: ShaderEffect<TShader>;
   readonly film: ShaderEffect<TShader>;
   readonly dateStamp: ShaderEffect<TShader>;
 }
@@ -56,6 +64,8 @@ export interface FilterSettings {
   readonly detail: DetailParams;
   /** The editor's local areas (EDT-10). */
   readonly local: readonly LocalAdjustment[];
+  /** Light and weather (EDT-24), last before the film so it grades them too. */
+  readonly light: LightParams;
   readonly film: FilmParams;
   readonly dateStamp: DateStampGlyphs;
 }
@@ -94,8 +104,9 @@ function isNeutral(params: Readonly<Record<string, number>>): boolean {
 }
 
 /**
- * Lens corrections, face fine-tuning, body reshaping, corrections, skin retouching
- * and detailed adjustments (lens → face shape → body → adjust → beauty → detail).
+ * Lens corrections, face fine-tuning, body reshaping, corrections, skin retouching,
+ * detailed adjustments and light (lens → face shape → body → adjust → beauty →
+ * detail → light).
  * Runs before anything drawn over the face (characters), so stickers are not
  * smoothed or reshaped.
  * Marked as a worklet so it can run on the camera frame thread.
@@ -148,6 +159,13 @@ export function chainRetouch<TShader>(
   if (!isNeutral(settings.detail) || settings.local.length > 0) {
     shader = effects.detail.makeShaderWithChildren(
       packUniforms(effects.detail, toDetailUniforms(settings.detail, settings.local, frame)),
+      [shader],
+    );
+    created.push(shader);
+  }
+  if (addsLight(settings.light)) {
+    shader = effects.light.makeShaderWithChildren(
+      packUniforms(effects.light, toLightUniforms(settings.light, frame)),
       [shader],
     );
     created.push(shader);
@@ -211,6 +229,7 @@ export function compileFilterEffects<TEffect>(
     adjust: compileRuntimeEffect(factory, ADJUST_SHADER_NAME, ADJUST_SHADER_SOURCE),
     beauty: compileRuntimeEffect(factory, BEAUTY_SHADER_NAME, BEAUTY_SHADER_SOURCE),
     detail: compileRuntimeEffect(factory, DETAIL_SHADER_NAME, DETAIL_SHADER_SOURCE),
+    light: compileRuntimeEffect(factory, LIGHT_SHADER_NAME, LIGHT_SHADER_SOURCE),
     film: compileRuntimeEffect(factory, FILM_SHADER_NAME, FILM_SHADER_SOURCE),
     dateStamp: compileRuntimeEffect(factory, DATE_STAMP_SHADER_NAME, DATE_STAMP_SHADER_SOURCE),
   };

@@ -7,6 +7,7 @@ import {
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   DEFAULT_LENS_PARAMS,
+  DEFAULT_LIGHT_PARAMS,
   toDateStampGlyphs,
   type AdjustParams,
   type BodyParams,
@@ -16,6 +17,7 @@ import {
   type FaceShapeParams,
   type FilterSettings,
   type LensParams,
+  type LightParams,
   type LocalAdjustment,
 } from '@fant/filters';
 
@@ -35,6 +37,8 @@ export function filterSettingsFor(input: {
   readonly local?: readonly LocalAdjustment[];
   /** Lens and noise corrections (EDT-20); none when omitted. */
   readonly lens?: LensParams;
+  /** Light and weather (EDT-24); none when omitted. */
+  readonly light?: LightParams;
   readonly dateStamp: DateStamp | null;
 }): FilterSettings {
   return {
@@ -45,6 +49,7 @@ export function filterSettingsFor(input: {
     beauty: input.beauty,
     detail: input.detail ?? DEFAULT_DETAIL_PARAMS,
     local: input.local ?? [],
+    light: input.light ?? DEFAULT_LIGHT_PARAMS,
     film: resolveFilmParams(input.film, { intensity: input.intensity, seed: input.seed }),
     dateStamp: toDateStampGlyphs(input.dateStamp),
   };
@@ -59,6 +64,7 @@ export function videoSettingsOf(settings: FilterSettings): FilterSettings {
     ...settings,
     // Lens corrections move and compare pixels, which a colour LUT cannot.
     lens: DEFAULT_LENS_PARAMS,
+    light: DEFAULT_LIGHT_PARAMS,
     film: colorOnlyFilmParams(settings.film),
     beauty: BEAUTY_LEVELS.off,
     faceShape: DEFAULT_FACE_SHAPE_PARAMS,

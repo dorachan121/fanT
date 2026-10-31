@@ -9,6 +9,7 @@ import {
   DEFAULT_DETAIL_PARAMS,
   DEFAULT_FACE_SHAPE_PARAMS,
   DEFAULT_LENS_PARAMS,
+  DEFAULT_LIGHT_PARAMS,
   IDENTITY_LUT,
   normalizeBeautyParams,
   normalizeFilmParams,
@@ -36,6 +37,7 @@ const NEUTRAL: FilterSettings = {
   beauty: normalizeBeautyParams({ smoothing: 0, brightness: 0, rosiness: 0 }),
   detail: DEFAULT_DETAIL_PARAMS,
   local: [],
+  light: DEFAULT_LIGHT_PARAMS,
   film: normalizeFilmParams({ warmth: 0, fade: 0, vignette: 0, grain: 0 }),
   dateStamp: toDateStampGlyphs(null),
 };
@@ -77,6 +79,7 @@ describe('chainFilters', () => {
       'faceShape',
       'film',
       'lens',
+      'light',
     ]);
   });
 

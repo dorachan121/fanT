@@ -109,6 +109,7 @@ export const en: Strings = {
       beauty: 'Skin',
       adjust: 'Adjust',
       scenery: 'Scenery',
+      light: 'Light & weather',
       makeup: 'Makeup',
       retouch: 'Retouch',
       background: 'Background',
@@ -130,6 +131,14 @@ export const en: Strings = {
       hint: 'Puts the people in front of the background you pick. Photos without people become all background.',
       unsupported: "This device can't change backgrounds 🙏",
       none: 'As is',
+    },
+    light: {
+      hint: 'Tap where the light (the sun) should come from ☀️',
+      rays: 'Sun rays',
+      flare: 'Lens flare',
+      fog: 'Mist',
+      rain: 'Rain',
+      snow: 'Snow',
     },
     blur: {
       hint: 'Tap where to focus. The farther from it, the blurrier, like a miniature 👆',
