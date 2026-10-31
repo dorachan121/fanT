@@ -35,7 +35,7 @@ import { DECO_FONTS } from '../deco/deco-fonts';
 export const MAX_STROKE_POINTS = 2000;
 export const MAX_DECO_LAYERS = 500;
 /** Furthest a photo can be straightened, in degrees either way. */
-export const MAX_STRAIGHTEN = 45;
+const MAX_STRAIGHTEN = 45;
 
 /**
  * Numbers within each parameter's range, e.g. the beauty or adjust parameters. A
