@@ -4,6 +4,21 @@ const centered = { min: -1, max: 1, defaultValue: 0 } as const;
 const hue = { min: 0, max: 360, defaultValue: 0 } as const;
 const amount = { min: 0, max: 1, defaultValue: 0 } as const;
 
+/** Colour channels with a tone curve of their own (EDT-32), beside the brightness curve. */
+export const CURVE_CHANNELS = ['Red', 'Green', 'Blue'] as const;
+export type CurveChannel = (typeof CURVE_CHANNELS)[number];
+/** The four points of every tone curve, dark to bright. */
+export const CURVE_POINTS = ['Shadows', 'Darks', 'Lights', 'Highlights'] as const;
+
+const channelCurveRanges = Object.fromEntries(
+  CURVE_CHANNELS.flatMap((channel) =>
+    CURVE_POINTS.map((point) => [`curve${channel}${point}`, { min: -1, max: 1, defaultValue: 0 }]),
+  ),
+) as Record<
+  `curve${CurveChannel}${(typeof CURVE_POINTS)[number]}`,
+  { readonly min: -1; readonly max: 1; readonly defaultValue: 0 }
+>;
+
 /** The tonal ranges colour grading tints separately (EDT-21). */
 export const GRADE_RANGES = ['Shadows', 'Midtones', 'Highlights'] as const;
 export type GradeRange = (typeof GRADE_RANGES)[number];
@@ -42,11 +57,16 @@ export const DETAIL_PARAM_RANGES = {
   shadows: centered,
   /** Saturation that favours dull colours over already vivid ones. */
   vibrance: centered,
+  /** Positive brightens the brightest tones up to white, negative holds them back (EDT-31). */
+  whites: centered,
+  /** Positive lifts the darkest tones, negative deepens them to black (EDT-31). */
+  blacks: centered,
   /** Tone curve: brightness around 1/8, 3/8, 5/8 and 7/8 of the range. */
   curveShadows: centered,
   curveDarks: centered,
   curveLights: centered,
   curveHighlights: centered,
+  ...channelCurveRanges,
   ...hslRanges,
   /** Positive clears haze from distant scenery, negative adds a soft mist. */
   dehaze: centered,

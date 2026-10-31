@@ -169,4 +169,18 @@ describe(`${DETAIL_SHADER_NAME} shader`, () => {
     expect(db).toBeGreaterThan(dr);
     expect(hr).toBeGreaterThan(hb);
   });
+
+  it('moves the black and white points', () => {
+    const lifted = render(RAMP, { blacks: 1 });
+    expect(pixelAt(lifted, 0, 0)[0]).toBeGreaterThan(15);
+    const bright = render(RAMP, { whites: 1 });
+    expect(pixelAt(bright, 58, 0)[0]).toBeGreaterThan(pixelAt(RAMP, 58, 0)[0] + 10);
+  });
+
+  it('bends one colour channel with its own curve', () => {
+    const redder = render(RAMP, { curveRedDarks: 1 });
+    const [r, g, b] = pixelAt(redder, 24, 0);
+    expect(r).toBeGreaterThan(g);
+    expect(g).toBe(b);
+  });
 });

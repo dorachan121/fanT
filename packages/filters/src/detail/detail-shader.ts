@@ -23,8 +23,13 @@ uniform float sky;
 uniform float sunset;
 uniform float4 gradeHues;
 uniform float4 gradeAmounts;
-// Tone curve: shadows, darks, lights, highlights.
+// Tone curves: shadows, darks, lights, highlights; brightness, then per channel.
 uniform float4 curve;
+uniform float4 curveRed;
+uniform float4 curveGreen;
+uniform float4 curveBlue;
+// Blacks and whites (EDT-31).
+uniform float2 levels;
 // Colour bands red, orange, yellow, green (A) and aqua, blue, purple, magenta (B).
 uniform float4 hueA;
 uniform float4 hueB;
@@ -160,9 +165,9 @@ half bump(half x, half centre) {
   return t * t * (3.0 - 2.0 * t);
 }
 
-half curveOf(half x) {
-  half lift = half(curve.x) * bump(x, 0.125) + half(curve.y) * bump(x, 0.375)
-    + half(curve.z) * bump(x, 0.625) + half(curve.w) * bump(x, 0.875);
+half curveOf(half x, float4 points) {
+  half lift = half(points.x) * bump(x, 0.125) + half(points.y) * bump(x, 0.375)
+    + half(points.z) * bump(x, 0.625) + half(points.w) * bump(x, 0.875);
   return saturate(x + lift * 0.12);
 }
 
@@ -223,9 +228,19 @@ half4 main(float2 coord) {
   color = local(color, uv, aspect, local2Area, local2Adjust, localAngles.z);
   color = local(color, uv, aspect, local3Area, local3Adjust, localAngles.w);
 
-  if (any(notEqual(curve, float4(0.0)))) {
-    color = half3(curveOf(color.r), curveOf(color.g), curveOf(color.b));
+  if (levels.x != 0.0 || levels.y != 0.0) {
+    // Moves the black and white points: the tones between stretch to follow.
+    half black = half(-levels.x * 0.1);
+    half white = half(1.0 - levels.y * 0.1);
+    color = (color - black) / (white - black);
   }
+
+  if (any(notEqual(curve, float4(0.0)))) {
+    color = half3(curveOf(color.r, curve), curveOf(color.g, curve), curveOf(color.b, curve));
+  }
+  if (any(notEqual(curveRed, float4(0.0)))) color.r = curveOf(color.r, curveRed);
+  if (any(notEqual(curveGreen, float4(0.0)))) color.g = curveOf(color.g, curveGreen);
+  if (any(notEqual(curveBlue, float4(0.0)))) color.b = curveOf(color.b, curveBlue);
 
   half luma = dot(saturate(color), LUMA);
   // Shadows act on the dark third, highlights on the bright third.

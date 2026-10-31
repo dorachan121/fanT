@@ -24,6 +24,11 @@ export type DetailUniforms = {
   readonly gradeHues: Vec4;
   readonly gradeAmounts: Vec4;
   readonly curve: Vec4;
+  readonly curveRed: Vec4;
+  readonly curveGreen: Vec4;
+  readonly curveBlue: Vec4;
+  /** Black point and white point shifts (EDT-31). */
+  readonly levels: readonly [number, number];
   readonly hueA: Vec4;
   readonly hueB: Vec4;
   readonly saturationA: Vec4;
@@ -87,6 +92,25 @@ export function toDetailUniforms(
       0,
     ],
     curve: [params.curveShadows, params.curveDarks, params.curveLights, params.curveHighlights],
+    curveRed: [
+      params.curveRedShadows,
+      params.curveRedDarks,
+      params.curveRedLights,
+      params.curveRedHighlights,
+    ],
+    curveGreen: [
+      params.curveGreenShadows,
+      params.curveGreenDarks,
+      params.curveGreenLights,
+      params.curveGreenHighlights,
+    ],
+    curveBlue: [
+      params.curveBlueShadows,
+      params.curveBlueDarks,
+      params.curveBlueLights,
+      params.curveBlueHighlights,
+    ],
+    levels: [params.blacks, params.whites],
     hueA: bands(params, 'Hue', 0),
     hueB: bands(params, 'Hue', 4),
     saturationA: bands(params, 'Saturation', 0),

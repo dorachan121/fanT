@@ -10,9 +10,10 @@ const ADJUSTMENTS: readonly AdjustParamName[] = [
   'contrast',
   'saturation',
   'temperature',
+  'tint',
 ];
 
-/** Basic corrections (EDT-03), with one-tap auto adjustment (EDT-19) above them. */
+/** Basic corrections (EDT-03, tint EDT-31), with one-tap auto adjustment (EDT-19) above them. */
 export function AdjustPanel({
   recipe,
   update,

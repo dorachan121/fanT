@@ -44,4 +44,13 @@ describe(`${ADJUST_SHADER_NAME} shader`, () => {
     expect(r).toBeGreaterThan(r0);
     expect(b).toBeLessThan(b0);
   });
+
+  it('shifts the tint towards magenta or green', () => {
+    const [r, g] = pixelAt(INPUT, 8, 8);
+    const magenta = pixelAt(render({ tint: 1 }), 8, 8);
+    const green = pixelAt(render({ tint: -1 }), 8, 8);
+    expect(magenta[1]).toBeLessThan(g);
+    expect(green[1]).toBeGreaterThan(g);
+    expect(magenta[0]).toBeGreaterThanOrEqual(r);
+  });
 });

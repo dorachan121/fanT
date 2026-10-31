@@ -1,20 +1,41 @@
-import { DETAIL_PARAM_RANGES, type DetailParamName } from '@fant/filters';
-import { StyleSheet } from 'react-native';
+import {
+  CURVE_CHANNELS,
+  CURVE_POINTS,
+  DETAIL_PARAM_RANGES,
+  type CurveChannel,
+  type DetailParamName,
+} from '@fant/filters';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 
 import { strings } from '../../../i18n';
-import { Text } from '../../../ui/text';
-import { colors } from '../../../ui/theme';
-import type { PanelProps } from './panel-props';
+import { Chip } from '../../../ui/chip';
 import { ParamSliders } from '../../../ui/param-sliders';
+import { Text } from '../../../ui/text';
+import { colors, spacing } from '../../../ui/theme';
+import type { PanelProps } from './panel-props';
 
-const TONE = ['sharpen', 'highlights', 'shadows', 'vibrance'] as const;
-const CURVE = ['curveShadows', 'curveDarks', 'curveLights', 'curveHighlights'] as const;
+const TONE = ['sharpen', 'highlights', 'shadows', 'whites', 'blacks', 'vibrance'] as const;
 
-/** Sharpening and tone (EDT-07) and the four-point tone curve (EDT-09). */
+/** The brightness curve, or one colour channel's (EDT-32). */
+type CurveTarget = 'Luma' | CurveChannel;
+
+function curveNames(target: CurveTarget): DetailParamName[] {
+  return CURVE_POINTS.map((point) =>
+    target === 'Luma' ? (`curve${point}` as const) : (`curve${target}${point}` as const),
+  );
+}
+
+/**
+ * Sharpening and tone (EDT-07), white and black levels (EDT-31), and the
+ * four-point tone curves for brightness (EDT-09) and each channel (EDT-32).
+ */
 export function TonePanel({ recipe, update }: PanelProps) {
+  const [target, setTarget] = useState<CurveTarget>('Luma');
   const change = (name: DetailParamName, value: number) => {
     update({ detail: { ...recipe.detail, [name]: value } }, name);
   };
+  const names = curveNames(target);
   return (
     <>
       <ParamSliders
@@ -25,11 +46,23 @@ export function TonePanel({ recipe, update }: PanelProps) {
         onChange={change}
       />
       <Text style={styles.heading}>{strings.edit.curve.title}</Text>
+      <View style={styles.row}>
+        {(['Luma', ...CURVE_CHANNELS] as const).map((candidate) => (
+          <Chip
+            key={candidate}
+            label={strings.edit.curve.targets[candidate]}
+            selected={target === candidate}
+            onPress={() => {
+              setTarget(candidate);
+            }}
+          />
+        ))}
+      </View>
       <ParamSliders
-        names={CURVE}
+        names={names}
         ranges={DETAIL_PARAM_RANGES}
         values={recipe.detail}
-        label={(name) => strings.edit.curve[name]}
+        label={(name) => strings.edit.curve.points[CURVE_POINTS[names.indexOf(name)] ?? 'Shadows']}
         onChange={change}
       />
     </>
@@ -38,4 +71,5 @@ export function TonePanel({ recipe, update }: PanelProps) {
 
 const styles = StyleSheet.create({
   heading: { color: colors.text, fontSize: 15, fontWeight: '700' },
+  row: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
 });

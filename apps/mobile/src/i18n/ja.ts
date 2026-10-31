@@ -133,6 +133,8 @@ export const ja = {
       sharpen: 'シャープ',
       highlights: 'ハイライト',
       shadows: 'シャドウ',
+      whites: '白レベル',
+      blacks: '黒レベル',
       vibrance: '自然な彩度',
     },
     background: {
@@ -185,10 +187,13 @@ export const ja = {
     },
     curve: {
       title: 'トーンカーブ',
-      curveShadows: '暗いところ',
-      curveDarks: 'やや暗いところ',
-      curveLights: 'やや明るいところ',
-      curveHighlights: '明るいところ',
+      targets: { Luma: '明るさ', Red: '赤', Green: '緑', Blue: '青' },
+      points: {
+        Shadows: '暗いところ',
+        Darks: 'やや暗いところ',
+        Lights: 'やや明るいところ',
+        Highlights: '明るいところ',
+      },
     },
     hsl: {
       bands: {
@@ -224,6 +229,7 @@ export const ja = {
     contrast: 'コントラスト',
     saturation: '彩度',
     temperature: '色温度',
+    tint: '色合い',
     rotate: '回転',
     straighten: '傾き',
     auto: '✨ 自動補正',

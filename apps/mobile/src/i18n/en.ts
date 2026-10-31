@@ -126,6 +126,8 @@ export const en: Strings = {
       sharpen: 'Sharpen',
       highlights: 'Highlights',
       shadows: 'Shadows',
+      whites: 'Whites',
+      blacks: 'Blacks',
       vibrance: 'Vibrance',
     },
     background: {
@@ -178,10 +180,8 @@ export const en: Strings = {
     },
     curve: {
       title: 'Tone curve',
-      curveShadows: 'Shadows',
-      curveDarks: 'Darks',
-      curveLights: 'Lights',
-      curveHighlights: 'Highlights',
+      targets: { Luma: 'Brightness', Red: 'Red', Green: 'Green', Blue: 'Blue' },
+      points: { Shadows: 'Shadows', Darks: 'Darks', Lights: 'Lights', Highlights: 'Highlights' },
     },
     hsl: {
       bands: {
@@ -218,6 +218,7 @@ export const en: Strings = {
     contrast: 'Contrast',
     saturation: 'Saturation',
     temperature: 'Temperature',
+    tint: 'Tint',
     rotate: 'Rotate',
     straighten: 'Straighten',
     auto: '✨ Auto',

@@ -9,6 +9,8 @@ export const ADJUST_PARAM_RANGES = {
   saturation: { min: -1, max: 1, defaultValue: 0 },
   /** Colour temperature: negative is cooler, positive is warmer. */
   temperature: { min: -1, max: 1, defaultValue: 0 },
+  /** Colour cast across the other axis: negative is greener, positive more magenta (EDT-31). */
+  tint: { min: -1, max: 1, defaultValue: 0 },
 } as const satisfies Record<string, ParamRange>;
 
 export type AdjustParamName = keyof typeof ADJUST_PARAM_RANGES;
@@ -30,12 +32,13 @@ uniform float brightness;
 uniform float contrast;
 uniform float saturation;
 uniform float temperature;
+uniform float tint;
 ${LUMA_SKSL}
 ${GRADE_SKSL}
 half4 main(float2 coord) {
   half4 source = unpremul(image.eval(coord));
   half3 color = source.rgb * half(exp2(brightness));
-  color = grade(color, temperature, 0.0, saturation, contrast, 0.0);
+  color = grade(color, temperature, tint, saturation, contrast, 0.0);
   return half4(saturate(color) * source.a, source.a);
 }
 `;
