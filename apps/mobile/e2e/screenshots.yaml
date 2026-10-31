@@ -93,14 +93,16 @@ appId: com.fant.camera.dev
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 14-album-empty
-# Import one of the simulator's sample photos and open it in the editor.
+# Import the sample landscape (e2e/assets/landscape.jpg, added to the simulator's
+# photos by the workflow) and open it in the editor.
 - tapOn:
     text: '写真を読み込む'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 15-photo-picker
+# The newest photo: the picker opens scrolled to it in its last row.
 - tapOn:
-    point: '20%,25%'
+    point: '85%,80%'
     optional: true
 - waitForAnimationToEnd
 - tapOn:
@@ -112,26 +114,160 @@ appId: com.fant.camera.dev
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 16-edit-film
+- scrollUntilVisible:
+    element: 'プリセット'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: 'プリセット'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 17-edit-presets
+- scrollUntilVisible:
+    element: '美肌'
+    direction: RIGHT
+    optional: true
 - tapOn:
     text: '美肌'
     optional: true
-- takeScreenshot: 17-edit-beauty
+- waitForAnimationToEnd
+- takeScreenshot: 18-edit-beauty
+- scrollUntilVisible:
+    element: 'メイク'
+    direction: RIGHT
+    optional: true
 - tapOn:
     text: 'メイク'
     optional: true
-- takeScreenshot: 18-edit-makeup
+- waitForAnimationToEnd
+- takeScreenshot: 19-edit-makeup
+- scrollUntilVisible:
+    element: 'レタッチ'
+    direction: RIGHT
+    optional: true
 - tapOn:
     text: 'レタッチ'
     optional: true
-- takeScreenshot: 19-edit-retouch
+- waitForAnimationToEnd
+- takeScreenshot: 20-edit-retouch
+- scrollUntilVisible:
+    element: '背景'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: '背景'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 21-edit-background
+- scrollUntilVisible:
+    element: 'ぼかし'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: 'ぼかし'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 22-edit-blur
+- scrollUntilVisible:
+    element: '補正'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: '補正'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 23-edit-adjust
+- tapOn:
+    text: '✨ 自動補正'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 24-edit-auto
+- scrollUntilVisible:
+    element: '風景'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: '風景'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 25-edit-scenery
+- tapOn:
+    text: '✨ HDR風'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 26-edit-hdr
+- scrollUntilVisible:
+    element: '空'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: '空'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 27-edit-sky
+- scrollUntilVisible:
+    element: '光と天気'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: '光と天気'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 28-edit-light
+- scrollUntilVisible:
+    element: 'トーン'
+    direction: RIGHT
+    optional: true
 - tapOn:
     text: 'トーン'
     optional: true
-- takeScreenshot: 20-edit-tone
+- waitForAnimationToEnd
+- takeScreenshot: 29-edit-tone
+- scrollUntilVisible:
+    element: 'カラー'
+    direction: RIGHT
+    optional: true
 - tapOn:
     text: 'カラー'
     optional: true
-- takeScreenshot: 21-edit-hsl
+- waitForAnimationToEnd
+- takeScreenshot: 30-edit-color
+- scrollUntilVisible:
+    element: '部分補正'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: '部分補正'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 31-edit-local
+- scrollUntilVisible:
+    element: '範囲'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: '範囲'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 32-edit-select
+- scrollUntilVisible:
+    element: 'レンズ'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: 'レンズ'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 33-edit-lens
+- scrollUntilVisible:
+    element: 'トリミング'
+    direction: RIGHT
+    optional: true
+- tapOn:
+    text: 'トリミング'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 34-edit-crop
 - scrollUntilVisible:
     element: 'フレーム'
     direction: RIGHT
@@ -139,14 +275,23 @@ appId: com.fant.camera.dev
 - tapOn:
     text: 'フレーム'
     optional: true
-- takeScreenshot: 22-edit-frame
+- waitForAnimationToEnd
+- takeScreenshot: 35-edit-frame
 - tapOn:
     text: '保存'
     optional: true
 - waitForAnimationToEnd
-- takeScreenshot: 23-photo
+- takeScreenshot: 36-photo
+- tapOn:
+    text: '動かす'
+    optional: true
+- waitForAnimationToEnd
+- takeScreenshot: 37-motion
+- tapOn:
+    text: '戻る'
+    optional: true
 - tapOn:
     text: 'デコ'
     optional: true
 - waitForAnimationToEnd
-- takeScreenshot: 24-deco
+- takeScreenshot: 38-deco
