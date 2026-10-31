@@ -54,6 +54,11 @@ appId: com.fant.camera.dev
     text: '.*フィルム'
     index: 0
     optional: true
+# A sheet left open (the character's colours) would block the top bar.
+- tapOn:
+    text: '閉じる'
+    optional: true
+- waitForAnimationToEnd
 - tapOn:
     text: '設定を開く'
     optional: true
@@ -98,11 +103,15 @@ appId: com.fant.camera.dev
 - tapOn:
     text: '写真を読み込む'
     optional: true
+- extendedWaitUntil:
+    visible: 'コレクション|Collections'
+    timeout: 20000
+    optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 15-photo-picker
-# The newest photo: the picker opens scrolled to it in its last row.
+# The newest photo (the sample landscape) is first, top left.
 - tapOn:
-    point: '85%,80%'
+    point: '15%,25%'
     optional: true
 - waitForAnimationToEnd
 - tapOn:
