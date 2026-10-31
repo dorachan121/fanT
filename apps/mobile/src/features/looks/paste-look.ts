@@ -4,7 +4,7 @@ import type { Look } from '../photo/recipe';
 import { withLook } from './look';
 
 /** Videos have no recipe to change. */
-export function canTakeLook(photo: AlbumPhoto): boolean {
+function canTakeLook(photo: AlbumPhoto): boolean {
   return photo.kind !== 'video';
 }
 

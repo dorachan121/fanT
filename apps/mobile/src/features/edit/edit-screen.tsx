@@ -15,7 +15,6 @@ import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { Chip } from '../../ui/chip';
 import { showError, showMessage } from '../../ui/dialogs';
-import { IconButton } from '../../ui/icon-button';
 import { ScreenHeader } from '../../ui/screen-header';
 import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
@@ -23,11 +22,10 @@ import { useContent } from '../content/content-store';
 import { findFilm } from '../content/lookup';
 import { saveEdit } from '../photo/photo-service';
 import { MAX_BRUSH_STROKES, type PhotoRecipe } from '../photo/recipe';
-import { lookOf, withLook } from '../looks/look';
-import { useLookClipboard } from '../looks/look-clipboard';
 import { isLocked, usePremium } from '../purchases/purchases-store';
 import { BrushLayer } from './brush-layer';
 import { CropFrame } from './crop-frame';
+import { EditHeaderActions } from './edit-header-actions';
 import { EDIT_TABS, EditTabPanel, type EditTab } from './edit-tabs';
 import { PhotoTapLayer } from './photo-tap-layer';
 import type { PhotoTool } from './tools/photo-tool';
@@ -72,7 +70,6 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
   const [saving, setSaving] = useState(false);
   const [photoRect, setPhotoRect] = useState<LayoutRectangle | null>(null);
   const [comparing, setComparing] = useState(false);
-  const copied = useLookClipboard((state) => state.look);
   const { setView } = session;
   // Hold to compare with the photo before editing (EDT-28); crop over the whole photo (EDT-29).
   useEffect(() => {
@@ -134,48 +131,13 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
       <ScreenHeader
         title={strings.edit.title}
         actions={
-          <>
-            <IconButton
-              icon="eye-outline"
-              label={strings.edit.compare}
-              active={comparing}
-              onPress={() => undefined}
-              onPressIn={() => {
-                setComparing(true);
-              }}
-              onPressOut={() => {
-                setComparing(false);
-              }}
-            />
-            <IconButton
-              icon="copy-outline"
-              label={strings.edit.copyLook}
-              onPress={() => {
-                useLookClipboard.getState().copy(lookOf(recipe));
-                showMessage(strings.edit.copied);
-              }}
-            />
-            <IconButton
-              icon="clipboard-outline"
-              label={strings.edit.pasteLook}
-              disabled={copied === null}
-              onPress={() => {
-                if (copied !== null) update(withLook(recipe, copied));
-              }}
-            />
-            <IconButton
-              icon="arrow-undo"
-              label={strings.edit.undo}
-              disabled={!session.canUndo}
-              onPress={session.undo}
-            />
-            <IconButton
-              icon="arrow-redo"
-              label={strings.edit.redo}
-              disabled={!session.canRedo}
-              onPress={session.redo}
-            />
-          </>
+          <EditHeaderActions
+            recipe={recipe}
+            update={update}
+            comparing={comparing}
+            onCompare={setComparing}
+            history={session}
+          />
         }
       />
       <PhotoCanvas
