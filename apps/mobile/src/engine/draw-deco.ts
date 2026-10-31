@@ -27,6 +27,9 @@ export interface DecoAssets {
   readonly fonts?: SkTypefaceFontProvider | null;
 }
 
+/** For drawing strokes alone (masks, painted areas): no stamps, images or fonts. */
+export const NO_DECO_ASSETS: DecoAssets = { stamps: new Map(), images: {} };
+
 /** A smooth path through the stroke's points (quadratic curves through midpoints). */
 function strokePath(stroke: DecoStroke, width: number, height: number): SkPath {
   const builder = Skia.PathBuilder.Make();

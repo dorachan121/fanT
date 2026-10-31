@@ -1,6 +1,7 @@
 import { Skia } from '@shopify/react-native-skia';
 
-import { editsSky, skyColorMatrix } from '../../../features/sky/sky-edit';
+import { toneMatrix } from '../../../features/selection/area-tone';
+import { editsSky } from '../../../features/sky/sky-edit';
 import { drawBackdrop } from '../../backdrop';
 import { drawImage, keepMasked } from '../drawing';
 import type { RetouchStep } from '../types';
@@ -12,7 +13,7 @@ export const skyStep: RetouchStep = {
     if (sky.mask === null) return;
     const photo = current();
     const layer = Skia.Paint();
-    const colors = Skia.ColorFilter.MakeMatrix(skyColorMatrix(sky.edit));
+    const colors = Skia.ColorFilter.MakeMatrix(toneMatrix(sky.edit));
     try {
       layer.setColorFilter(colors);
       canvas.saveLayer(layer);

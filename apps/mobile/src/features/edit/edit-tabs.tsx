@@ -24,10 +24,12 @@ import { PresetsPanel } from './panels/presets-panel';
 import type { PanelProps } from './panels/panel-props';
 import { RetouchPanel } from './panels/retouch-panel';
 import { SceneryPanel } from './panels/scenery-panel';
+import { SelectPanel } from './panels/select-panel';
 import { SkyPanel } from './panels/sky-panel';
 import { TonePanel } from './panels/tone-panel';
 import type { useLocalTool } from './tools/use-local-tool';
 import type { useRetouchTool } from './tools/use-retouch-tool';
+import type { useSelectTool } from './tools/use-select-tool';
 
 /** The editor's tabs, in the order they are offered (S-21). */
 export const EDIT_TABS = [
@@ -45,6 +47,7 @@ export const EDIT_TABS = [
   'tone',
   'hsl',
   'local',
+  'select',
   'lens',
   'crop',
   'frame',
@@ -58,6 +61,7 @@ export interface EditTabContext extends PanelProps {
   readonly takenAt: number | null;
   readonly local: ReturnType<typeof useLocalTool>;
   readonly retouch: ReturnType<typeof useRetouchTool>;
+  readonly select: ReturnType<typeof useSelectTool>;
 }
 
 /** The controls of one tab; every change goes through `update`, so it can be undone. */
@@ -148,6 +152,7 @@ export function EditTabPanel({
         onShape={local.onShape}
       />
     ),
+    select: () => <SelectPanel {...props} tool={context.select} />,
     lens: () => <LensPanel {...props} />,
     crop: () => <CropPanel {...props} originalSize={context.original.size} />,
     frame: () => (

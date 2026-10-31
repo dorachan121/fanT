@@ -37,18 +37,37 @@ export function keepWhere(canvas: SkCanvas, shader: SkShader): void {
   }
 }
 
-/** Keeps only what is under a mask, e.g. the people or the sky. */
-export function keepMasked(canvas: SkCanvas, mask: PlacedMask): void {
-  const shader = mask.image.makeShaderOptions(
+/** The mask placed on the output, as a shader whose alpha is the mask. */
+function maskShader(mask: PlacedMask): SkShader {
+  return mask.image.makeShaderOptions(
     TileMode.Clamp,
     TileMode.Clamp,
     FilterMode.Linear,
     MipmapMode.None,
     mask.matrix,
   );
+}
+
+/** Keeps only what is under a mask, e.g. the people or the sky. */
+export function keepMasked(canvas: SkCanvas, mask: PlacedMask): void {
+  const shader = maskShader(mask);
   try {
     keepWhere(canvas, shader);
   } finally {
+    shader.dispose();
+  }
+}
+
+/** Keeps only what is outside a mask (destination-out), e.g. the background. */
+export function keepOutside(canvas: SkCanvas, mask: PlacedMask): void {
+  const shader = maskShader(mask);
+  const paint = Skia.Paint();
+  try {
+    paint.setShader(shader);
+    paint.setBlendMode(BlendMode.DstOut);
+    canvas.drawPaint(paint);
+  } finally {
+    paint.dispose();
     shader.dispose();
   }
 }

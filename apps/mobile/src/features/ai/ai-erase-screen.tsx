@@ -6,7 +6,7 @@ import { StyleSheet, View, type LayoutRectangle } from 'react-native';
 import { GestureDetector, usePanGesture } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { recordDeco } from '../../engine/draw-deco';
+import { NO_DECO_ASSETS, recordDeco } from '../../engine/draw-deco';
 import { encodeEraseMask } from '../../engine/erase-mask';
 import { decodeImage, imageSize } from '../../engine/photo';
 import { PhotoCanvas } from '../../engine/photo-canvas';
@@ -29,7 +29,6 @@ import type { DecoStroke } from '../photo/recipe';
 const MAX_STROKES = 40;
 /** How the painted area is shown while painting. */
 const BRUSH_COLOR = '#ff5fa2';
-const NO_ASSETS = { stamps: new Map(), images: {} } as const;
 
 /** Decodes the photo to paint on; freed when the screen closes. */
 function usePhoto(uri: string): SkImage | null {
@@ -67,7 +66,7 @@ export function AiEraseScreen({ sourceUri }: { readonly sourceUri: string }) {
     [strokes, stroke],
   );
   const overlay = useMemo(
-    () => (size === null ? null : recordDeco(shown, size.width, size.height, NO_ASSETS, null)),
+    () => (size === null ? null : recordDeco(shown, size.width, size.height, NO_DECO_ASSETS, null)),
     [shown, size],
   );
   useEffect(() => () => overlay?.dispose(), [overlay]);

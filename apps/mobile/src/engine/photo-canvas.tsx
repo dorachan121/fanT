@@ -18,6 +18,8 @@ interface PhotoCanvasProps {
   readonly photoSize: Size;
   /** Drawn over the photo in `photoSize` coordinates, e.g. decorations. */
   readonly overlay?: SkPicture | null;
+  /** How strongly the overlay shows (1 by default), e.g. faint for painted areas. */
+  readonly overlayOpacity?: number;
   /** Receives where the photo is shown, for mapping touches to photo coordinates. */
   readonly onPhotoRect?: (rect: LayoutRectangle) => void;
   readonly children?: ReactNode;
@@ -28,6 +30,7 @@ export function PhotoCanvas({
   image,
   photoSize,
   overlay,
+  overlayOpacity = 1,
   onPhotoRect,
   children,
 }: PhotoCanvasProps) {
@@ -56,7 +59,11 @@ export function PhotoCanvas({
               fit="fill"
             />
           )}
-          {overlay !== undefined && overlay !== null && <Picture picture={overlay} />}
+          {overlay !== undefined && overlay !== null && (
+            <Group opacity={overlayOpacity}>
+              <Picture picture={overlay} />
+            </Group>
+          )}
         </Group>
       </Canvas>
       {children}

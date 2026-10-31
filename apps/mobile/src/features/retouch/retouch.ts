@@ -1,6 +1,8 @@
 import { hexColorSchema } from '@fant/content-schema';
 import { z } from 'zod';
 
+import { changesTone, type AreaTone } from '../selection/area-tone';
+
 /** Blemish spots a photo can have (BTY-11); each is a few bytes in the recipe. */
 export const MAX_HEAL_SPOTS = 200;
 
@@ -46,14 +48,21 @@ export const HAIR_COLORS = [
 
 /**
  * What the person mask is needed for: a new backdrop (EDT-16), background blur
- * (EDT-11) or hair colour (EDT-12).
+ * (EDT-11), hair colour (EDT-12) or toning the people or the background (EDT-34).
  */
 export function needsPersonMask(recipe: {
   readonly backdrop: string | null;
   readonly backgroundBlur: number;
   readonly hair: Hair;
+  readonly selective: { readonly people: AreaTone; readonly background: AreaTone };
 }): boolean {
-  return recipe.backdrop !== null || recipe.backgroundBlur > 0 || recipe.hair.amount > 0;
+  return (
+    recipe.backdrop !== null ||
+    recipe.backgroundBlur > 0 ||
+    recipe.hair.amount > 0 ||
+    changesTone(recipe.selective.people) ||
+    changesTone(recipe.selective.background)
+  );
 }
 
 /** Converts `#rrggbb` to linear-ish 0–1 RGB for a shader. */

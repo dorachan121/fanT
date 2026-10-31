@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   ScrollView,
@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { NO_DECO_ASSETS, recordDeco } from '../../engine/draw-deco';
 import { PhotoCanvas } from '../../engine/photo-canvas';
 import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
@@ -21,10 +22,11 @@ import { reportError } from '../analytics/analytics';
 import { useContent } from '../content/content-store';
 import { findFilm } from '../content/lookup';
 import { saveEdit } from '../photo/photo-service';
-import type { PhotoRecipe } from '../photo/recipe';
+import { MAX_BRUSH_STROKES, type PhotoRecipe } from '../photo/recipe';
 import { lookOf, withLook } from '../looks/look';
 import { useLookClipboard } from '../looks/look-clipboard';
 import { isLocked, usePremium } from '../purchases/purchases-store';
+import { BrushLayer } from './brush-layer';
 import { CropFrame } from './crop-frame';
 import { EDIT_TABS, EditTabPanel, type EditTab } from './edit-tabs';
 import { PhotoTapLayer } from './photo-tap-layer';
@@ -33,6 +35,7 @@ import { useFocusTool } from './tools/use-focus-tool';
 import { useLightTool } from './tools/use-light-tool';
 import { useLocalTool } from './tools/use-local-tool';
 import { useRetouchTool } from './tools/use-retouch-tool';
+import { useSelectTool } from './tools/use-select-tool';
 import { usePhotoSession } from './use-photo-session';
 
 type Session = ReturnType<typeof usePhotoSession>;
@@ -83,6 +86,23 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
   const retouch = useRetouchTool({ recipe, update });
   const focus = useFocusTool({ recipe, update });
   const light = useLightTool({ recipe, update });
+  const select = useSelectTool();
+  const painting = tab === 'select' && select.mode === 'brush';
+  // Painted strokes, shown faintly while painting.
+  const brushOverlay = useMemo(
+    () =>
+      painting
+        ? recordDeco(
+            recipe.brush.strokes,
+            outputSize.width,
+            outputSize.height,
+            NO_DECO_ASSETS,
+            null,
+          )
+        : null,
+    [painting, recipe.brush.strokes, outputSize],
+  );
+  useEffect(() => () => brushOverlay?.dispose(), [brushOverlay]);
   /** The tabs whose tool places things where the photo is tapped. */
   const tools: Partial<Record<EditTab, PhotoTool>> = {
     local: local.tool,
@@ -161,9 +181,24 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
       <PhotoCanvas
         image={session.preview}
         photoSize={session.previewSize ?? outputSize}
+        overlay={brushOverlay}
+        overlayOpacity={0.4}
         onPhotoRect={setPhotoRect}
       >
         <PhotoTapLayer rect={photoRect} markers={tool?.markers ?? []} onTap={tool?.onTap ?? null} />
+        {painting && (
+          <BrushLayer
+            rect={photoRect}
+            width={select.brushSize}
+            onStroke={(stroke) => {
+              if (recipe.brush.strokes.length >= MAX_BRUSH_STROKES) {
+                showMessage(strings.edit.select.full);
+                return;
+              }
+              update({ brush: { ...recipe.brush, strokes: [...recipe.brush.strokes, stroke] } });
+            }}
+          />
+        )}
         {tab === 'crop' && (
           <CropFrame
             rect={photoRect}
@@ -203,6 +238,7 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
               takenAt: session.photo?.createdAt ?? null,
               local,
               retouch,
+              select,
             }}
           />
         </ScrollView>

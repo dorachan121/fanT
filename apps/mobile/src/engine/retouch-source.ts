@@ -10,9 +10,11 @@ import {
 import type { Size } from '../features/photo/geometry';
 import { backdropStep } from './retouch/steps/backdrop';
 import { backgroundBlurStep } from './retouch/steps/background-blur';
+import { brushStep } from './retouch/steps/brush';
 import { focusStep } from './retouch/steps/focus';
 import { hairStep } from './retouch/steps/hair';
 import { healStep } from './retouch/steps/heal';
+import { selectiveStep } from './retouch/steps/selective';
 import { skyStep } from './retouch/steps/sky';
 import type { RetouchInput, RetouchStep } from './retouch/types';
 import { makeSurface } from './surface';
@@ -20,12 +22,15 @@ import { makeSurface } from './surface';
 export type { PlacedMask, RetouchInput } from './retouch/types';
 
 /**
- * The steps, in order: the sky (EDT-25), a new backdrop (EDT-16) and background
- * blur behind the people (EDT-11), hair colour (EDT-12), blemish removal (BTY-11)
- * and tilt-shift (EDT-23). A new step is added here, not inside another.
+ * The steps, in order: the sky (EDT-25), the people and the background (EDT-34),
+ * a painted area (EDT-35), a new backdrop (EDT-16) and background blur behind the
+ * people (EDT-11), hair colour (EDT-12), blemish removal (BTY-11) and tilt-shift
+ * (EDT-23). A new step is added here, not inside another.
  */
 const STEPS: readonly RetouchStep[] = [
   skyStep,
+  selectiveStep,
+  brushStep,
   backdropStep,
   backgroundBlurStep,
   hairStep,

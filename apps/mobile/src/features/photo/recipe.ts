@@ -26,6 +26,7 @@ import { z } from 'zod';
 
 import { makeupSchema, NO_MAKEUP, type Makeup } from '../makeup/makeup';
 import { focusBlurSchema, NO_FOCUS_BLUR } from '../retouch/focus-blur';
+import { areaToneSchema, NO_AREA_TONE } from '../selection/area-tone';
 import { NO_SKY_EDIT, skyEditSchema } from '../sky/sky-edit';
 import { hairSchema, healSpotSchema, MAX_HEAL_SPOTS, NO_HAIR_COLOR } from '../retouch/retouch';
 import { FRAME_TYPES } from './frames';
@@ -34,6 +35,8 @@ import { DECO_FONTS } from '../deco/deco-fonts';
 /** Limits that keep a recipe small; the editor stops adding past them (DCO-*). */
 export const MAX_STROKE_POINTS = 2000;
 export const MAX_DECO_LAYERS = 500;
+/** Strokes of the adjustment brush (EDT-35), enough to cover a few things. */
+export const MAX_BRUSH_STROKES = 40;
 /** Furthest a photo can be straightened, in degrees either way. */
 const MAX_STRAIGHTEN = 45;
 
@@ -189,6 +192,20 @@ const photoRecipeSchema = z.strictObject({
    * know is drawn as none. Missing in older recipes.
    */
   backdrop: z.string().max(32).nullable().default(null),
+  /** The people and the background on their own (EDT-34); missing in older recipes. */
+  selective: z
+    .strictObject({
+      people: areaToneSchema.default(NO_AREA_TONE),
+      background: areaToneSchema.default(NO_AREA_TONE),
+    })
+    .default({ people: NO_AREA_TONE, background: NO_AREA_TONE }),
+  /** An area painted with the adjustment brush (EDT-35); missing in older recipes. */
+  brush: z
+    .strictObject({
+      strokes: z.array(decoStrokeSchema).max(MAX_BRUSH_STROKES).default([]),
+      tone: areaToneSchema.default(NO_AREA_TONE),
+    })
+    .default({ strokes: [], tone: NO_AREA_TONE }),
   /** The sky alone (EDT-25), found on the device; missing in older recipes. */
   sky: skyEditSchema.default(NO_SKY_EDIT),
   /** Tilt-shift (EDT-23); missing in older recipes. */
@@ -264,6 +281,8 @@ export function newRecipe(options: {
     backdrop: null,
     focusBlur: NO_FOCUS_BLUR,
     sky: NO_SKY_EDIT,
+    selective: { people: NO_AREA_TONE, background: NO_AREA_TONE },
+    brush: { strokes: [], tone: NO_AREA_TONE },
     backgroundBlur: 0,
     hair: NO_HAIR_COLOR,
     detail: DEFAULT_DETAIL_PARAMS,

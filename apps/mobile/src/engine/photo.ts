@@ -146,6 +146,8 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
     heal: recipe.heal,
     backdrop: findBackdrop(recipe.backdrop),
     focusBlur: recipe.focusBlur,
+    selective: recipe.selective,
+    brush: recipe.brush,
     backgroundBlur: recipe.backgroundBlur,
     hair: recipe.hair,
     mask: people,
