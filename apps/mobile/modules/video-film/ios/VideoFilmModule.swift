@@ -3,9 +3,10 @@ import CoreImage
 import ExpoModulesCore
 import UIKit
 
-/// Colours short videos with a film's 3D LUT (CAM-13), on the device: every frame
-/// goes through Core Image's colour cube while AVFoundation re-encodes the video,
-/// keeping its sound and orientation.
+/// Short videos made on the device: recordings coloured with a film's 3D LUT
+/// (CAM-13), every frame through Core Image's colour cube while AVFoundation
+/// re-encodes them with their sound and orientation, and moving photos encoded
+/// from their frames (EDT-37).
 public class VideoFilmModule: Module {
   public func definition() -> ModuleDefinition {
     Name("VideoFilm")
@@ -20,6 +21,24 @@ public class VideoFilmModule: Module {
         return
       }
       Self.applyLut(input: input, output: output, size: size, rgba: rgba, promise: promise)
+    }
+
+    AsyncFunction("encodeFrames") { (frameUris: [String], fps: Int, outputUri: String, promise: Promise) in
+      let frames = frameUris.compactMap { URL(string: $0) }.filter { $0.isFileURL }
+      guard let output = URL(string: outputUri), output.isFileURL, !frames.isEmpty,
+        frames.count == frameUris.count, fps > 0
+      else {
+        promise.reject("E_VIDEO_ARGS", "Invalid frames")
+        return
+      }
+      DispatchQueue.global(qos: .userInitiated).async {
+        do {
+          try Self.encodeFrames(frames, fps: fps, output: output)
+          promise.resolve(nil)
+        } catch {
+          promise.reject("E_VIDEO_ENCODE", error.localizedDescription)
+        }
+      }
     }
 
     AsyncFunction("thumbnail") { (videoUri: String, jpegUri: String, promise: Promise) in
@@ -49,6 +68,71 @@ public class VideoFilmModule: Module {
           promise.reject("E_VIDEO_THUMBNAIL", error.localizedDescription)
         }
       }
+    }
+  }
+
+  private struct EncodeError: LocalizedError {
+    let errorDescription: String?
+  }
+
+  /// Writes JPEG frames as an H.264 MP4, one per 1/`fps` second, at the first frame's size.
+  private static func encodeFrames(_ frames: [URL], fps: Int, output: URL) throws {
+    guard let first = UIImage(contentsOfFile: frames[0].path)?.cgImage else {
+      throw EncodeError(errorDescription: "Unreadable frame")
+    }
+    // H.264 needs even sides.
+    let width = first.width / 2 * 2
+    let height = first.height / 2 * 2
+    try? FileManager.default.removeItem(at: output)
+    let writer = try AVAssetWriter(outputURL: output, fileType: .mp4)
+    let input = AVAssetWriterInput(
+      mediaType: .video,
+      outputSettings: [
+        AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: width, AVVideoHeightKey: height,
+      ])
+    input.expectsMediaDataInRealTime = false
+    let adaptor = AVAssetWriterInputPixelBufferAdaptor(
+      assetWriterInput: input,
+      sourcePixelBufferAttributes: [
+        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32ARGB,
+        kCVPixelBufferWidthKey as String: width,
+        kCVPixelBufferHeightKey as String: height,
+      ])
+    guard writer.canAdd(input) else { throw EncodeError(errorDescription: "Cannot add video") }
+    writer.add(input)
+    guard writer.startWriting() else {
+      throw writer.error ?? EncodeError(errorDescription: "Cannot start writing")
+    }
+    writer.startSession(atSourceTime: .zero)
+    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    for (index, frame) in frames.enumerated() {
+      guard let image = UIImage(contentsOfFile: frame.path)?.cgImage else {
+        throw EncodeError(errorDescription: "Unreadable frame")
+      }
+      while !input.isReadyForMoreMediaData { Thread.sleep(forTimeInterval: 0.005) }
+      var buffer: CVPixelBuffer?
+      guard let pool = adaptor.pixelBufferPool,
+        CVPixelBufferPoolCreatePixelBuffer(nil, pool, &buffer) == kCVReturnSuccess,
+        let pixels = buffer
+      else { throw EncodeError(errorDescription: "No pixel buffer") }
+      CVPixelBufferLockBaseAddress(pixels, [])
+      let context = CGContext(
+        data: CVPixelBufferGetBaseAddress(pixels), width: width, height: height,
+        bitsPerComponent: 8, bytesPerRow: CVPixelBufferGetBytesPerRow(pixels), space: colorSpace,
+        bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue)
+      context?.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+      CVPixelBufferUnlockBaseAddress(pixels, [])
+      let time = CMTime(value: CMTimeValue(index), timescale: CMTimeScale(fps))
+      guard adaptor.append(pixels, withPresentationTime: time) else {
+        throw writer.error ?? EncodeError(errorDescription: "Cannot write a frame")
+      }
+    }
+    input.markAsFinished()
+    let finished = DispatchSemaphore(value: 0)
+    writer.finishWriting { finished.signal() }
+    finished.wait()
+    guard writer.status == .completed else {
+      throw writer.error ?? EncodeError(errorDescription: "Cannot finish the video")
     }
   }
 

@@ -100,6 +100,7 @@ export const ja = {
     video: '動画',
     edit: '編集',
     deco: 'デコ',
+    motion: '動かす',
     ai: 'AI変身',
     retake: '撮り直す',
     saved: '写真アプリに保存したよ💗',
@@ -362,6 +363,23 @@ export const ja = {
     deco: 'らくがき',
     sheetColor: '台紙そのまま',
     backdropNone: '背景そのまま',
+  },
+  motion: {
+    title: '🌊 動く写真',
+    hint: '動かしたい所（水・雲・滝など）を指でなぞって、流れる向きと速さを選んでね。',
+    directions: {
+      right: '→',
+      left: '←',
+      down: '↓',
+      up: '↑',
+      downRight: '↘',
+      upRight: '↗',
+    },
+    speed: '速さ',
+    brush: 'ブラシの太さ',
+    play: '▶ 再生',
+    paint: '🖌️ なぞる',
+    undo: 'ひとつ戻す',
   },
   merge: {
     hdr: {

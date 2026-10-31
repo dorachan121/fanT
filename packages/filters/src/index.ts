@@ -149,3 +149,4 @@ export {
   EXPOSURE_FUSION_SHADER_SOURCE,
   type ExposureFusionUniforms,
 } from './merge/exposure-fusion';
+export { MOTION_SHADER_NAME, MOTION_SHADER_SOURCE, type MotionUniforms } from './motion/motion';

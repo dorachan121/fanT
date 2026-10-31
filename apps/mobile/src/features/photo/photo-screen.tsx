@@ -92,6 +92,15 @@ export function PhotoScreen({ id, fromCamera }: PhotoScreenProps) {
               router.push({ pathname: '/deco/[id]', params: { id: photo.id } });
             }}
           />
+          {photo.videoUri === null && (
+            <PhotoAction
+              icon="water"
+              label={strings.photo.motion}
+              onPress={() => {
+                router.push({ pathname: '/motion/[id]', params: { id: photo.id } });
+              }}
+            />
+          )}
           {aiAvailable && photo.videoUri === null && (
             <PhotoAction
               icon="sparkles"

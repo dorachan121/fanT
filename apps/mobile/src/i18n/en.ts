@@ -93,6 +93,7 @@ export const en: Strings = {
     video: 'Video',
     edit: 'Edit',
     deco: 'Decorate',
+    motion: 'Animate',
     ai: 'AI magic',
     retake: 'Retake',
     saved: 'Saved to Photos 💗',
@@ -351,6 +352,23 @@ export const en: Strings = {
     deco: 'Doodle',
     sheetColor: 'Sheet as is',
     backdropNone: 'Background as is',
+  },
+  motion: {
+    title: '🌊 Moving photo',
+    hint: 'Paint what should move (water, clouds, a waterfall), then pick the direction and speed.',
+    directions: {
+      right: '→',
+      left: '←',
+      down: '↓',
+      up: '↑',
+      downRight: '↘',
+      upRight: '↗',
+    },
+    speed: 'Speed',
+    brush: 'Brush size',
+    play: '▶ Play',
+    paint: '🖌️ Paint',
+    undo: 'Undo stroke',
   },
   merge: {
     hdr: {

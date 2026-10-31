@@ -1,7 +1,7 @@
 import type { Film } from '@fant/content-schema';
 import { File } from 'expo-file-system';
 
-import { applyLut, videoThumbnail } from '../../../modules/video-film/src';
+import { applyLut, encodeFrames, videoThumbnail } from '../../../modules/video-film/src';
 import { bakeFilmLut } from '../../engine/video-lut';
 import { tempDirectory } from '../../lib/temp-files';
 import { track } from '../analytics/analytics';
@@ -79,5 +79,14 @@ export async function saveAiVideo(uri: string): Promise<AlbumPhoto> {
     new File(uri).copySync(new File(target));
     return Promise.resolve();
   });
+  return photo;
+}
+
+/** Encodes the frames of a moving photo (EDT-37) and adds it to the album as a video. */
+export async function saveFramesVideo(
+  frameUris: readonly string[],
+  fps: number,
+): Promise<AlbumPhoto> {
+  const { photo } = await addVideo((target) => encodeFrames(frameUris, fps, target));
   return photo;
 }

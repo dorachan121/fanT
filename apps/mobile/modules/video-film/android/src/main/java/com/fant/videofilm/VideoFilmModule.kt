@@ -13,6 +13,7 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.SingleColorLut
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.EditedMediaItem
+import androidx.media3.transformer.EditedMediaItemSequence
 import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
@@ -25,9 +26,9 @@ import java.io.File
 import java.io.FileOutputStream
 
 /**
- * Colours short videos with a film's 3D LUT (CAM-13), on the device: Media3
- * Transformer re-encodes the video with a colour-LUT effect, keeping its sound
- * and orientation.
+ * Short videos made on the device with Media3 Transformer: recordings coloured
+ * with a film's 3D LUT (CAM-13), keeping their sound and orientation, and moving
+ * photos encoded from their frames (EDT-37).
  */
 class VideoFilmModule : Module() {
   private val context
@@ -43,6 +44,14 @@ class VideoFilmModule : Module() {
         return@AsyncFunction
       }
       applyLut(fileOf(inputUri), fileOf(outputUri), cubeOf(size, rgba), promise)
+    }
+
+    AsyncFunction("encodeFrames") { frameUris: List<String>, fps: Int, outputUri: String, promise: Promise ->
+      if (frameUris.isEmpty() || fps <= 0) {
+        promise.reject("E_VIDEO_ARGS", "No frames", null)
+        return@AsyncFunction
+      }
+      encodeFrames(frameUris.map(::fileOf), fps, fileOf(outputUri), promise)
     }
 
     AsyncFunction("thumbnail") { videoUri: String, jpegUri: String, promise: Promise ->
@@ -83,6 +92,25 @@ class VideoFilmModule : Module() {
       EditedMediaItem.Builder(MediaItem.fromUri(Uri.fromFile(input)))
         .setEffects(Effects(listOf(), listOf(SingleColorLut.createFromCube(cube))))
         .build()
+    export(Composition.Builder(EditedMediaItemSequence(listOf(item))).build(), output, promise)
+  }
+
+  /** Each frame is an image shown for one frame's time, in order. */
+  @OptIn(UnstableApi::class)
+  private fun encodeFrames(frames: List<File>, fps: Int, output: File, promise: Promise) {
+    val frameMs = (1000L / fps).coerceAtLeast(1L)
+    val items =
+      frames.map { frame ->
+        EditedMediaItem.Builder(
+            MediaItem.Builder().setUri(Uri.fromFile(frame)).setImageDurationMs(frameMs).build())
+          .setFrameRate(fps)
+          .build()
+      }
+    export(Composition.Builder(EditedMediaItemSequence(items)).build(), output, promise)
+  }
+
+  @OptIn(UnstableApi::class)
+  private fun export(composition: Composition, output: File, promise: Promise) {
     // Transformer runs on a thread with a Looper; the main one is simplest.
     Handler(Looper.getMainLooper()).post {
       output.delete()
@@ -99,7 +127,7 @@ class VideoFilmModule : Module() {
               }
             })
           .build()
-      transformer.start(item, output.path)
+      transformer.start(composition, output.path)
     }
   }
 }

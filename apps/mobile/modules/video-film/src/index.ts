@@ -9,6 +9,7 @@ export interface VideoInfo {
 interface VideoFilmModule {
   applyLut(inputUri: string, outputUri: string, size: number, rgbaBase64: string): Promise<void>;
   thumbnail(videoUri: string, jpegUri: string): Promise<VideoInfo>;
+  encodeFrames(frameUris: string[], fps: number, outputUri: string): Promise<void>;
 }
 
 /** `null` where the native module is not built in (e.g. tests, web). */
@@ -30,6 +31,18 @@ export function applyLut(
   lut: { readonly size: number; readonly rgbaBase64: string },
 ): Promise<void> {
   return required().applyLut(inputUri, outputUri, lut.size, lut.rgbaBase64);
+}
+
+/**
+ * Encodes JPEG frames, all one size, into an MP4 at `fps` frames a second
+ * (EDT-37), on the device.
+ */
+export function encodeFrames(
+  frameUris: readonly string[],
+  fps: number,
+  outputUri: string,
+): Promise<void> {
+  return required().encodeFrames([...frameUris], fps, outputUri);
 }
 
 /** Writes the first frame, upright, as a JPEG and returns the video's size and length. */
