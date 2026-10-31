@@ -6,7 +6,7 @@ import { FlatList, StyleSheet, useWindowDimensions, View } from 'react-native';
 
 import { strings } from '../../i18n';
 import { Bouncy } from '../../ui/bouncy';
-import { confirmDestructive, showError } from '../../ui/dialogs';
+import { confirmDestructive, showError, showMessage } from '../../ui/dialogs';
 import { IconButton } from '../../ui/icon-button';
 import { ScreenHeader } from '../../ui/screen-header';
 import { HeroEmoji } from '../../ui/hero-emoji';
@@ -14,6 +14,8 @@ import { colors, radius, softShadow, spacing } from '../../ui/theme';
 import { reportError } from '../analytics/analytics';
 import { importPhoto } from '../photo/import-photo';
 import { MAX_COLLAGE_PHOTOS, MIN_COLLAGE_PHOTOS } from '../collage/collage-layout';
+import { useLookClipboard } from '../looks/look-clipboard';
+import { pasteLook } from '../looks/paste-look';
 import { canMerge, type MergeMode } from '../merge/merge-modes';
 import { deletePhotos } from './album-db';
 import { useAlbum } from './use-album';
@@ -28,6 +30,8 @@ export function AlbumScreen() {
   const [selecting, setSelecting] = useState(false);
   const [selected, setSelected] = useState<ReadonlySet<string>>(new Set());
   const [importing, setImporting] = useState(false);
+  const [pasting, setPasting] = useState(false);
+  const copied = useLookClipboard((state) => state.look);
   const size = (width - spacing.sm * (COLUMNS + 1)) / COLUMNS;
 
   const toggle = (id: string) => {
@@ -44,6 +48,23 @@ export function AlbumScreen() {
     deletePhotos([...selected]);
     setSelected(new Set());
     setSelecting(false);
+  };
+
+  /** Puts the copied edits on every selected photo (EDT-06, EDT-33). */
+  const pasteSelected = async () => {
+    if (copied === null) return;
+    setPasting(true);
+    try {
+      const chosen = photos.filter((photo) => selected.has(photo.id));
+      const changed = await pasteLook(chosen, copied, (error) => {
+        reportError(error, 'album.paste');
+      });
+      showMessage(strings.album.pasted(changed, chosen.length));
+      setSelected(new Set());
+      setSelecting(false);
+    } finally {
+      setPasting(false);
+    }
   };
 
   const runImport = async () => {
@@ -92,6 +113,12 @@ export function AlbumScreen() {
                   }}
                 />
               ))}
+              <IconButton
+                icon="clipboard-outline"
+                label={strings.edit.pasteLook}
+                disabled={copied === null || selected.size === 0 || pasting}
+                onPress={() => void pasteSelected()}
+              />
               <IconButton
                 icon="trash-outline"
                 label={strings.common.delete}

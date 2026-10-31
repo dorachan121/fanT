@@ -208,6 +208,23 @@ const photoRecipeSchema = z.strictObject({
     .default(null),
 });
 export type PhotoRecipe = z.infer<typeof photoRecipeSchema>;
+
+/**
+ * The parts of a recipe that make its look, the same on any photo (EDT-33): what
+ * is copied, pasted and kept in presets. Framing, decorations and retouching tied
+ * to places in one photo are left out.
+ */
+export const lookSchema = photoRecipeSchema.pick({
+  film: true,
+  beauty: true,
+  adjust: true,
+  detail: true,
+  lens: true,
+  light: true,
+  sky: true,
+});
+export type Look = z.infer<typeof lookSchema>;
+export const LOOK_KEYS = Object.keys(lookSchema.shape) as (keyof Look)[];
 export type QuarterTurn = PhotoRecipe['transform']['rotation'];
 
 export function newRecipe(options: {

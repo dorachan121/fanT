@@ -13,7 +13,7 @@ import { PhotoCanvas } from '../../engine/photo-canvas';
 import { strings } from '../../i18n';
 import { Button } from '../../ui/button';
 import { Chip } from '../../ui/chip';
-import { showError } from '../../ui/dialogs';
+import { showError, showMessage } from '../../ui/dialogs';
 import { IconButton } from '../../ui/icon-button';
 import { ScreenHeader } from '../../ui/screen-header';
 import { colors, radius, softShadow, spacing } from '../../ui/theme';
@@ -22,6 +22,8 @@ import { useContent } from '../content/content-store';
 import { findFilm } from '../content/lookup';
 import { saveEdit } from '../photo/photo-service';
 import type { PhotoRecipe } from '../photo/recipe';
+import { lookOf, withLook } from '../looks/look';
+import { useLookClipboard } from '../looks/look-clipboard';
 import { isLocked, usePremium } from '../purchases/purchases-store';
 import { CropFrame } from './crop-frame';
 import { EDIT_TABS, EditTabPanel, type EditTab } from './edit-tabs';
@@ -67,6 +69,7 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
   const [saving, setSaving] = useState(false);
   const [photoRect, setPhotoRect] = useState<LayoutRectangle | null>(null);
   const [comparing, setComparing] = useState(false);
+  const copied = useLookClipboard((state) => state.look);
   const { setView } = session;
   // Hold to compare with the photo before editing (EDT-28); crop over the whole photo (EDT-29).
   useEffect(() => {
@@ -122,6 +125,22 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
               }}
               onPressOut={() => {
                 setComparing(false);
+              }}
+            />
+            <IconButton
+              icon="copy-outline"
+              label={strings.edit.copyLook}
+              onPress={() => {
+                useLookClipboard.getState().copy(lookOf(recipe));
+                showMessage(strings.edit.copied);
+              }}
+            />
+            <IconButton
+              icon="clipboard-outline"
+              label={strings.edit.pasteLook}
+              disabled={copied === null}
+              onPress={() => {
+                if (copied !== null) update(withLook(recipe, copied));
               }}
             />
             <IconButton

@@ -5,7 +5,7 @@ import { strings } from '../../../i18n';
 import { Chip } from '../../../ui/chip';
 import { ParamSliders } from '../../../ui/param-sliders';
 import { spacing } from '../../../ui/theme';
-import { SCENERY_LOOKS, withLook, type SceneryLook } from '../scenery-looks';
+import { SCENERY_LOOKS, withSceneryLook, type SceneryLook } from '../scenery-looks';
 import type { PanelProps } from './panel-props';
 
 const SCENERY = ['dehaze', 'clarity', 'sky', 'sunset'] as const;
@@ -24,7 +24,7 @@ export function SceneryPanel({ recipe, update }: PanelProps) {
             label={strings.edit.looks[look]}
             selected={false}
             onPress={() => {
-              update(withLook(recipe, look));
+              update(withSceneryLook(recipe, look));
             }}
           />
         ))}

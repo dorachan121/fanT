@@ -106,6 +106,7 @@ export const en: Strings = {
     title: 'Edit',
     tabs: {
       film: 'Film',
+      presets: 'Presets',
       beauty: 'Skin',
       adjust: 'Adjust',
       scenery: 'Scenery',
@@ -231,6 +232,17 @@ export const en: Strings = {
     },
     auto: '✨ Auto',
     compare: 'Hold to see the photo before editing',
+    copyLook: 'Copy edits',
+    pasteLook: 'Paste edits',
+    copied: 'Edits copied 📋 Paste them while editing another photo or in the album',
+    presets: {
+      hint: 'Save the current colours and adjustments to put on other photos in one tap.',
+      save: 'Save current edits',
+      name: (index) => `My preset ${String(index)}`,
+      saved: 'Preset saved 💾',
+      full: "Can't save more presets 🙏 Delete some you don't need",
+      remove: (name) => `Delete ${name}`,
+    },
     histogram: 'Brightness spread',
     perspective: { vertical: 'Vertical perspective', horizontal: 'Horizontal perspective' },
     flip: 'Flip',
@@ -304,6 +316,10 @@ export const en: Strings = {
     gap: 'Spacing',
   },
   album: {
+    pasted: (changed, total) =>
+      changed === total
+        ? `Pasted on ${String(changed)} photos ✨`
+        : `Pasted on ${String(changed)} of ${String(total)} (videos and others stay as they are)`,
     title: 'Album',
     empty: 'No photos yet 📷\nThey show up here once you take some!',
     select: 'Select',

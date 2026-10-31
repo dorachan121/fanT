@@ -113,6 +113,7 @@ export const ja = {
     title: '編集',
     tabs: {
       film: 'フィルム',
+      presets: 'プリセット',
       beauty: '美肌',
       adjust: '補正',
       scenery: '風景',
@@ -242,6 +243,17 @@ export const ja = {
     },
     auto: '✨ 自動補正',
     compare: '押している間、加工前を見る',
+    copyLook: '加工をコピー',
+    pasteLook: '加工を貼り付け',
+    copied: '加工をコピーしたよ📋 ほかの写真の編集やアルバムで貼り付けられるよ',
+    presets: {
+      hint: '今の色や補正を保存して、ほかの写真にワンタップでかけられるよ。',
+      save: '今の加工を保存',
+      name: (index: number) => `マイプリセット${String(index)}`,
+      saved: 'プリセットを保存したよ💾',
+      full: 'プリセットはこれ以上保存できないよ🙏 いらないものを消してね',
+      remove: (name: string) => `${name}を消す`,
+    },
     histogram: '明るさの分布',
     perspective: { vertical: '縦の遠近', horizontal: '横の遠近' },
     flip: '反転',
@@ -315,6 +327,10 @@ export const ja = {
     gap: 'すきま',
   },
   album: {
+    pasted: (changed: number, total: number) =>
+      changed === total
+        ? `${String(changed)}枚に貼り付けたよ✨`
+        : `${String(total)}枚のうち${String(changed)}枚に貼り付けたよ（動画などはそのまま）`,
     title: 'アルバム',
     empty: 'まだ写真がないよ〜📷\n撮ったらここに並ぶよ！',
     select: '選ぶ',

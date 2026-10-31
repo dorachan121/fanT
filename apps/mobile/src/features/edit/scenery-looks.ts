@@ -33,7 +33,7 @@ export const SCENERY_LOOKS = {
 export type SceneryLook = keyof typeof SCENERY_LOOKS;
 
 /** The recipe change of a look: its values set, every other value kept. */
-export function withLook(
+export function withSceneryLook(
   recipe: PhotoRecipe,
   look: SceneryLook,
 ): Pick<PhotoRecipe, 'adjust' | 'detail' | 'lens'> {

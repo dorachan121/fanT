@@ -2,7 +2,7 @@ import { ADJUST_PARAM_RANGES, DETAIL_PARAM_RANGES, LENS_PARAM_RANGES } from '@fa
 import { describe, expect, it } from 'vitest';
 
 import { neutralRecipe } from '../photo/recipe';
-import { SCENERY_LOOKS, withLook, type SceneryLook } from './scenery-looks';
+import { SCENERY_LOOKS, withSceneryLook, type SceneryLook } from './scenery-looks';
 
 const RANGES = {
   adjust: ADJUST_PARAM_RANGES,
@@ -32,7 +32,7 @@ describe('scenery looks', () => {
       ...neutralRecipe(0.5),
       detail: { ...neutralRecipe(0.5).detail, sharpen: 0.3 },
     };
-    const { adjust, detail, lens } = withLook(recipe, 'drama');
+    const { adjust, detail, lens } = withSceneryLook(recipe, 'drama');
     expect(adjust.contrast).toBe(0.25);
     expect(detail.clarity).toBe(0.8);
     expect(detail.sharpen).toBe(0.3);

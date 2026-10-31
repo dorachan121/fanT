@@ -20,6 +20,7 @@ import { HslPanel } from './panels/hsl-panel';
 import { LensPanel } from './panels/lens-panel';
 import { LightPanel } from './panels/light-panel';
 import { LocalPanel } from './panels/local-panel';
+import { PresetsPanel } from './panels/presets-panel';
 import type { PanelProps } from './panels/panel-props';
 import { RetouchPanel } from './panels/retouch-panel';
 import { SceneryPanel } from './panels/scenery-panel';
@@ -31,6 +32,7 @@ import type { useRetouchTool } from './tools/use-retouch-tool';
 /** The editor's tabs, in the order they are offered (S-21). */
 export const EDIT_TABS = [
   'film',
+  'presets',
   'beauty',
   'makeup',
   'retouch',
@@ -70,6 +72,7 @@ export function EditTabPanel({
   const props: PanelProps = { recipe, update };
   const panels: Record<EditTab, () => ReactNode> = {
     film: () => <FilmPanel {...props} takenAt={context.takenAt} />,
+    presets: () => <PresetsPanel {...props} />,
     beauty: () => (
       <>
         <BeautyControls
