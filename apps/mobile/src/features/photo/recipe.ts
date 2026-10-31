@@ -23,6 +23,7 @@ import {
 import { z } from 'zod';
 
 import { makeupSchema, NO_MAKEUP, type Makeup } from '../makeup/makeup';
+import { focusBlurSchema, NO_FOCUS_BLUR } from '../retouch/focus-blur';
 import { hairSchema, healSpotSchema, MAX_HEAL_SPOTS, NO_HAIR_COLOR } from '../retouch/retouch';
 import { FRAME_TYPES } from './frames';
 import { DECO_FONTS } from '../deco/deco-fonts';
@@ -183,6 +184,8 @@ const photoRecipeSchema = z.strictObject({
    * know is drawn as none. Missing in older recipes.
    */
   backdrop: z.string().max(32).nullable().default(null),
+  /** Tilt-shift (EDT-23); missing in older recipes. */
+  focusBlur: focusBlurSchema.default(NO_FOCUS_BLUR),
   /** Background blur behind the people (EDT-11); missing in older recipes. */
   backgroundBlur: z.number().min(0).max(1).default(0),
   /** Hair colour (EDT-12); missing in older recipes. */
@@ -235,6 +238,7 @@ export function newRecipe(options: {
     heal: [],
     body: DEFAULT_BODY_PARAMS,
     backdrop: null,
+    focusBlur: NO_FOCUS_BLUR,
     backgroundBlur: 0,
     hair: NO_HAIR_COLOR,
     detail: DEFAULT_DETAIL_PARAMS,

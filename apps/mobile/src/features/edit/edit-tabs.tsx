@@ -11,6 +11,7 @@ import { autoAdjusted } from './auto-adjust';
 import { FramePicker } from './frame-picker';
 import { AdjustPanel } from './panels/adjust-panel';
 import { BackgroundPanel } from './panels/background-panel';
+import { BlurPanel } from './panels/blur-panel';
 import { CropPanel } from './panels/crop-panel';
 import { FilmPanel } from './panels/film-panel';
 import { GradingControls } from './panels/grading-controls';
@@ -31,6 +32,7 @@ export const EDIT_TABS = [
   'makeup',
   'retouch',
   'background',
+  'blur',
   'adjust',
   'scenery',
   'tone',
@@ -95,6 +97,7 @@ export function EditTabPanel({
       />
     ),
     background: () => <BackgroundPanel {...props} />,
+    blur: () => <BlurPanel {...props} />,
     adjust: () => (
       <AdjustPanel
         {...props}

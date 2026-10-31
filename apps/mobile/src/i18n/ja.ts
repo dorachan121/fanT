@@ -119,6 +119,7 @@ export const ja = {
       makeup: 'メイク',
       retouch: 'レタッチ',
       background: '背景',
+      blur: 'ぼかし',
       tone: 'トーン',
       hsl: 'カラー',
       local: '部分補正',
@@ -136,6 +137,14 @@ export const ja = {
       hint: '写っている人の後ろを、えらんだ背景に変えるよ。人が写っていない写真は全体が背景になるよ',
       unsupported: 'この端末では背景を変えられないよ🙏',
       none: 'そのまま',
+    },
+    blur: {
+      hint: 'ピントを合わせたい所をタップしてね。そこから離れるほどぼけて、ミニチュアのようになるよ👆',
+      shapes: { band: '▭ 帯', radial: '⭕ 円' },
+      off: 'なし',
+      amount: 'ぼかしの強さ',
+      size: 'ピントの範囲',
+      angle: '帯の向き',
     },
     lens: {
       distortion: 'ゆがみ補正',

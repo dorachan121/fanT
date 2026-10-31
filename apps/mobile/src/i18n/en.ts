@@ -112,6 +112,7 @@ export const en: Strings = {
       makeup: 'Makeup',
       retouch: 'Retouch',
       background: 'Background',
+      blur: 'Blur',
       tone: 'Tone',
       hsl: 'Colour',
       local: 'Spot fix',
@@ -129,6 +130,14 @@ export const en: Strings = {
       hint: 'Puts the people in front of the background you pick. Photos without people become all background.',
       unsupported: "This device can't change backgrounds 🙏",
       none: 'As is',
+    },
+    blur: {
+      hint: 'Tap where to focus. The farther from it, the blurrier, like a miniature 👆',
+      shapes: { band: '▭ Band', radial: '⭕ Circle' },
+      off: 'Off',
+      amount: 'Blur',
+      size: 'Focus area',
+      angle: 'Band direction',
     },
     lens: {
       distortion: 'Distortion',

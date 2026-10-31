@@ -23,6 +23,7 @@ import {
 
 import type { Backdrop } from '../features/photo/backdrops';
 import type { Size } from '../features/photo/geometry';
+import { focusBlurSigma, focusGradient, type FocusBlur } from '../features/retouch/focus-blur';
 import { rgbOf, type Hair, type HealSpot } from '../features/retouch/retouch';
 import { drawBackdrop } from './backdrop';
 import { makeSurface } from './surface';
@@ -43,12 +44,15 @@ export interface RetouchInput {
   readonly mask: { readonly image: SkImage; readonly matrix: SkMatrix } | null;
   /** Heads in output pixels, for hair colour. */
   readonly heads: readonly HairHead[];
+  /** Tilt-shift (EDT-23): blur beyond the focus; needs no mask. */
+  readonly focusBlur: FocusBlur;
 }
 
 /** Whether there is anything to do before the filter chain. */
 export function hasRetouch(input: RetouchInput): boolean {
   return (
     input.heal.length > 0 ||
+    input.focusBlur.amount > 0 ||
     (input.mask !== null &&
       (input.backdrop !== null ||
         input.backgroundBlur > 0 ||
@@ -121,10 +125,33 @@ function healSpot(canvas: SkCanvas, image: SkImage, spot: HealSpot, size: Size):
   }
 }
 
+/** A gradient that is opaque where the photo stays in focus (EDT-23). */
+function focusShader(focus: FocusBlur, size: Size): SkShader {
+  const gradient = focusGradient(focus, size);
+  const opaque = Skia.Color('black');
+  const clear = Skia.Color('transparent');
+  if (gradient.kind === 'radial') {
+    return Skia.Shader.MakeRadialGradient(
+      vec(gradient.center.x, gradient.center.y),
+      gradient.radius,
+      [opaque, opaque, clear],
+      [0, gradient.sharpTo, 1],
+      TileMode.Clamp,
+    );
+  }
+  return Skia.Shader.MakeLinearGradient(
+    vec(gradient.from.x, gradient.from.y),
+    vec(gradient.to.x, gradient.to.y),
+    [clear, opaque, opaque, clear],
+    [0, 0.25, 0.75, 1],
+    TileMode.Clamp,
+  );
+}
+
 /**
  * Prepares the photo before the filter chain, in output pixels: a new backdrop
- * (EDT-16) and background blur behind the people (EDT-11), hair colour (EDT-12)
- * and blemish removal (BTY-11).
+ * (EDT-16) and background blur behind the people (EDT-11), hair colour (EDT-12),
+ * blemish removal (BTY-11) and tilt-shift (EDT-23).
  * Returns a shader for the chain to draw from; the caller disposes `dispose`.
  */
 export function retouchSource(
@@ -209,6 +236,26 @@ export function retouchSource(
       const current = snapshot(surface);
       images.push(current);
       for (const spot of input.heal) healSpot(canvas, current, spot, size);
+    }
+
+    if (input.focusBlur.amount > 0) {
+      const sharp = snapshot(surface);
+      images.push(sharp);
+      canvas.clear(Skia.Color('transparent'));
+      drawImage(canvas, sharp, focusBlurSigma(input.focusBlur, size));
+      const keep = Skia.Paint();
+      const gradient = focusShader(input.focusBlur, size);
+      try {
+        canvas.saveLayer();
+        drawImage(canvas, sharp, 0);
+        keep.setShader(gradient);
+        keep.setBlendMode(BlendMode.DstIn);
+        canvas.drawPaint(keep);
+        canvas.restore();
+      } finally {
+        gradient.dispose();
+        keep.dispose();
+      }
     }
 
     const result = snapshot(surface);

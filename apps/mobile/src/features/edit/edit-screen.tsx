@@ -26,6 +26,7 @@ import { isLocked, usePremium } from '../purchases/purchases-store';
 import { EDIT_TABS, EditTabPanel, type EditTab } from './edit-tabs';
 import { PhotoTapLayer } from './photo-tap-layer';
 import type { PhotoTool } from './tools/photo-tool';
+import { useFocusTool } from './tools/use-focus-tool';
 import { useLocalTool } from './tools/use-local-tool';
 import { useRetouchTool } from './tools/use-retouch-tool';
 import { usePhotoSession } from './use-photo-session';
@@ -69,8 +70,13 @@ function Editor({ id, session }: { readonly id: string; readonly session: Loaded
   };
   const local = useLocalTool({ recipe, update });
   const retouch = useRetouchTool({ recipe, update });
+  const focus = useFocusTool({ recipe, update });
   /** The tabs whose tool places things where the photo is tapped. */
-  const tools: Partial<Record<EditTab, PhotoTool>> = { local: local.tool, retouch: retouch.tool };
+  const tools: Partial<Record<EditTab, PhotoTool>> = {
+    local: local.tool,
+    retouch: retouch.tool,
+    blur: focus,
+  };
   const tool = tools[tab];
 
   const save = async () => {

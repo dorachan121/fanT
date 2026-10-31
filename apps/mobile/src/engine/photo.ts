@@ -137,6 +137,7 @@ export async function renderPhoto(input: PhotoRenderInput): Promise<SkImage> {
   const retouch: RetouchInput = {
     heal: recipe.heal,
     backdrop: findBackdrop(recipe.backdrop),
+    focusBlur: recipe.focusBlur,
     backgroundBlur: recipe.backgroundBlur,
     hair: recipe.hair,
     mask: mask === null || maskMatrix === null ? null : { image: mask, matrix: maskMatrix },
