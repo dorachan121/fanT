@@ -145,63 +145,79 @@ appId: com.fant.camera.dev
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 16-edit-film
-- scrollUntilVisible:
-    element: 'プリセット'
-    direction: RIGHT
+# The tab row scrolls on its own: swipe it slowly from the tab last tapped, so
+# that tab moves to the left edge and the next one comes into view.
+- swipe:
+    from:
+      text: 'フィルム'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: 'プリセット'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 17-edit-presets
-- scrollUntilVisible:
-    element: '美肌'
-    direction: RIGHT
+- swipe:
+    from:
+      text: 'プリセット'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: '美肌'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 18-edit-beauty
-- scrollUntilVisible:
-    element: 'メイク'
-    direction: RIGHT
+- swipe:
+    from:
+      text: '美肌'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: 'メイク'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 19-edit-makeup
-- scrollUntilVisible:
-    element: 'レタッチ'
-    direction: RIGHT
+- swipe:
+    from:
+      text: 'メイク'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: 'レタッチ'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 20-edit-retouch
-- scrollUntilVisible:
-    element: '背景'
-    direction: RIGHT
+- swipe:
+    from:
+      text: 'レタッチ'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: '背景'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 21-edit-background
-- scrollUntilVisible:
-    element: 'ぼかし'
-    direction: RIGHT
+- swipe:
+    from:
+      text: '背景'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: 'ぼかし'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 22-edit-blur
-- scrollUntilVisible:
-    element: '補正'
-    direction: RIGHT
+- swipe:
+    from:
+      text: 'ぼかし'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: '補正'
@@ -213,9 +229,11 @@ appId: com.fant.camera.dev
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 24-edit-auto
-- scrollUntilVisible:
-    element: '風景'
-    direction: RIGHT
+- swipe:
+    from:
+      text: '補正'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: '風景'
@@ -227,81 +245,99 @@ appId: com.fant.camera.dev
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 26-edit-hdr
-- scrollUntilVisible:
-    element: '空'
-    direction: RIGHT
+- swipe:
+    from:
+      text: '風景'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: '空'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 27-edit-sky
-- scrollUntilVisible:
-    element: '光と天気'
-    direction: RIGHT
+- swipe:
+    from:
+      text: '空'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: '光と天気'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 28-edit-light
-- scrollUntilVisible:
-    element: 'トーン'
-    direction: RIGHT
+- swipe:
+    from:
+      text: '光と天気'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: 'トーン'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 29-edit-tone
-- scrollUntilVisible:
-    element: 'カラー'
-    direction: RIGHT
+- swipe:
+    from:
+      text: 'トーン'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: 'カラー'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 30-edit-color
-- scrollUntilVisible:
-    element: '部分補正'
-    direction: RIGHT
+- swipe:
+    from:
+      text: 'カラー'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: '部分補正'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 31-edit-local
-- scrollUntilVisible:
-    element: '範囲'
-    direction: RIGHT
+- swipe:
+    from:
+      text: '部分補正'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: '範囲'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 32-edit-select
-- scrollUntilVisible:
-    element: 'レンズ'
-    direction: RIGHT
+- swipe:
+    from:
+      text: '範囲'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: 'レンズ'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 33-edit-lens
-- scrollUntilVisible:
-    element: 'トリミング'
-    direction: RIGHT
+- swipe:
+    from:
+      text: 'レンズ'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: 'トリミング'
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 34-edit-crop
-- scrollUntilVisible:
-    element: 'フレーム'
-    direction: RIGHT
+- swipe:
+    from:
+      text: 'トリミング'
+    direction: LEFT
+    duration: 1500
     optional: true
 - tapOn:
     text: 'フレーム'
