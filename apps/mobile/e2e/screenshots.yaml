@@ -76,6 +76,10 @@ appId: com.fant.camera.dev
 - tapOn:
     text: '閉じる|戻る'
     optional: true
+- waitForAnimationToEnd
+- scrollUntilVisible:
+    element: '規約とポリシー.*'
+    optional: true
 - tapOn:
     text: '規約とポリシー.*'
     optional: true
@@ -98,27 +102,45 @@ appId: com.fant.camera.dev
     optional: true
 - waitForAnimationToEnd
 - takeScreenshot: 14-album-empty
-# Import the sample landscape (e2e/assets/landscape.jpg, added to the simulator's
-# photos by the workflow) and open it in the editor.
+# The system photo picker does not open under the simulator's UI tests, so add
+# the sample landscape that developer builds draw (settings, developer section).
 - tapOn:
-    text: '写真を読み込む'
+    text: '戻る'
     optional: true
+- tapOn:
+    text: '設定を開く'
+    optional: true
+- scrollUntilVisible:
+    element: '見本の写真をアルバムに追加.*'
+    optional: true
+- tapOn:
+    text: '見本の写真をアルバムに追加.*'
+    optional: true
+- tapOn:
+    text: 'OK'
+    optional: true
+- stopApp
+- launchApp:
+    clearState: false
 - extendedWaitUntil:
-    visible: 'コレクション|Collections'
-    timeout: 20000
+    visible: 'アルバムを開く'
+    timeout: 30000
+    optional: true
+- tapOn:
+    text: 'アルバムを開く'
     optional: true
 - waitForAnimationToEnd
-- takeScreenshot: 15-photo-picker
-# The newest photo (the sample landscape) is first, top left.
+- takeScreenshot: 15-album
+# The sample is the first photo, top left; open it, then the editor.
 - tapOn:
-    point: '15%,25%'
+    point: '17%,24%'
     optional: true
 - waitForAnimationToEnd
 - tapOn:
-    text: '追加|Add|完了|Done'
+    text: '編集'
     optional: true
 - extendedWaitUntil:
-    visible: '編集'
+    visible: 'プリセット'
     timeout: 30000
     optional: true
 - waitForAnimationToEnd
